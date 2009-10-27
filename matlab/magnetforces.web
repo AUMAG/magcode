@@ -1,0 +1,44 @@
+
+@* Calculating forces between magnets.
+This is the source to some code to calculate the forces and torques between
+two cuboid-shaped magnets, subject to a variety of restrictions on
+displacement and rotation but on the whole providing a reasonably general
+solution.
+
+@(magnetforces.m@>=
+  [forces torques] = function magnetforces(magnet_fixed, magnet_floating);
+
+  @<extract the input variables@>
+  @<split the rotations into components@>
+  @<transform the displacements@>
+  @<calculate the forces@>
+  @<recombine the results@>
+
+  return;
+
+@ First of all, address the data structures required for the input and output.
+Because displacement and rotation of a single magnet has six components, plus
+size of each face another three, plus magnetisation strength and direction
+makes eleven in total, we use one of Matlab's structures to pass the
+information into the function.
+
+@<extract the input variables@>=
+
+  a1 = 0.5*magnet_fixed.dim(1);
+  b1 = 0.5*magnet_fixed.dim(2);
+  c1 = 0.5*magnet_fixed.dim(3);
+  a2 = 0.5*magnet_floating.dim(1);
+  b2 = 0.5*magnet_floating.dim(2);
+  c2 = 0.5*magnet_floating.dim(3);
+
+@ Next
+  @<transform the displacements@>=
+  
+@ Next
+  @<split the rotations into components@>=
+  
+@ Next
+  @<calculate the forces@>=
+  
+@ Next
+  @<recombine the results@>=
