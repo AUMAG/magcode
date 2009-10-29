@@ -42,8 +42,8 @@ nine in total, we use one of Matlab's structures to pass the information into
 the function. Otherwise we'd have an overwhelming number of input arguments.
 
 We use spherical coordinates to represent magnetisation angle, where |theta|
-is the angle from the vertical ($0<\theta<\pi$) and |phi| is the angle around
-the horizontal plane ($0<\phi<2\pi$).
+is the angle from the vertical ($0\le\theta\le\pi$) and |phi| is the angle around
+the horizontal plane ($0\le\phi\le2\pi$).
 
 @< Extract ... @>=
 
@@ -73,23 +73,79 @@ to nine force calculations for a single magnet.
 
 @< Decompose ... @>=
 
-J1x = J1r*cos(J1p)*sin(J1t);
-J1y = J1r*sin(J1p)*sin(J1t);
-J1z = J1r*cos(J1t);
+[J1x J1y J1z] = sph2cart(J1t,J1p,J1r);
+[J2x J2y J2z] = sph2cart(J2t,J2p,J2r);
 
-J2x = J2r*cos(J2p)*sin(J2t);
-J2y = J2r*sin(J2p)*sin(J2t);
-J2z = J2r*cos(J2t);
 
 @ The expressions we have to calculate the forces assume a fixed magnet with
 positive |z| magnetisation only. Secondly, magnetisation direction of the
-floating magnet may only be |z|- or |x|-directions.
+floating magnet may only be in the positive |z|- or |y|-directions.
+
+The parallel forces are more easily visualised; if |J1z| is negative, then
+transform the coordinate system so that up is down and down is up. Then proceed
+as usual and reverse the vertical forces in the last step.
+
+The orthogonal forces require reflection and/or rotation to get the displacements
+in a form suitable for calculation.
 
 @< Transform ... @>=
 
-@ Next
+@< Precompute rotation matrices @>
 
-@< Calculate ... @>=
+force_components_x = zeros(3);
+force_components_y = zeros(3);
+force_components_z = zeros(3);
+
+@< Calculate parallel forces @>
+@< Calculate orthogonal forces @>
+
+@ The parallel forces are easier, so I'll do them first.
+
+@< Calculate parallel forces @>=
+
+if ~( J1x == 0 || J2x == 0 )
+  @< Calculate forces |x|-|x| @>
+end
+if ~( J1y == 0 || J2y == 0 )
+  @< Calculate forces |y|-|y| @>
+end
+if ~( J1z == 0 || J2z == 0 )
+  @< Calculate forces |z|-|z| @>
+end
+
+@ It becomes much hard to visualise how the coordinates should be transformed
+for the orthogonal magnetisations.
+
+@< Calculate orthogonal forces @>=
+
+
+
+
+@ The easy one. Note that |J1z| and |J2z| can be negative and the forces
+  calculated will be correct.
+
+@< Calculate forces |z|-|z| @>=
+
+[Fx Fy Fz] = forces_parallel(a1,b1,c1,a2,b2,c2,dx,dy,dz,J1z,J2z);
+force_components(3,3,:) = [Fx Fy Fz];
+
+@ Rotate the entire coordinate system around the |y|-axis so that
+  the new |z| is the old |x|. After the forces are calculated, rotate them
+  back to the original coordinate system.
+
+@< Calculate forces |x|-|x| @>=
+
+[dxr dyr dzr] = rotate_x_to_z([dx dy dz]);
+[Fx Fy Fz] = forces_parallel(c1,b1,a1,c2,b2,a2,dxr,dyr,dzr,J1x,J2x);
+force_components(1,1,:) = rotate_z_to_x([Fx Fy Fz]);
+
+@ Rotate again, this time making |x| the `up' direction.
+
+@< Calculate forces |y|-|y| @>=
+
+[dxr dyr dzr] = rotate_y_to_z([dx dy dz]);
+[Fx Fy Fz] = forces_parallel(a1,c1,b1,a2,c2,b2,dxr,dyr,dzr,J1y,J2y);
+force_components(2,2,:) = rotate_z_to_y([Fx Fy Fz]);
 
 @ Next
 
