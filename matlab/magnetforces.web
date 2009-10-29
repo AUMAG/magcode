@@ -1,44 +1,232 @@
 
-@* Calculating forces between magnets.
-This is the source to some code to calculate the forces and torques between
-two cuboid-shaped magnets, subject to a variety of restrictions on
-displacement and rotation but on the whole providing a reasonably general
-solution.
+@ About this file. This is a `literate programming` approach to writing Matlab
+code using \textsc{matlabweb}. To be honest I don't know if it's any better
+than simply using the Matlab programming language directly. But ain't this
+documentation nice!
 
-@(magnetforces.m@>=
-  [forces torques] = function magnetforces(magnet_fixed, magnet_floating);
+@* Calculating forces between magnets. This is the source to some code to
+calculate the forces (and perhaps torques) between two cuboid-shaped magnets
+with arbitary displacement and magnetisation direction.
 
-  @<extract the input variables@>
-  @<split the rotations into components@>
-  @<transform the displacements@>
-  @<calculate the forces@>
-  @<recombine the results@>
+If this code works then I'll look at calculating the forces for magnets with rotation as well.
 
-  return;
+@( magnetforces.m @>=
+  [forces torques] = function magnetforces(magnet_fixed, magnet_float, magnet_disp);
+
+  @< Extract input variables @>
+  @< Decompose orthogonal superpositions @>
+  @< Transform appropriate coordinate systems @>
+  @< Calculate forces @>
+  @< Recombine results @>
+
+  end
+
+  @<Functions for calculating forces and stiffnesses@>
 
 @ First of all, address the data structures required for the input and output.
-Because displacement and rotation of a single magnet has six components, plus
-size of each face another three, plus magnetisation strength and direction
-makes eleven in total, we use one of Matlab's structures to pass the
-information into the function.
+Because displacement of a single magnet has three components, plus sizes of
+the faces another three, plus magnetisation strength and direction (two) makes
+nine in total, we use one of Matlab's structures to pass the information into
+the function. Otherwise we'd have an overwhelming number of input arguments.
 
-@<extract the input variables@>=
+We use spherical coordinates to represent magnetisation angle, where |theta|
+is the angle from the vertical ($0<\theta<\pi$) and |phi| is the angle around
+the horizontal plane ($0<\phi<2\pi$).
+
+@< Extract ... @>=
 
   a1 = 0.5*magnet_fixed.dim(1);
   b1 = 0.5*magnet_fixed.dim(2);
   c1 = 0.5*magnet_fixed.dim(3);
-  a2 = 0.5*magnet_floating.dim(1);
-  b2 = 0.5*magnet_floating.dim(2);
-  c2 = 0.5*magnet_floating.dim(3);
+  a2 = 0.5*magnet_float.dim(1);
+  b2 = 0.5*magnet_float.dim(2);
+  c2 = 0.5*magnet_float.dim(3);
+  
+  J1r = magnet_fixed.magn;
+  J2r = magnet_float.magn;
+  J1t = magnet_fixed.magdir(1);
+  J2t = magnet_float.magdir(1);
+  J1p = magnet_fixed.magdir(2);
+  J2p = magnet_float.magdir(2);
+  
+  dx = magnet_disp(1);
+  dy = magnet_disp(2);
+  dz = magnet_disp(3);
+
+@ Superposition is used to turn an arbitrary magnetisation angle into a set of
+orthogonal magnetisations.
+
+Each magnet can potentially have three components, which can result in up
+to nine force calculations for a single magnet.
+
+@< Decompose ... @>=
+
+J1x = J1r*cos(J1p)*sin(J1t);
+J1y = J1r*sin(J1p)*sin(J1t);
+J1z = J1r*cos(J1t);
+
+J2x = J2r*cos(J2p)*sin(J2t);
+J2y = J2r*sin(J2p)*sin(J2t);
+J2z = J2r*cos(J2t);
+
+@ The expressions we have to calculate the forces assume a fixed magnet with
+positive |z| magnetisation only. Secondly, magnetisation direction of the
+floating magnet may only be |z|- or |x|-directions.
+
+@< Transform ... @>=
 
 @ Next
-  @<transform the displacements@>=
-  
+
+@< Calculate ... @>=
+
 @ Next
-  @<split the rotations into components@>=
-  
-@ Next
-  @<calculate the forces@>=
-  
-@ Next
-  @<recombine the results@>=
+
+@< Recombine ... @>=
+
+@* Functions for calculating forces and stiffnesses. The calculations for
+forces between differently-oriented cuboid magnets are all directly from the
+literature. The stiffnesses have been derived by differentiating the force
+expressions, but that's the easy part.
+
+@< Functions ... @>=
+
+@< Parallel magnets force calculation @>
+@< Parallel magnets stiffness calculation @>
+@< Orthogonal magnets force calculation @>
+@< Orthogonal magnets stiffness calculation @>
+
+@ The expressions here follow directly from \textcite{akoun1984}.
+
+\begin{center}
+\begin{tabular}{lll}
+ Inputs:
+ &    |(a,b,c)| & the half dimensions of the fixed magnet \\
+ &    |(A,B,C)| & the half dimensions of the floating magnet \\
+ & |(dx,dy,dz)| & distance between magnet centres \\
+ &     |(J,J2)| & magnetisations of the magnet(s) in the z-direction \\
+ Outputs:
+ & |(Fx,Fy,Fz)| & Forces of the second magnet \\
+\end{tabular}
+\end{center}
+
+@< Parallel magnets force calculation @>=
+
+function [Fx Fy Fz] = forces_parallel(a,b,c,A,B,C,dx,dy,dz,J,J2)
+% You probably want to call
+%   warning off MATLAB:divideByZero
+%   warning off MATLAB:log:logOfZero
+
+if nargin < 11
+  J2=J;
+elseif nargin < 10
+  error('Wrong number of input arguments.')
+end
+
+[index_h, index_j, index_k, index_l, index_p, index_q] = ndgrid([0 1]);
+index_sum = (-1).^(index_h+index_j+index_k+index_l+index_p+index_q);
+
+% (Using this method is actually LESS efficient than using six for
+% loops for h..q over [0 1], but it looks a bit nicer, huh?)
+
+u = dx + A*(-1).^index_j - a*(-1).^index_h;
+v = dy + B*(-1).^index_l - b*(-1).^index_k;
+w = dz + C*(-1).^index_q - c*(-1).^index_p;
+r = sqrt(u.^2+v.^2+w.^2);
+
+f_x = ...
+  + 0.5*(v.^2-w.^2).*log(r-u) ...
+  + u.*v.*log(r-v) ...
+  + v.*w.*atan(u.*v./r./w) ...
+  + 0.5*r.*u;
+
+f_y = ...
+  + 0.5*(u.^2-w.^2).*log(r-v) ...
+  + u.*v.*log(r-u) ...
+  + u.*w.*atan(u.*v./r./w)...
+  + 0.5*r.*v;
+
+f_z = ...
+  - u.*w.*log(r-u) ...
+  - v.*w.*log(r-v) ...
+  + u.*v.*atan(u.*v./r./w) ...
+  - r.*w;
+
+fx = index_sum.*f_x;
+fy = index_sum.*f_y;
+fz = index_sum.*f_z;
+
+magconst = J*J2/(4*pi*(4*pi*1e-7));
+Fx = magconst*sum(fx(:));
+Fy = magconst*sum(fy(:));
+Fz = magconst*sum(fz(:));
+
+end
+
+@ And these are the stiffnesses.
+
+\begin{center}
+\begin{tabular}{lll}
+ Inputs:
+ &    |(a,b,c)| & the half dimensions of the fixed magnet \\
+ &    |(A,B,C)| & the half dimensions of the floating magnet \\
+ & |(dx,dy,dz)| & distance between magnet centres \\
+ &     |(J,J2)| & magnetisations of the magnet(s) in the z-direction \\
+ Outputs:
+ & |(Kx,Ky,Kz)| & Stiffnesses of the 2nd magnet \\
+\end{tabular}
+\end{center}
+
+@< Parallel magnets stiffness calculation @>=
+
+function [Kx Ky Kz] = stiffness_parallel(a,b,c,A,B,C,dx,dy,dz,J,J2)
+% You probably want to call
+%   warning off MATLAB:divideByZero
+%   warning off MATLAB:log:logOfZero
+
+if nargin < 11
+  J2=J;
+elseif nargin < 10
+  error('Wrong number of input arguments.')
+end
+
+[index_h, index_j, index_k, index_l, index_p, index_q] = ndgrid([0 1]);
+index_sum = (-1).^(index_h+index_j+index_k+index_l+index_p+index_q);
+
+% Using this method is actually less efficient than using six for
+% loops for h..q over [0 1]. To be addressed.
+
+u = dx + A*(-1).^index_j - a*(-1).^index_h;
+v = dy + B*(-1).^index_l - b*(-1).^index_k;
+w = dz + C*(-1).^index_q - c*(-1).^index_p;
+r = sqrt(u.^2+v.^2+w.^2);
+
+
+k_x = ...
+  - r ...
+  - (u.^2.*v)./(u.^2+w.^2) ...
+  - v.*log(r-v) ;
+k_y = ...
+  - r ...
+  - (v.^2.*u)./(v.^2+w.^2) ...
+  - u.*log(r-u) ;
+
+k_z = -k_x-k_y;
+
+kx = index_sum.*k_x;
+ky = index_sum.*k_y;
+kz = index_sum.*k_z;
+
+magconst = J*J2/(4*pi*(4*pi*1e-7));
+Kx = magconst*sum(kx(:));
+Ky = magconst*sum(ky(:));
+Kz = magconst*sum(kz(:));
+
+end
+
+@ Orthogonal magnets forces.
+
+@< Orthogonal magnets force calculation @>=
+
+@ Orthogonal magnets stiffnesses.
+
+@< Orthogonal magnets stiffness calculation @>=

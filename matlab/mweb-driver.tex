@@ -1,7 +1,10 @@
 
 \documentclass{article}
 \usepackage[hyperref]{webfiles}
+\usepackage{biblatex}
+\bibliography{journals,phd}
 \usepackage[colorlinks]{hyperref}
+\usepackage{bookmark}
 \usepackage{expl3}
 \ExplSyntaxOn
 \clist_map_inline:nn
@@ -142,12 +145,32 @@
    XVisual, XVisualMode, fixedwidth, FixedWidthFontName, imread,
    imwrite, imfinfo}
   {\tl_set:cn{g_matlab_reserved_\tl_to_str:n{#1}_tl}{}}
+
+\clist_map_inline:nn {
+  {a1}{a\sb1} ,
+  {a2}{a\sb2} ,
+  {b1}{b\sb1} ,
+  {b2}{b\sb2} ,
+  {c1}{c\sb1} ,
+  {c2}{c\sb2}
+}{\tl_set:cn{g_matlab_sym_\tl_to_str:n\exp_after:wN{\use_i:nn #1}_tl}{\use_ii:nn#1}}
+
 \def\xwebId#1{% identifier, more than one char
   \cs_if_exist:cTF {g_matlab_reserved_\tl_to_str:n{#1}_tl}
     {\hbox{\rm#1\/\kern.05em}}
-    {\hbox{\it#1\/\kern.05em}}
+    {
+      \cs_if_exist:cTF {g_matlab_sym_\tl_to_str:n{#1}_tl}
+        { \ensuremath{\use:c{g_matlab_sym_\tl_to_str:n{#1}_tl}} }
+        { \hbox{\sl#1\/\kern.05em} }
+    }
 } 
+
+\usepackage{amsmath}
+\renewcommand\hat{\text{\ttfamily\char`\^}}
+
 \ExplSyntaxOff
 \begin{document}
 \webfile{\WEBNAME}
+
+\printbibliography
 \end{document}
