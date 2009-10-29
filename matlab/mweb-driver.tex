@@ -1,5 +1,6 @@
 
 \documentclass{article}
+\usepackage{amsmath}
 \usepackage[hyperref]{webfiles}
 \usepackage{biblatex}
 \bibliography{journals,phd}
@@ -165,11 +166,13 @@
         { \hbox{\sl#1\/\kern.05em} }
     }
 } 
-
-\usepackage{amsmath}
-\renewcommand\hat{\text{\ttfamily\char`\^}}
-
 \ExplSyntaxOff
+
+% hacks:
+\def\neg{\text{\scshape not}}
+\renewcommand\hat{\text{\ttfamily\char`\^}}
+\def\xwebOr#1$\V${\text{\scshape or}$}
+
 \begin{document}
 \webfile{\WEBNAME}
 
