@@ -1,27 +1,39 @@
 
 @ About this file. This is a `literate programming` approach to writing Matlab
-code using \textsc{matlabweb}. To be honest I don't know if it's any better
-than simply using the Matlab programming language directly. But ain't this
-documentation nice!
+code using \textsc{matlabweb}%
+\footnote{\url{http://tug.ctan.org/pkg/matlabweb}}. To be honest I don't know
+if it's any better than simply using the Matlab programming language directly.
+The big advantage for me is that you have access to the entire \LaTeX\
+document environment, which gives you access to vastly better tools for
+cross-referencing, maths typesetting, structured formatting, bibliography
+generation, and so on.
+
+The downside is obviously that you miss out on Matlab's IDE with its
+integrated M-Lint program, debugger, profiler, and so on. Depending on ones
+work habits, this may be more or less of limiting factor to using `literate
+programming' in this way.
 
 @* Calculating forces between magnets. This is the source to some code to
 calculate the forces (and perhaps torques) between two cuboid-shaped magnets
 with arbitary displacement and magnetisation direction.
 
-If this code works then I'll look at calculating the forces for magnets with rotation as well.
+If this code works then I'll look at calculating the forces for magnets with
+rotation as well.
 
 @( magnetforces.m @>=
-  [forces torques] = function magnetforces(magnet_fixed, magnet_float, magnet_disp);
 
-  @< Extract input variables @>
-  @< Decompose orthogonal superpositions @>
-  @< Transform appropriate coordinate systems @>
-  @< Calculate forces @>
-  @< Recombine results @>
+[forces torques] = function magnetforces(magnet_fixed, magnet_float, magnet_disp);
 
-  end
+@< Matlab help text @>
 
-  @<Functions for calculating forces and stiffnesses@>
+@< Extract input variables @>
+@< Decompose orthogonal superpositions @>
+@< Transform coordinate systems and calculate force components @>
+@< Recombine results @>
+
+end
+
+@< Functions for calculating forces and stiffnesses @>
 
 @ First of all, address the data structures required for the input and output.
 Because displacement of a single magnet has three components, plus sizes of
