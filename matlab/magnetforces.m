@@ -47,7 +47,7 @@ J2  =  [ J2r  *  cosd(J2p)  *  cosd(J2t) ,  ...
  
  
  
-force_components  =  repmat(NaN,[3 3 3]); 
+force_components  =  repmat(NaN,[9 3]); 
  
  
  
@@ -74,13 +74,13 @@ J1rot  =  rotate_x_to_z(J1);
 J2rot  =  rotate_x_to_z(J2); 
  
 forces_xyz  =  forces_z_z(size1rot,size2rot,drot,J1rot,J2rot); 
-force_components(1,1,:)  =  rotate_z_to_x(forces_xyz); 
+force_components(4,:)  =  rotate_z_to_x(forces_xyz); 
  
 forces_xyz  =  forces_z_y(size1rot,size2rot,drot,J1rot,J2rot); 
-force_components(1,2,:)  =  rotate_z_to_x(forces_xyz); 
+force_components(5,:)  =  rotate_z_to_x(forces_xyz); 
  
 forces_xyz  =  forces_z_y(size1rot,size2rot,drot,J1rot,J2rot); 
-force_components(1,3,:)  =  rotate_z_to_x(forces_xyz); 
+force_components(6,:)  =  rotate_z_to_x(forces_xyz); 
  
  
  
@@ -92,13 +92,13 @@ J1rot     =  rotate_y_to_z( J1    );
 J2rot     =  rotate_y_to_z( J2    ); 
  
 forces_xyz  =  forces_z_z(size1rot,size2rot,drot,J1rot,J2rot); 
-force_components(2,2,:)  =  rotate_z_to_y(forces_xyz); 
+force_components(7,:)  =  rotate_z_to_y(forces_xyz); 
  
 forces_xyz  =  forces_z_x(size1rot,size2rot,drot,J1rot,J2rot); 
-force_components(2,1,:)  =  rotate_z_to_y(forces_xyz); 
+force_components(8,:)  =  rotate_z_to_y(forces_xyz); 
  
 forces_xyz  =  forces_z_y(size1rot,size2rot,drot,J1rot,J2rot); 
-force_components(2,3,:)  =  rotate_z_to_y(forces_xyz); 
+force_components(9,:)  =  rotate_z_to_y(forces_xyz); 
  
  
  
@@ -108,18 +108,18 @@ force_components(2,3,:)  =  rotate_z_to_y(forces_xyz);
  
  
 forces_xyz  =  forces_z_z(size1,size2,displ,J1,J2); 
-force_components(3,3,:)  =  forces_xyz; 
+force_components(1,:)  =  forces_xyz; 
  
 forces_xyz  =  forces_z_y( size1,size2,displ,J1,J2 ); 
-force_components(3,2,:)  =  forces_xyz; 
+force_components(2,:)  =  forces_xyz; 
  
 forces_xyz  =  forces_z_x( size1,size2,displ,J1,J2 ); 
-force_components(3,1,:)  =  forces_xyz; 
+force_components(3,:)  =  forces_xyz; 
  
  
  
  
-forces_out  =  squeeze(sum(sum(force_components,1),2)); 
+forces_out  =  sum(force_components); 
  
  
  
@@ -142,7 +142,6 @@ if length(J2) == 3
 end 
  
 if (J1==0 || J2==0) 
-  disp('Zero magnetisation (parallel)') 
   forces_xyz  =  [0 0 0]; 
   return; 
 end 
@@ -221,7 +220,6 @@ if length(J2) == 3
 end 
  
 if (J1==0 || J2==0) 
-  disp('Zero magnetisation (orth)') 
   forces_xyz  =  [0 0 0]; 
   return; 
 end 
