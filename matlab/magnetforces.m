@@ -1,6 +1,6 @@
  
  
-[forces torques]  =  function magnetforces(magnet_fixed, magnet_float, magnet_disp); 
+[forces_out]  =  function magnetforces(magnet_fixed, magnet_float, magnet_disp); 
  
  
  
@@ -38,71 +38,90 @@
  
  
  
-[J1x J1y J1z]  =  sph2cart(J1t,J1p,J1r); 
-[J2x J2y J2z]  =  sph2cart(J2t,J2p,J2r); 
+J1  =  sph2cart(J1t,J1p,J1r); 
+J2  =  sph2cart(J2t,J2p,J2r); 
  
  
  
  
  
+force_components  =  zeros(3,3,3); 
  
  
-Rx  =  @(theta) [1 0 0; 0 cos(theta) -sin(theta); 0 sin(theta) cos(theta)] ; 
-Ry  =  @(theta) [cos(theta) 0 sin(theta); 0 1 0; -sin(theta) 0 cos(theta)] ; 
-Rz  =  @(theta) [cos(theta) -sin(theta) 0; sin(theta) cos(theta) 0; 0 0 1] ; 
- 
-rotate_z_to_x  =  @(vec) Ry(pi/2) * vec' 
-rotate_x_to_z  =  @(vec) Ry(-pi/2) * vec' 
- 
-rotate_z_to_y  =  @(vec) Rx(-pi/2) * vec' 
-rotate_y_to_z  =  @(vec) Rx(pi/2) * vec' 
- 
- 
- 
- 
-force_components_x  =  zeros(3); 
-force_components_y  =  zeros(3); 
-force_components_z  =  zeros(3); 
- 
- 
- 
-if ~( J1x == 0 || J2x == 0 ) 
-   
  
 [dxr dyr dzr]  =  rotate_x_to_z([dx dy dz]); 
-[Fx Fy Fz]  =  forces_parallel(c1,b1,a1,c2,b2,a2,dxr,dyr,dzr,J1x,J2x); 
+Jrot  =  rotate_x_to_z(J2); 
+[Fx Fy Fz]  =  forces_parallel(c1,b1,a1,c2,b2,a2,dxr,dyr,dzr,J1(1),Jrot(3)); 
 force_components(1,1,:)  =  rotate_z_to_x([Fx Fy Fz]); 
  
  
-end 
-if ~( J1y == 0 || J2y == 0 ) 
-   
+ 
+ 
+[dxr dyr dzr]  =  rotate_x_to_z([dx dy dz]); 
+Jrot  =  rotate_x_to_z(J2); 
+[Fy Fx Fz]  =  forces_orthogonal(c1,b1,a1,c2,b2,a2,dyr,dxr,dzr,J1(1),Jrot(2)); 
+force_components(1,2,:)  =  rotate_z_to_x([Fx Fy Fz]); 
+ 
+ 
+ 
+ 
+ 
+[dxr dyr dzr]  =  rotate_x_to_z([dx dy dz]); 
+Jrot  =  rotate_x_to_z(J2); 
+[Fy Fx Fz]  =  forces_orthogonal(b1,c1,a1,b2,c2,a2,dyr,dxr,dzr,J1(1),Jrot(2)); 
+force_components(1,3,:)  =  rotate_z_to_x([Fx Fy Fz]); 
+ 
+ 
+ 
+ 
+ 
  
 [dxr dyr dzr]  =  rotate_y_to_z([dx dy dz]); 
-[Fx Fy Fz]  =  forces_parallel(a1,c1,b1,a2,c2,b2,dxr,dyr,dzr,J1y,J2y); 
+Jrot  =  rotate_y_to_z(J2); 
+[Fy Fx Fz]  =  forces_orthogonal(c1,a1,b1,c2,a2,b2,dyr,dxr,dzr,J1(y),Jrot(2)); 
+force_components(2,1,:)  =  rotate_z_to_y([Fx Fy Fz]); 
+ 
+ 
+ 
+ 
+ 
+[dxr dyr dzr]  =  rotate_y_to_z([dx dy dz]); 
+Jrot  =  rotate_y_to_z(J2); 
+[Fx Fy Fz]  =  forces_parallel(a1,c1,b1,a2,c2,b2,dxr,dyr,dzr,J1(2),Jrot(3)); 
 force_components(2,2,:)  =  rotate_z_to_y([Fx Fy Fz]); 
  
  
-end 
-if ~( J1z == 0 || J2z == 0 ) 
-   
+ 
+ 
+ 
+[dxr dyr dzr]  =  rotate_y_to_z([dx dy dz]); 
+Jrot  =  rotate_y_to_z(J2); 
+[Fx Fy Fz]  =  forces_orthogonal(a1,c1,b1,a2,c2,b2,dxr,dyr,dzr,J1(2),Jrot(2)); 
+force_components(2,3,:)  =  rotate_z_to_y([Fx Fy Fz]); 
+ 
+ 
+ 
+ 
+ 
+[Fy Fx Fz]  =  forces_orthogonal( b1,a1,c1,b2,a2,c2,dy,dx,dz,J1(3),J2(1) ); 
+force_components(3,1,:)  =  [Fx Fy Fz]; 
+ 
+ 
+ 
+ 
+ 
+[Fx Fy Fz]  =  forces_orthogonal( a1,b1,c1,a2,b2,c2,dx,dy,dz,J1(3),J2(2) ); 
+force_components(3,2,:)  =  [Fx Fy Fz]; 
+ 
+ 
+ 
  
 [Fx Fy Fz]  =  forces_parallel(a1,b1,c1,a2,b2,c2,dx,dy,dz,J1z,J2z); 
 force_components(3,3,:)  =  [Fx Fy Fz]; 
  
  
-end 
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+forces_out  =  sum(force_components,3); 
  
  
  
@@ -121,6 +140,13 @@ if nargin < 11
   J2 = J; 
 elseif nargin < 10 
   error('Wrong number of input arguments.') 
+end 
+ 
+if (J==0 || J2==0) 
+  Fx  =  0; 
+  Fy  =  0; 
+  Fz  =  0; 
+  return; 
 end 
  
 [index_h, index_j, index_k, index_l, index_p, index_q]  =  ndgrid([0 1]); 
@@ -177,6 +203,13 @@ elseif nargin < 10
   error('Wrong number of input arguments.') 
 end 
  
+if (J==0 || J2==0) 
+  Kx  =  0; 
+  Ky  =  0; 
+  Kz  =  0; 
+  return; 
+end 
+ 
 [index_h, index_j, index_k, index_l, index_p, index_q]  =  ndgrid([0 1]); 
 index_sum  =  (-1).^(index_h+index_j+index_k+index_l+index_p+index_q); 
  
@@ -220,6 +253,13 @@ if nargin < 11
   J2 = J; 
 elseif nargin < 10 
   error('Wrong number of input arguments.') 
+end 
+ 
+if (J==0 || J2==0) 
+  Fx  =  0; 
+  Fy  =  0; 
+  Fz  =  0; 
+  return; 
 end 
  
 [index_h, index_j, index_k, index_l, index_p, index_q]  =  ndgrid([0 1]); 
