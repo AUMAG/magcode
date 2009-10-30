@@ -65,7 +65,6 @@ flip_y_z  =  @(vec) abs(rotate_y_to_z(vec)) ;
  
  
  
-disp('x-x'); 
  
  
 size1rot  =  flip_x_z(size1); 
@@ -73,96 +72,50 @@ size2rot  =  flip_x_z(size2);
 drot   =  rotate_x_to_z(displ); 
 J1rot  =  rotate_x_to_z(J1); 
 J2rot  =  rotate_x_to_z(J2); 
-forces_xyz  =  forces_parallel(size1rot,size2rot,drot,J1rot,J2rot); 
+ 
+forces_xyz  =  forces_z_z(size1rot,size2rot,drot,J1rot,J2rot); 
 force_components(1,1,:)  =  rotate_z_to_x(forces_xyz); 
  
- 
- 
-disp('x-y'); 
- 
- 
-size1rot  =  flip_x_z(size1); 
-size2rot  =  flip_x_z(size2); 
-drot   =  rotate_x_to_z( displ ); 
-J1rot  =  rotate_x_to_z(J1); 
-J2rot  =  rotate_x_to_z(J2); 
-forces_xyz  =  forces_orthogonal_y(size1rot,size2rot,drot,J1rot,J2rot); 
+forces_xyz  =  forces_z_y(size1rot,size2rot,drot,J1rot,J2rot); 
 force_components(1,2,:)  =  rotate_z_to_x(forces_xyz); 
  
- 
- 
-disp('x-z'); 
- 
- 
-size1rot  =  flip_x_z(size1); 
-size2rot  =  flip_x_z(size2); 
-drot   =  rotate_x_to_z( displ ); 
-J1rot  =  rotate_x_to_z(J1); 
-J2rot  =  rotate_x_to_z(J2); 
-forces_xyz  =  forces_orthogonal_y(size1rot,size2rot,drot,J1rot,J2rot); 
+forces_xyz  =  forces_z_y(size1rot,size2rot,drot,J1rot,J2rot); 
 force_components(1,3,:)  =  rotate_z_to_x(forces_xyz); 
  
  
  
  
-disp('y-x'); 
- 
- 
-size1rot  =  flip_x_z(size1); 
-size2rot  =  flip_x_z(size2); 
+size1rot  =  flip_y_z(size1); 
+size2rot  =  flip_y_z(size2); 
 drot      =  rotate_y_to_z( displ ); 
 J1rot     =  rotate_y_to_z( J1    ); 
 J2rot     =  rotate_y_to_z( J2    ); 
-forces_xyz  =  forces_orthogonal_x(size1rot,size2rot,drot,J1rot,J2rot); 
-force_components(2,1,:)  =  rotate_z_to_y(forces_xyz); 
  
- 
- 
-disp('y-y'); 
- 
- 
-size1rot  =  flip_y_z(size1); 
-size2rot  =  flip_y_z(size2); 
-drot   =  rotate_y_to_z( displ ); 
-J1rot  =  rotate_y_to_z(J1); 
-J2rot  =  rotate_y_to_z(J2); 
-forces_xyz  =  forces_parallel(size1rot,size2rot,drot,J1rot,J2rot); 
+forces_xyz  =  forces_z_z(size1rot,size2rot,drot,J1rot,J2rot); 
 force_components(2,2,:)  =  rotate_z_to_y(forces_xyz); 
  
+forces_xyz  =  forces_z_x(size1rot,size2rot,drot,J1rot,J2rot); 
+force_components(2,1,:)  =  rotate_z_to_y(forces_xyz); 
  
- 
-disp('y-z'); 
- 
- 
-size1rot  =  flip_y_z(size1); 
-size2rot  =  flip_y_z(size2); 
-drot   =  rotate_y_to_z( displ ); 
-J1rot  =  rotate_y_to_z(J1); 
-J2rot  =  rotate_y_to_z(J2); 
-forces_xyz  =  forces_orthogonal_y(size1rot,size2rot,drot,J1rot,J2rot); 
+forces_xyz  =  forces_z_y(size1rot,size2rot,drot,J1rot,J2rot); 
 force_components(2,3,:)  =  rotate_z_to_y(forces_xyz); 
  
  
  
-disp('z-x'); 
  
  
-forces_xyz  =  forces_orthogonal_x( size1,size2,displ,J1,J2 ); 
-force_components(3,1,:)  =  forces_xyz; 
  
  
-disp('z-y'); 
  
+forces_xyz  =  forces_z_z(size1,size2,displ,J1,J2); 
+force_components(3,3,:)  =  forces_xyz; 
  
-forces_xyz  =  forces_orthogonal_y( size1,size2,displ,J1,J2 ); 
+forces_xyz  =  forces_z_y( size1,size2,displ,J1,J2 ); 
 force_components(3,2,:)  =  forces_xyz; 
  
+forces_xyz  =  forces_z_x( size1,size2,displ,J1,J2 ); 
+force_components(3,1,:)  =  forces_xyz; 
  
-disp('z-z'); 
- 
- 
-forces_xyz  =  forces_parallel(size1,size2,displ,J1,J2); 
-force_components(3,3,:)  =  forces_xyz; 
  
  
  
@@ -176,7 +129,7 @@ end
  
  
  
-function forces_xyz  =  forces_parallel(size1,size2,offset,J1,J2) 
+function forces_xyz  =  forces_z_z(size1,size2,offset,J1,J2) 
 % You probably want to call 
 %   warning off MATLAB:divideByZero 
 %   warning off MATLAB:log:logOfZero 
@@ -246,11 +199,11 @@ end
  
  
  
-function forces_xyz  =  forces_orthogonal_x(size1,size2,offset,J1,J2) 
+function forces_xyz  =  forces_z_x(size1,size2,offset,J1,J2) 
  
 swap_x_y  =  @(vec) [vec(2) vec(1) vec(3)]; 
  
-forces_xyz  =  forces_orthogonal_y( ... 
+forces_xyz  =  forces_z_y( ... 
   swap_x_y(size1), swap_x_y(size2), swap_x_y(offset), ... 
   J1, swap_x_y(J2) ); 
  
@@ -258,7 +211,7 @@ forces_xyz  =  swap_x_y( forces_xyz );
  
 end 
  
-function forces_xyz  =  forces_orthogonal_y(size1,size2,offset,J1,J2) 
+function forces_xyz  =  forces_z_y(size1,size2,offset,J1,J2) 
  
 if length(J1) == 3 
   J1  =  J1(3); 

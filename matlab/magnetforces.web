@@ -107,133 +107,73 @@ force_components = repmat(NaN,[3 3 3]);
 
 @< Precompute rotation matrices @>
 
-disp('x-x');
-@< Calculate forces |x|-|x| @>
-disp('x-y');
-@< Calculate forces |x|-|y| @>
-disp('x-z');
-@< Calculate forces |x|-|z| @>
-disp('y-x');
-@< Calculate forces |y|-|x| @>
-disp('y-y');
-@< Calculate forces |y|-|y| @>
-disp('y-z');
-@< Calculate forces |y|-|z| @>
-disp('z-x');
-@< Calculate forces |z|-|x| @>
-disp('z-y');
-@< Calculate forces |z|-|y| @>
-disp('z-z');
-@< Calculate forces |z|-|z| @>
+@< Calculate forces |x| @>
+@< Calculate forces |y| @>
+@< Calculate forces |z| @>
 
 forces_out = squeeze(sum(sum(force_components,1),2));
 
-@ The easy one. Note that the magnetisations can be negative and the forces
-  calculated will be correct.
-
-@< Calculate forces |z|-|z| @>=
-
-forces_xyz = forces_parallel(size1,size2,displ,J1,J2);
-force_components(3,3,:) = forces_xyz;
-
-@ Now the analogous calculation with the orthogonal force.
+@ The easy one first, where our magnetisation components align with the
+  direction expected by the force functions.
   I'm hoping that the correct forces are calculated even if the magnetisations
   are negative.
 
-@< Calculate forces |z|-|y| @>=
+@< Calculate forces |z| @>=
 
-forces_xyz = forces_orthogonal_y( size1,size2,displ,J1,J2 );
+forces_xyz = forces_z_z(size1,size2,displ,J1,J2);
+force_components(3,3,:) = forces_xyz;
+
+forces_xyz = forces_z_y( size1,size2,displ,J1,J2 );
 force_components(3,2,:) = forces_xyz;
 
-@ For |x| magnetisation, we can just calculate it \emph{as is} it were in the
-  |y| direction, ensuring to swap the necessary components.
-
-@< Calculate forces |z|-|x| @>=
-
-forces_xyz = forces_orthogonal_x( size1,size2,displ,J1,J2 );
+forces_xyz = forces_z_x( size1,size2,displ,J1,J2 );
 force_components(3,1,:) = forces_xyz;
 
-@ The other parallel forces (|x|-|x| and |y|-|y|) require a rotation to get
+
+@ The other forces (i.e., |x| and |y| components) require a rotation to get
   the magnetisations correctly aligned.
-  In this case, rotate the entire coordinate system around the |y|-axis so
-  that the new |z| is the old |x|.
+  In the case of the magnet sizes, the lengths are just flipped rather than
+  rotated (in rotation, sign is important).
   After the forces are calculated, rotate them back to the original
   coordinate system.
 
-@< Calculate forces |x|-|x| @>=
+@< Calculate forces |x| @>=
 
 size1rot = flip_x_z(size1);
 size2rot = flip_x_z(size2);
 drot  = rotate_x_to_z(displ);
 J1rot = rotate_x_to_z(J1);
 J2rot = rotate_x_to_z(J2);
-forces_xyz = forces_parallel(size1rot,size2rot,drot,J1rot,J2rot);
+
+forces_xyz = forces_z_z(size1rot,size2rot,drot,J1rot,J2rot);
 force_components(1,1,:) = rotate_z_to_x(forces_xyz);
 
+forces_xyz = forces_z_y(size1rot,size2rot,drot,J1rot,J2rot);
+force_components(1,2,:) = rotate_z_to_x(forces_xyz);
+
+forces_xyz = forces_z_y(size1rot,size2rot,drot,J1rot,J2rot);
+force_components(1,3,:) = rotate_z_to_x(forces_xyz);
 
 @ Same again, this time making |y| the `up' direction.
 
-@< Calculate forces |y|-|y| @>=
-
-size1rot = flip_y_z(size1);
-size2rot = flip_y_z(size2);
-drot  = rotate_y_to_z( displ );
-J1rot = rotate_y_to_z(J1);
-J2rot = rotate_y_to_z(J2);
-forces_xyz = forces_parallel(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(2,2,:) = rotate_z_to_y(forces_xyz);
-
-
-@ There are four more force calculations. |y|-|z| is |z|-|y| rotated.
-
-@< Calculate forces |y|-|z| @>=
-
-size1rot = flip_y_z(size1);
-size2rot = flip_y_z(size2);
-drot  = rotate_y_to_z( displ );
-J1rot = rotate_y_to_z(J1);
-J2rot = rotate_y_to_z(J2);
-forces_xyz = forces_orthogonal_y(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(2,3,:) = rotate_z_to_y(forces_xyz);
-
-
-@ |x|-|y| is |z|-|y| rotated.
-
-@< Calculate forces |x|-|y| @>=
-
-size1rot = flip_x_z(size1);
-size2rot = flip_x_z(size2);
-drot  = rotate_x_to_z( displ );
-J1rot = rotate_x_to_z(J1);
-J2rot = rotate_x_to_z(J2);
-forces_xyz = forces_orthogonal_y(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(1,2,:) = rotate_z_to_x(forces_xyz);
-
-
-@ |y|-|x| is |z|-|x| rotated.
-
-@< Calculate forces |y|-|x| @>=
+@< Calculate forces |y| @>=
 
 size1rot = flip_y_z(size1);
 size2rot = flip_y_z(size2);
 drot     = rotate_y_to_z( displ );
 J1rot    = rotate_y_to_z( J1    );
 J2rot    = rotate_y_to_z( J2    );
-forces_xyz = forces_orthogonal_x(size1rot,size2rot,drot,J1rot,J2rot);
+
+forces_xyz = forces_z_z(size1rot,size2rot,drot,J1rot,J2rot);
+force_components(2,2,:) = rotate_z_to_y(forces_xyz);
+
+forces_xyz = forces_z_x(size1rot,size2rot,drot,J1rot,J2rot);
 force_components(2,1,:) = rotate_z_to_y(forces_xyz);
 
+forces_xyz = forces_z_y(size1rot,size2rot,drot,J1rot,J2rot);
+force_components(2,3,:) = rotate_z_to_y(forces_xyz);
 
-@ |x|-|z| is |z|-|x| rotated.
 
-@< Calculate forces |x|-|z| @>=
-
-size1rot = flip_x_z(size1);
-size2rot = flip_x_z(size2);
-drot  = rotate_x_to_z( displ );
-J1rot = rotate_x_to_z(J1);
-J2rot = rotate_x_to_z(J2);
-forces_xyz = forces_orthogonal_y(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(1,3,:) = rotate_z_to_x(forces_xyz);
 
 
 
@@ -263,7 +203,7 @@ expressions, but that's the easy part.
 
 @< Parallel magnets force calculation @>=
 
-function forces_xyz = forces_parallel(size1,size2,offset,J1,J2)
+function forces_xyz = forces_z_z(size1,size2,offset,J1,J2)
 % You probably want to call
 %   warning off MATLAB:divideByZero
 %   warning off MATLAB:log:logOfZero
@@ -335,11 +275,11 @@ The magnetisation of the floating magnet |J2| is in the positive |y|-direction.
 
 @< Orthogonal magnets force calculation @>=
 
-function forces_xyz = forces_orthogonal_x(size1,size2,offset,J1,J2)
+function forces_xyz = forces_z_x(size1,size2,offset,J1,J2)
 
 swap_x_y = @@(vec) [vec(2) vec(1) vec(3)];
 
-forces_xyz = forces_orthogonal_y(...
+forces_xyz = forces_z_y(...
   swap_x_y(size1), swap_x_y(size2), swap_x_y(offset),...
   J1, swap_x_y(J2) );
 
@@ -347,7 +287,7 @@ forces_xyz = swap_x_y( forces_xyz );
 
 end
 
-function forces_xyz = forces_orthogonal_y(size1,size2,offset,J1,J2)
+function forces_xyz = forces_z_y(size1,size2,offset,J1,J2)
 
 if length(J1) == 3
   J1 = J1(3);
