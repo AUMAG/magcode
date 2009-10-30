@@ -191,7 +191,7 @@ fy  =  index_sum.*f_y;
 fz  =  index_sum.*f_z; 
  
 magconst  =  J1 * J2/(4 * pi * (4 * pi * 1e-7)); 
-forces_xyz  =  magconst.*[ sum(fx(:)) sum(fy(:)) sum(fz(:)) ] 
+forces_xyz  =  magconst.*[ sum(fx(:)) sum(fy(:)) sum(fz(:)) ] ; 
  
 end 
  
@@ -271,7 +271,7 @@ fy  =  index_sum.*f_y;
 fz  =  index_sum.*f_z; 
  
 magconst  =  J1 * J2/(4 * pi * (4 * pi * 1e-7)); 
-forces_xyz  =  magconst.*[ sum(fx(:)) sum(fy(:)) sum(fz(:)) ] 
+forces_xyz  =  magconst.*[ sum(fx(:)) sum(fy(:)) sum(fz(:)) ] ; 
  
  
 end 
