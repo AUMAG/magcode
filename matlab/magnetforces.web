@@ -22,7 +22,7 @@ rotation as well.
 
 @( magnetforces.m @>=
 
-[forces_out] = function magnetforces(magnet_fixed, magnet_float, magnet_disp);
+function [forces_out] = magnetforces(magnet_fixed, magnet_float, magnet_disp)
 
 @< Matlab help text @>
 
@@ -40,29 +40,35 @@ the faces another three, plus magnetisation strength and direction (two) makes
 nine in total, we use one of Matlab's structures to pass the information into
 the function. Otherwise we'd have an overwhelming number of input arguments.
 
-We use spherical coordinates to represent magnetisation angle, where |theta|
-is the angle from the vertical ($0\le\theta\le\pi$) and |phi| is the angle around
-the horizontal plane ($0\le\phi\le2\pi$).
+We use spherical coordinates to represent magnetisation angle, where |phi| is
+the angle from the horizontal plane ($-\pi/2\le \phi \le\pi/2$) and |theta|
+is the angle around the horizontal plane ($0\le\theta\le2\pi$). This follows
+Matlab's definition; other conventions are commonly used as well. Remember:
+\begin{quote}
+$(1,0,0)_{\text{cartesian}} \equiv (0,0,1)_{\text{spherical}}$\\
+$(0,1,0)_{\text{cartesian}} \equiv (\pi/2,0,1)_{\text{spherical}}$\\
+$(0,0,1)_{\text{cartesian}} \equiv (0,\pi/2,1)_{\text{spherical}}$
+\end{quote}
 
 @< Extract ... @>=
 
-  a1 = 0.5*magnet_fixed.dim(1);
-  b1 = 0.5*magnet_fixed.dim(2);
-  c1 = 0.5*magnet_fixed.dim(3);
-  a2 = 0.5*magnet_float.dim(1);
-  b2 = 0.5*magnet_float.dim(2);
-  c2 = 0.5*magnet_float.dim(3);
-  
-  J1r = magnet_fixed.magn;
-  J2r = magnet_float.magn;
-  J1t = magnet_fixed.magdir(1);
-  J2t = magnet_float.magdir(1);
-  J1p = magnet_fixed.magdir(2);
-  J2p = magnet_float.magdir(2);
-  
-  dx = magnet_disp(1);
-  dy = magnet_disp(2);
-  dz = magnet_disp(3);
+a1 = 0.5*magnet_fixed.dim(1);
+b1 = 0.5*magnet_fixed.dim(2);
+c1 = 0.5*magnet_fixed.dim(3);
+a2 = 0.5*magnet_float.dim(1);
+b2 = 0.5*magnet_float.dim(2);
+c2 = 0.5*magnet_float.dim(3);
+
+J1r = magnet_fixed.magn;
+J2r = magnet_float.magn;
+J1t = magnet_fixed.magdir(1);
+J2t = magnet_float.magdir(1);
+J1p = magnet_fixed.magdir(2);
+J2p = magnet_float.magdir(2);
+
+dx = magnet_disp(1);
+dy = magnet_disp(2);
+dz = magnet_disp(3);
 
 @ Superposition is used to turn an arbitrary magnetisation angle into a set of
 orthogonal magnetisations.
@@ -70,11 +76,20 @@ orthogonal magnetisations.
 Each magnet can potentially have three components, which can result in up
 to nine force calculations for a single magnet.
 
+We don't use Matlab's |sph2cart| here, because it doesn't calculate zero
+accurately (because it uses radians).
+
 @< Decompose ... @>=
 
-J1 = sph2cart(J1t,J1p,J1r);
-J2 = sph2cart(J2t,J2p,J2r);
+J1x = J1r * cosd(J1p) * cosd(J1t);
+J2x = J2r * cosd(J2p) * cosd(J2t);
+J1y = J1r * cosd(J1p) * sind(J1t);
+J2y = J2r * cosd(J2p) * sind(J2t);
+J1z = J1r * sind(J1p) ;
+J2z = J2r * sind(J2p) ;
 
+J1 = [J1x J1y J1z];
+J2 = [J2x J2y J2z];
 
 @ The expressions we have to calculate the forces assume a fixed magnet with
 positive |z| magnetisation only. Secondly, magnetisation direction of the
@@ -92,26 +107,37 @@ direction, and fill it up by calculating
 
 @< Calculate all forces @>=
 
-force_components = zeros(3,3,3);
+force_components = repmat(NaN,[3 3 3]);
 
+@< Precompute rotation matrices @>
+
+disp('x-x');
 @< Calculate forces |x|-|x| @>
+disp('x-y');
 @< Calculate forces |x|-|y| @>
+disp('x-z');
 @< Calculate forces |x|-|z| @>
+disp('y-x');
 @< Calculate forces |y|-|x| @>
+disp('y-y');
 @< Calculate forces |y|-|y| @>
+disp('y-z');
 @< Calculate forces |y|-|z| @>
+disp('z-x');
 @< Calculate forces |z|-|x| @>
+disp('z-y');
 @< Calculate forces |z|-|y| @>
+disp('z-z');
 @< Calculate forces |z|-|z| @>
 
-forces_out = sum(force_components,3);
+forces_out = squeeze(sum(sum(force_components,1),2));
 
 @ The easy one. Note that |J1z| and |J2z| can be negative and the forces
   calculated will be correct.
 
 @< Calculate forces |z|-|z| @>=
 
-[Fx Fy Fz] = forces_parallel(a1,b1,c1,a2,b2,c2,dx,dy,dz,J1z,J2z);
+[Fx Fy Fz] = forces_parallel(a1,b1,c1,a2,b2,c2,[dx,dy,dz],J1,J2);
 force_components(3,3,:) = [Fx Fy Fz];
 
 @ Now the analogous calculation with the orthogonal force.
@@ -120,7 +146,7 @@ force_components(3,3,:) = [Fx Fy Fz];
 
 @< Calculate forces |z|-|y| @>=
 
-[Fx Fy Fz] = forces_orthogonal( a1,b1,c1,a2,b2,c2,dx,dy,dz,J1(3),J2(2) );
+[Fx Fy Fz] = forces_orthogonal( a1,b1,c1,a2,b2,c2,[dx,dy,dz],J1,J2 );
 force_components(3,2,:) = [Fx Fy Fz];
 
 @ For |x| magnetisation, we can just calculate it \emph{as is} it were in the
@@ -128,7 +154,7 @@ force_components(3,2,:) = [Fx Fy Fz];
 
 @< Calculate forces |z|-|x| @>=
 
-[Fy Fx Fz] = forces_orthogonal( b1,a1,c1,b2,a2,c2,dy,dx,dz,J1(3),J2(1) );
+[Fy Fx Fz] = forces_orthogonal( b1,a1,c1,b2,a2,c2,[dy,dx,dz],J1,J2(1) );
 force_components(3,1,:) = [Fx Fy Fz];
 
 
@@ -141,18 +167,20 @@ force_components(3,1,:) = [Fx Fy Fz];
 
 @< Calculate forces |x|-|x| @>=
 
-[dxr dyr dzr] = rotate_x_to_z([dx dy dz]);
-Jrot = rotate_x_to_z(J2);
-[Fx Fy Fz] = forces_parallel(c1,b1,a1,c2,b2,a2,dxr,dyr,dzr,J1(1),Jrot(3));
+drot = rotate_x_to_z([dx dy dz]);
+J1rot = rotate_x_to_z(J1);
+J2rot = rotate_x_to_z(J2);
+[Fx Fy Fz] = forces_parallel(c1,b1,a1,c2,b2,a2,drot,J1rot,J2rot);
 force_components(1,1,:) = rotate_z_to_x([Fx Fy Fz]);
 
 @ Same again, this time making |y| the `up' direction.
 
 @< Calculate forces |y|-|y| @>=
 
-[dxr dyr dzr] = rotate_y_to_z([dx dy dz]);
-Jrot = rotate_y_to_z(J2);
-[Fx Fy Fz] = forces_parallel(a1,c1,b1,a2,c2,b2,dxr,dyr,dzr,J1(2),Jrot(3));
+drot = rotate_y_to_z( [dx dy dz] );
+J1rot = rotate_y_to_z(J1);
+J2rot = rotate_y_to_z(J2);
+[Fx Fy Fz] = forces_parallel(a1,c1,b1,a2,c2,b2,drot,J1rot,J2rot);
 force_components(2,2,:) = rotate_z_to_y([Fx Fy Fz]);
 
 
@@ -160,9 +188,10 @@ force_components(2,2,:) = rotate_z_to_y([Fx Fy Fz]);
 
 @< Calculate forces |y|-|z| @>=
 
-[dxr dyr dzr] = rotate_y_to_z([dx dy dz]);
-Jrot = rotate_y_to_z(J2);
-[Fx Fy Fz] = forces_orthogonal(a1,c1,b1,a2,c2,b2,dxr,dyr,dzr,J1(2),Jrot(2));
+drot = rotate_y_to_z( [dx dy dz] );
+J1rot = rotate_y_to_z(J1);
+J2rot = rotate_y_to_z(J2);
+[Fx Fy Fz] = forces_orthogonal(a1,c1,b1,a2,c2,b2,drot,J1rot,J2rot);
 force_components(2,3,:) = rotate_z_to_y([Fx Fy Fz]);
 
 
@@ -170,9 +199,10 @@ force_components(2,3,:) = rotate_z_to_y([Fx Fy Fz]);
 
 @< Calculate forces |x|-|y| @>=
 
-[dxr dyr dzr] = rotate_x_to_z([dx dy dz]);
-Jrot = rotate_x_to_z(J2);
-[Fy Fx Fz] = forces_orthogonal(c1,b1,a1,c2,b2,a2,dyr,dxr,dzr,J1(1),Jrot(2));
+drot = rotate_x_to_z( [dx dy dz] );
+J1rot = rotate_x_to_z(J1);
+J2rot = rotate_x_to_z(J2);
+[Fx Fy Fz] = forces_orthogonal(c1,b1,a1,c2,b2,a2,drot,J1rot,J2rot);
 force_components(1,2,:) = rotate_z_to_x([Fx Fy Fz]);
 
 
@@ -181,10 +211,11 @@ force_components(1,2,:) = rotate_z_to_x([Fx Fy Fz]);
 
 @< Calculate forces |y|-|x| @>=
 
-[dxr dyr dzr] = rotate_y_to_z([dx dy dz]);
-Jrot = rotate_y_to_z(J2);
-[Fy Fx Fz] = forces_orthogonal(c1,a1,b1,c2,a2,b2,dyr,dxr,dzr,J1(y),Jrot(2));
-force_components(2,1,:) = rotate_z_to_y([Fx Fy Fz]);
+drot = swap_x_y( rotate_y_to_z( [dx dy dz] ) );
+J1rot = swap_x_y(rotate_y_to_z(J1));
+J2rot = swap_x_y(rotate_y_to_z(J2));
+[Fx Fy Fz] = forces_orthogonal(c1,a1,b1,c2,a2,b2,drot,J1rot,J2rot);
+force_components(2,1,:) = rotate_z_to_y(swap_x_y([Fx Fy Fz]));
 
 
 @ |x|-|z| is |z|-|x| rotated;
@@ -192,10 +223,13 @@ force_components(2,1,:) = rotate_z_to_y([Fx Fy Fz]);
 
 @< Calculate forces |x|-|z| @>=
 
-[dxr dyr dzr] = rotate_x_to_z([dx dy dz]);
-Jrot = rotate_x_to_z(J2);
-[Fy Fx Fz] = forces_orthogonal(b1,c1,a1,b2,c2,a2,dyr,dxr,dzr,J1(1),Jrot(2));
-force_components(1,3,:) = rotate_z_to_x([Fx Fy Fz]);
+drot = swap_x_y( rotate_x_to_z( [dx dy dz] ) );
+J1rot = swap_x_y(rotate_x_to_z(J1));
+J2rot = swap_x_y(rotate_x_to_z(J2));
+
+[Fx Fy Fz] = forces_orthogonal(b1,c1,a1,b2,c2,a2,drot,J1rot,J2rot);
+
+force_components(1,3,:) = rotate_z_to_x(swap_x_y([Fx Fy Fz]));
 
 
 
@@ -227,23 +261,29 @@ expressions, but that's the easy part.
 
 @< Parallel magnets force calculation @>=
 
-function [Fx Fy Fz] = forces_parallel(a,b,c,A,B,C,dx,dy,dz,J,J2)
+function [Fx Fy Fz] = forces_parallel(a,b,c,A,B,C,offset,J1,J2)
 % You probably want to call
 %   warning off MATLAB:divideByZero
 %   warning off MATLAB:log:logOfZero
 
-if nargin < 11
-  J2=J;
-elseif nargin < 10
-  error('Wrong number of input arguments.')
+if length(J1) == 3
+  J1 = J1(3);
+end
+if length(J2) == 3
+  J2 = J2(3);
 end
 
-if (J==0 || J2==0)
+if (J1==0 || J2==0)
+  disp('Zero magnetisation (parallel)')
   Fx = 0;
   Fy = 0;
   Fz = 0;
   return;
 end
+
+dx = offset(1);
+dy = offset(2);
+dz = offset(3);
 
 [index_h, index_j, index_k, index_l, index_p, index_q] = ndgrid([0 1]);
 index_sum = (-1).^(index_h+index_j+index_k+index_l+index_p+index_q);
@@ -278,7 +318,7 @@ fx = index_sum.*f_x;
 fy = index_sum.*f_y;
 fz = index_sum.*f_z;
 
-magconst = J*J2/(4*pi*(4*pi*1e-7));
+magconst = J1*J2/(4*pi*(4*pi*1e-7));
 Fx = magconst*sum(fx(:));
 Fy = magconst*sum(fy(:));
 Fz = magconst*sum(fz(:));
@@ -306,11 +346,6 @@ function [Kx Ky Kz] = stiffness_parallel(a,b,c,A,B,C,dx,dy,dz,J,J2)
 %   warning off MATLAB:divideByZero
 %   warning off MATLAB:log:logOfZero
 
-if nargin < 11
-  J2=J;
-elseif nargin < 10
-  error('Wrong number of input arguments.')
-end
 
 if (J==0 || J2==0)
   Kx = 0;
@@ -358,20 +393,26 @@ The magnetisation of the floating magnet |J2| is in the positive |y|-direction.
 
 @< Orthogonal magnets force calculation @>=
 
-function [Fx Fy Fz] = forces_orthogonal(a,b,c,A,B,C,dx,dy,dz,J,J2)
+function [Fx Fy Fz] = forces_orthogonal(a,b,c,A,B,C,offset,J1,J2)
 
-if nargin < 11
-  J2=J;
-elseif nargin < 10
-  error('Wrong number of input arguments.')
+if length(J1) == 3
+  J1 = J1(3);
+end
+if length(J2) == 3
+  J2 = J2(2);
 end
 
-if (J==0 || J2==0)
+if (J1==0 || J2==0)
+  disp('Zero magnetisation (orth)')
   Fx = 0;
   Fy = 0;
   Fz = 0;
   return;
 end
+
+dx = offset(1);
+dy = offset(2);
+dz = offset(3);
 
 [index_h, index_j, index_k, index_l, index_p, index_q] = ndgrid([0 1]);
 index_sum = (-1).^(index_h+index_j+index_k+index_l+index_p+index_q);
@@ -385,33 +426,35 @@ w = dz + C*(-1).^index_q - c*(-1).^index_p;
 r = sqrt(u.^2+v.^2+w.^2);
 
 f_x = ...
-  - v .* w .* ln( r-u ) ...
-  + v .* u .* ln( r+w ) ...
-  + w .* u .* ln( r+v ) ...
-  - 0.5 * u.^2 .* arctan( v .* w ./ ( u .* r) ) ...
-  - 0.5 * v.^2 .* arctan( u .* w ./ ( v .* r) ) ...
-  - 0.5 * w.^2 .* arctan( u .* v ./ ( w .* r) );
+  - v .* w .* log( r-u ) ...
+  + v .* u .* log( r+w ) ...
+  + w .* u .* log( r+v ) ...
+  - 0.5 * u.^2 .* atan( v .* w ./ ( u .* r) ) ...
+  - 0.5 * v.^2 .* atan( u .* w ./ ( v .* r) ) ...
+  - 0.5 * w.^2 .* atan( u .* v ./ ( w .* r) );
 
-fy = ...
-  0.5 * ( u.^2 - v.^2 ) .* ln( r+w ) ...
-  - u .* w .* ln ( r-u ) ...
-  - u .* v .* arctan( u .* w ./ ( v .* r) ) ...
+f_y = ...
+  0.5 * ( u.^2 - v.^2 ) .* log( r+w ) ...
+  - u .* w .* log ( r-u ) ...
+  - u .* v .* atan( u .* w ./ ( v .* r) ) ...
   - 0.5 * w .* r;
 
-fz = ...
-  0.5 * ( u.^2 - w.^2 ) .* ln( r+v ) ...
-  - u .* v .* ln ( r-u ) ...
-  - u .* w .* arctan( u .* v ./ ( w .* r) ) ...
+f_z = ...
+  0.5 * ( u.^2 - w.^2 ) .* log( r+v ) ...
+  - u .* v .* log ( r-u ) ...
+  - u .* w .* atan( u .* v ./ ( w .* r) ) ...
   - 0.5 * v .* r;
 
 fx = index_sum.*f_x;
 fy = index_sum.*f_y;
 fz = index_sum.*f_z;
 
-magconst = J*J2/(4*pi*(4*pi*1e-7));
+magconst = J1*J2/(4*pi*(4*pi*1e-7));
 Fx = magconst*sum(fx(:));
 Fy = magconst*sum(fy(:));
 Fz = magconst*sum(fz(:));
+
+end
 
 @ Orthogonal magnets stiffnesses.
 
@@ -422,19 +465,21 @@ Fz = magconst*sum(fz(:));
 
 @ When the forces are rotated we use these rotation matrices to avoid
   having to think too hard.
+  Use degrees in order to compute $sin \pi/2$ exactly!
 
 @< Precompute rotation matrices @>=
 
-Rx = @@(theta) [1 0 0; 0 cos(theta) -sin(theta); 0 sin(theta) cos(theta)] ;
-Ry = @@(theta) [cos(theta) 0 sin(theta); 0 1 0; -sin(theta) 0 cos(theta)] ;
-Rz = @@(theta) [cos(theta) -sin(theta) 0; sin(theta) cos(theta) 0; 0 0 1] ;
+Rx = @@(theta) [1 0 0; 0 cosd(theta) -sind(theta); 0 sind(theta) cosd(theta)] ;
+Ry = @@(theta) [cosd(theta) 0 sind(theta); 0 1 0; -sind(theta) 0 cosd(theta)] ;
+Rz = @@(theta) [cosd(theta) -sind(theta) 0; sind(theta) cosd(theta) 0; 0 0 1] ;
 
-rotate_z_to_x = @@(vec) Ry(pi/2)*vec'
-rotate_x_to_z = @@(vec) Ry(-pi/2)*vec'
+rotate_z_to_x = @@(vec)  Ry( 90)*vec' ;
+rotate_x_to_z = @@(vec)  Ry(-90)*vec' ;
+                                        
+rotate_z_to_y = @@(vec)  Rx(-90)*vec' ;
+rotate_y_to_z = @@(vec)  Rx( 90)*vec' ;
 
-rotate_z_to_y = @@(vec) Rx(-pi/2)*vec'
-rotate_y_to_z = @@(vec) Rx(pi/2)*vec'
-
+swap_x_y = @@(vec) [vec(2) vec(1) vec(3)];
 
 @ When users type \texttt{help magnetforces} this is what they see. This is
   designed to be displayed in a fixed-width font so the output here will be
@@ -465,14 +510,68 @@ rotate_y_to_z = @@(vec) Rx(pi/2)*vec'
    low-tech method. In time this test suite should be (somehow) useable for
    all implementations of \texttt{magnetocode}, not just Matlab.
 
-@( magforce-test001a.m @>=
+@( magforce_test001a.m @>=
+
+f = [];
+
+magnet_fixed.dim = [0.04 0.04 0.04];
+magnet_float.dim =    magnet_fixed.dim;
+
+magnet_fixed.magn = 1.3;
+magnet_float.magn =   magnet_fixed.magn;
+magnet_fixed.magdir = [0 90]; % vertical
+magnet_float.magdir = magnet_fixed.magdir;
+
+displ = [0 0 0.1];
+
+magnet_float.magn = 1.3;
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ+eps);
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,-displ+eps);
+
+magnet_float.magn = -1.3;
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ+eps);
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,-displ+eps);
+  
+magnet_fixed.magdir = [0 0]; % x
+magnet_float.magdir = magnet_fixed.magdir;
+displ = [0.1 0 0];
+
+magnet_float.magn = 1.3;
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ+eps);
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,-displ+eps);
+
+magnet_float.magn = -1.3;
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ+eps);
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,-displ+eps);
+
+magnet_fixed.magdir = [90 0]; % y
+magnet_float.magdir = magnet_fixed.magdir;
+displ = [0 0.1 0];
+
+magnet_float.magn = 1.3;
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ+eps);
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,-displ+eps);
+
+magnet_float.magn = -1.3;
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ+eps);
+f(:,end+1) = magnetforces(magnet_fixed,magnet_float,-displ+eps);
+
+assert( chop( f(3,1) , 6 ) == - chop ( f(3,2) , 6) );
+assert( chop( f(3,2) , 6 ) ==   chop ( f(3,3) , 6) );
+assert( chop( f(3,3) , 6 ) == - chop ( f(3,4) , 6) );
+
+disp('Tests passed');
+
+@ Get some numbers:
+
+@( magforce_test002a.m @>=
 
 magnet_fixed.dim = [0.02 0.04 0.06];
 magnet_fixed.magn = 1.3;
-magnet_fixed.madir = [0 0]; % vertical
+magnet_fixed.magdir = [90 0]+eps; % vertical
 
 magnet_float.dim = [0.07 0.05 0.03];
 magnet_float.magn = 1.1;
-magnet_float.madir = [0 0]; % vertical
+magnet_float.magdir = [90 0]+eps; % vertical
 
 magnet_disp = [0.1 0.15 0.05];

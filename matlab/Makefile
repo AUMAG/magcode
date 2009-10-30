@@ -7,6 +7,7 @@ DRV = mweb-driver
 DIR = /tmp/mweb
 
 all: $(SCPT) $(DOC)
+tangle: $(SCPT)
 
 $(SCPT):  $(SRC)
 	mtangle $(SRC)
