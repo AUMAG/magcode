@@ -1,70 +1,141 @@
  
  
- 
-for ff  =  [1 -1] 
- 
-f  =  []; 
- 
 magnet_fixed.dim  =  [0.04 0.04 0.04]; 
 magnet_float.dim  =  magnet_fixed.dim; 
  
-magnet_fixed.magn  =  ff * 1.3; 
- 
-magnet_fixed.magdir  =  [0 90]; % vertical 
-magnet_float.magdir  =  [0 90]; 
-displ  =  [0 0 0.1]; 
- 
+magnet_fixed.magn  =  1.3; 
 magnet_float.magn  =  1.3; 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ+eps); 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,-displ+eps); 
+offset  =  0.1; 
  
-magnet_float.magn  =  -1.3; 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ+eps); 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,-displ+eps); 
  
-magnet_fixed.magdir  =  [0 0]; % x 
-magnet_float.magdir  =  [0 0]; 
-displ  =  [0.1 0 0]; 
+f  =  []; 
  
-magnet_float.magn  =  1.3; 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ+eps); 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,-displ+eps); 
- 
-magnet_float.magn  =  -1.3; 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ+eps); 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,-displ+eps); 
- 
-magnet_fixed.magdir  =  [90 0]; % y 
-magnet_float.magdir  =  [90 0]; 
-displ  =  [0 0.1 0]; 
- 
-magnet_float.magn  =  1.3; 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ+eps); 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,-displ+eps); 
- 
-magnet_float.magn  =  -1.3; 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ+eps); 
-f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,-displ+eps); 
- 
-assert( chop( f(3,1) , 6 ) == - chop ( f(3,2) , 6) ); 
-assert( chop( f(3,2) , 6 ) ==   chop ( f(3,3) , 6) ); 
-assert( chop( f(3,3) , 6 ) == - chop ( f(3,4) , 6) ); 
- 
-assert( chop( f(3,4) , 6 ) ==   chop ( f(1,5) , 6) ); 
- 
-assert( chop( f(1,5) , 6 ) == - chop ( f(1,6) , 6) ); 
-assert( chop( f(1,6) , 6 ) ==   chop ( f(1,7) , 6) ); 
-assert( chop( f(1,7) , 6 ) == - chop ( f(1,8) , 6) ); 
- 
-assert( chop( f(1,8) , 6 ) ==   chop ( f(2,9) , 6) ); 
- 
-assert( chop( f(2, 9) , 6 ) == - chop ( f(2,10) , 6) ); 
-assert( chop( f(2,10) , 6 ) ==   chop ( f(2,11) , 6) ); 
-assert( chop( f(2,11) , 6 ) == - chop ( f(2,12) , 6) ); 
- 
+for ii  =  [1, -1] 
+  magnet_fixed.magdir  =  [0 ii * 90]; % $\pm z$ 
+  for jj  =  [1, -1] 
+    magnet_float.magdir  =  [0 jj * 90]; 
+    for kk  =  [1, -1] 
+      displ  =  kk * [0 0 offset]+eps; 
+      f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ); 
+    end 
+  end 
 end 
  
-disp('Tests passed'); 
+dirforces  =  chop( f(3,:), 8 ); 
+otherforces  =  f([1 2],:); 
+ 
+ 
+ 
+ 
+assert (  ... 
+      all(all( abs( otherforces ) < 1e-11 )) ,  ... 
+      'Horizontal forces should be zero'  ... 
+    ) 
+assert (  ... 
+      all( abs(dirforces) == abs(dirforces(1)) ) ,  ... 
+      'Force magnitudes should be equal'  ... 
+    ) 
+assert (  ... 
+      all( dirforces(1:4) == -dirforces(5:8) ) ,  ... 
+      'Forces should be opposite with reversed fixed magnet magnetisation'  ... 
+    ) 
+assert (  ... 
+      all( dirforces([1 3 5 7]) == -dirforces([2 4 6 8]) ) ,  ... 
+      'Forces should be opposite with reversed float magnet magnetisation'  ... 
+    ) 
+ 
+ 
+ 
+ 
+ 
+ 
+f  =  []; 
+ 
+for ii  =  [1, -1] 
+  magnet_fixed.magdir  =  [90+ii * 90 0]; % $\pm x$ 
+  for jj  =  [1, -1] 
+    magnet_float.magdir  =  [90+jj * 90 0]; 
+    for kk  =  [1, -1] 
+      displ  =  kk * [offset 0 0]+eps; 
+      f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ); 
+    end 
+  end 
+end 
+ 
+dirforces  =  chop( f(1,:), 8 ); 
+otherforces  =  f([2 3],:); 
+ 
+ 
+ 
+ 
+assert (  ... 
+      all(all( abs( otherforces ) < 1e-11 )) ,  ... 
+      'Horizontal forces should be zero'  ... 
+    ) 
+assert (  ... 
+      all( abs(dirforces) == abs(dirforces(1)) ) ,  ... 
+      'Force magnitudes should be equal'  ... 
+    ) 
+assert (  ... 
+      all( dirforces(1:4) == -dirforces(5:8) ) ,  ... 
+      'Forces should be opposite with reversed fixed magnet magnetisation'  ... 
+    ) 
+assert (  ... 
+      all( dirforces([1 3 5 7]) == -dirforces([2 4 6 8]) ) ,  ... 
+      'Forces should be opposite with reversed float magnet magnetisation'  ... 
+    ) 
+ 
+ 
+ 
+ 
+ 
+ 
+f  =  []; 
+ 
+for ii  =  [1, -1] 
+  magnet_fixed.magdir  =  [ii * 90 0]; % $\pm y$ 
+  for jj  =  [1, -1] 
+    magnet_float.magdir  =  [jj * 90 0]; 
+    for kk  =  [1, -1] 
+      displ  =  kk * [0 offset 0]+eps; 
+      f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ); 
+    end 
+  end 
+end 
+ 
+dirforces  =  chop( f(2,:), 8 ); 
+otherforces  =  f([1 3],:); 
+ 
+ 
+ 
+ 
+ 
+assert (  ... 
+      all(all( abs( otherforces ) < 1e-11 )) ,  ... 
+      'Horizontal forces should be zero'  ... 
+    ) 
+assert (  ... 
+      all( abs(dirforces) == abs(dirforces(1)) ) ,  ... 
+      'Force magnitudes should be equal'  ... 
+    ) 
+assert (  ... 
+      all( dirforces(1:4) == -dirforces(5:8) ) ,  ... 
+      'Forces should be opposite with reversed fixed magnet magnetisation'  ... 
+    ) 
+assert (  ... 
+      all( dirforces([1 3 5 7]) == -dirforces([2 4 6 8]) ) ,  ... 
+      'Forces should be opposite with reversed float magnet magnetisation'  ... 
+    ) 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+disp('============') 
+disp('Tests passed') 
+disp('============') 
  
  
 

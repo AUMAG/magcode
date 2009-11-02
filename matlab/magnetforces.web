@@ -20,6 +20,9 @@ with arbitary displacement and magnetisation direction.
 If this code works then I'll look at calculating the forces for magnets with
 rotation as well.
 
+@ The main function is called |magnetforces|, which takes three arguments:
+  |magnet_fixed|, |magnet_float|, and |displ|. These will be described below.
+
 @( magnetforces.m @>=
 
 function [forces_out] = magnetforces(magnet_fixed, magnet_float, displ)
@@ -55,11 +58,11 @@ $(0,0,1)_{\text{cartesian}} \equiv (0,\pi/2,1)_{\text{spherical}}$
 a1 = 0.5*magnet_fixed.dim(1);
 b1 = 0.5*magnet_fixed.dim(2);
 c1 = 0.5*magnet_fixed.dim(3);
-size1 = [a1 b1 c1];
+size1 = [a1; b1; c1];
 a2 = 0.5*magnet_float.dim(1);
 b2 = 0.5*magnet_float.dim(2);
 c2 = 0.5*magnet_float.dim(3);
-size2 = [a2 b2 c2];
+size2 = [a2; b2; c2];
 
 J1r = magnet_fixed.magn;
 J2r = magnet_float.magn;
@@ -84,12 +87,14 @@ to machine precision rather than symbolically).
 
 @< Decompose ... @>=
 
-J1 = [ J1r * cosd(J1p) * cosd(J1t) , ...
-       J1r * cosd(J1p) * sind(J1t) , ...
+displ = reshape(displ,[3 1]); % column vector
+
+J1 = [ J1r * cosd(J1p) * cosd(J1t)  ; ...
+       J1r * cosd(J1p) * sind(J1t)  ; ...
        J1r * sind(J1p) ];
 
-J2 = [ J2r * cosd(J2p) * cosd(J2t) , ...
-       J2r * cosd(J2p) * sind(J2t) , ...
+J2 = [ J2r * cosd(J2p) * cosd(J2t)  ; ...
+       J2r * cosd(J2p) * sind(J2t)  ; ...
        J2r * sind(J2p) ];
 
 @ The expressions we have to calculate the forces assume a fixed magnet with
@@ -137,21 +142,30 @@ disp(J2)
 
 @ The easy one first, where our magnetisation components align with the
   direction expected by the force functions.
-  I'm hoping that the correct forces are calculated even if the magnetisations
-  are negative.
 
 @< Calculate forces |z| @>=
 
-forces_z_z = forces_z_z(size1,size2,displ,J1,J2);
-force_components(7,:) = forces_z_z;
+if J1(3) < 0
+  coord_transform = reverse_z
+else
+  coord_transform = reverse_none
+end
 
-forces_z_y = forces_z_y( size1,size2,displ,J1,J2 );
-force_components(8,:) = forces_z_y;
+   d_trans = coord_transform(displ);
+  J1_trans = coord_transform(J1);
+  J2_trans = coord_transform(J2);
 
-forces_z_x = forces_z_x( size1,size2,displ,J1,J2 );
-force_components(9,:) = forces_z_x;
+forces_z_z = forces_z_z( size1,size2,d_trans,J1_trans,J2_trans );
+force_components(7,:) = coord_transform(forces_z_z);
+
+forces_z_y = forces_z_y( size1,size2,d_trans,J1_trans,J2_trans );
+force_components(8,:) = coord_transform(forces_z_y);
+
+forces_z_x = forces_z_x( size1,size2,d_trans,J1_trans,J2_trans );
+force_components(9,:) = coord_transform(forces_z_x);
 
 @ Print these forces.
+
 @< Print ... @>+=
 
 disp('Forces z-x:')
@@ -170,20 +184,30 @@ disp(forces_z_z)
 
 @< Calculate forces |x| @>=
 
-size1rot = flip_x_z(size1);
-size2rot = flip_x_z(size2);
-drot  = rotate_x_to_z(displ);
-J1rot = rotate_x_to_z(J1);
-J2rot = rotate_x_to_z(J2);
+size1_rot = flip_x_z(size1);
+size2_rot = flip_x_z(size2);
+d_rot  = rotate_x_to_z(displ);
+J1_rot = rotate_x_to_z(J1);
+J2_rot = rotate_x_to_z(J2);
 
-forces_x_x = forces_z_z(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(1,:) = rotate_z_to_x(forces_x_x);
+if J2_rot(2) < 0
+  coord_transform = reverse_y
+else
+  coord_transform = reverse_none
+end
 
-forces_x_y = forces_z_y(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(2,:) = rotate_z_to_x(forces_x_y);
+   d_trans = coord_transform( d_rot);
+  J1_trans = coord_transform(J1_rot);
+  J2_trans = coord_transform(J2_rot);
 
-forces_x_z = forces_z_y(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(3,:) = rotate_z_to_x(forces_x_z);
+forces_x_x = forces_z_z(size1_rot,size2_rot,d_trans,J1_trans,J2_trans);
+force_components(1,:) = rotate_z_to_x( coord_transform(forces_x_x) );
+
+forces_x_y = forces_z_y(size1_rot,size2_rot,d_trans,J1_trans,J2_trans);
+force_components(2,:) = rotate_z_to_x( coord_transform(forces_x_y) );
+
+forces_x_z = forces_z_y(size1_rot,size2_rot,d_trans,J1_trans,J2_trans);
+force_components(3,:) = rotate_z_to_x( coord_transform(forces_x_z) );
 
 @ Print these forces.
 @< Print ... @>+=
@@ -199,23 +223,34 @@ disp(forces_x_z)
 
 @< Calculate forces |y| @>=
 
-size1rot = flip_y_z(size1);
-size2rot = flip_y_z(size2);
-drot     = rotate_y_to_z( displ );
-J1rot    = rotate_y_to_z( J1    );
-J2rot    = rotate_y_to_z( J2    );
+size1_rot = flip_y_z(size1);
+size2_rot = flip_y_z(size2);
+d_rot     = rotate_y_to_z( displ );
+J1_rot    = rotate_y_to_z( J1    );
+J2_rot    = rotate_y_to_z( J2    );
 
-forces_y_x = forces_z_x(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(4,:) = rotate_z_to_y(forces_y_x);
+if J2_rot(2) < 0
+  coord_transform = reverse_y ;
+else
+  coord_transform = reverse_none ;
+end
 
-forces_y_y = forces_z_z(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(5,:) = rotate_z_to_y(forces_y_y);
+   d_trans = coord_transform( d_rot);
+  J1_trans = coord_transform(J1_rot);
+  J2_trans = coord_transform(J2_rot);
 
-forces_y_z = forces_z_y(size1rot,size2rot,drot,J1rot,J2rot);
-force_components(6,:) = rotate_z_to_y(forces_y_z);
+forces_y_x = forces_z_x(size1_rot,size2_rot,d_trans,J1_trans,J2_trans);
+force_components(4,:) = rotate_z_to_y( coord_transform(forces_y_x) );
+
+forces_y_y = forces_z_z(size1_rot,size2_rot,d_trans,J1_trans,J2_trans);
+force_components(5,:) = rotate_z_to_y( coord_transform(forces_y_y) );
+
+forces_y_z = forces_z_y(size1_rot,size2_rot,d_trans,J1_trans,J2_trans);
+force_components(6,:) = rotate_z_to_y( coord_transform(forces_y_z) );
 
 
 @ Print these forces.
+
 @< Print ... @>+=
 
 disp('Forces y-x:')
@@ -224,7 +259,6 @@ disp('Forces y-y:')
 disp(forces_y_y)
 disp('Forces y-z:')
 disp(forces_y_z)
-
 
 
 @* Functions for calculating forces and stiffnesses. The calculations for
@@ -301,7 +335,7 @@ The magnetisation of the floating magnet |J2| is in the positive |y|-direction.
 
 function forces_xyz = forces_z_x(size1,size2,offset,J1,J2)
 
-swap_x_y = @@(vec) [vec(2) vec(1) vec(3)];
+swap_x_y = @@(vec) [vec(2); vec(1); vec(3)];
 
 forces_xyz = forces_z_y(...
   swap_x_y(size1), swap_x_y(size2), swap_x_y(offset),...
@@ -356,12 +390,18 @@ forces_xyz = magconst.*[ sum(fx(:)) sum(fy(:)) sum(fz(:)) ] ;
 
 end
 
-@ Some shared setup code.
+@ Some shared setup code. First |return| early if either of the magnetisations
+  are zero --- that's the trivial solution. Assume that the magnetisation
+  has already been `chopped'; i.e., that we don't need to check for |J1| or
+  |J2| less than |1e-12| or whatever.
+
+  (I'm using the Mathematica definition of |chop| here; in Matlab it means
+  truncate to a certain number of significant figures.)
 
 @< Forces initialise variables @>=
 
 if (J1==0 || J2==0)
-  forces_xyz = [0 0 0];
+  forces_xyz = [0; 0; 0];
   return;
 end
 
@@ -400,13 +440,18 @@ Rx = @@(theta) [1 0 0; 0 cosd(theta) -sind(theta); 0 sind(theta) cosd(theta)] ;
 Ry = @@(theta) [cosd(theta) 0 sind(theta); 0 1 0; -sind(theta) 0 cosd(theta)] ;
 Rz = @@(theta) [cosd(theta) -sind(theta) 0; sind(theta) cosd(theta) 0; 0 0 1] ;
 
-rotate_z_to_x = @@(vec)  Ry( 90)*vec' ;
-rotate_x_to_z = @@(vec)  Ry(-90)*vec' ;
+rotate_z_to_x = @@(vec)  Ry( 90)*vec ;
+rotate_x_to_z = @@(vec)  Ry(-90)*vec ;
 flip_x_z = @@(vec) abs(rotate_x_to_z(vec)) ;
                                         
-rotate_z_to_y = @@(vec)  Rx(-90)*vec' ;
-rotate_y_to_z = @@(vec)  Rx( 90)*vec' ;
+rotate_z_to_y = @@(vec)  Rx(-90)*vec ;
+rotate_y_to_z = @@(vec)  Rx( 90)*vec ;
 flip_y_z = @@(vec) abs(rotate_y_to_z(vec)) ;
+
+reverse_z = @@(vec) Ry(180)*vec ;
+reverse_y = @@(vec) Rz(180)*vec ;
+
+reverse_none = @@(vec) vec ;
 
 @ When users type \texttt{help magnetforces} this is what they see. This is
   designed to be displayed in a fixed-width font so the output here will be
