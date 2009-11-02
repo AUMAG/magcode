@@ -9,7 +9,7 @@
 \usepackage{expl3}
 \ExplSyntaxOn
 \clist_map_inline:nn
-   {function, eval, feval, global, nargchk, break, else, elseif, end,
+   {assert,function, eval, feval, global, nargchk, break, else, elseif, end,
    error, for, if, return, while, input, keyboard, menu,
    pause, dbclear, dbcont, dbdown, dbquit, dbstack,
    dbstatus, dbstep, dbstop, dbtype, dbup, dbmex,
@@ -147,6 +147,7 @@
    imwrite, imfinfo}
   {\tl_set:cn{g_matlab_reserved_\tl_to_str:n{#1}_tl}{}}
 
+
 \clist_map_inline:nn {
   {theta}{\theta} ,
   {a1}{a\sb1} ,
@@ -159,13 +160,26 @@
 
 \def\xwebId#1{% identifier, more than one char
   \cs_if_exist:cTF {g_matlab_reserved_\tl_to_str:n{#1}_tl}
-    {\hbox{\rm#1\/\kern.05em}}
+    {\hbox{\fontfamily{lmvtt}\selectfont#1\/\kern.05em}}
     {
       \cs_if_exist:cTF {g_matlab_sym_\tl_to_str:n{#1}_tl}
         { \ensuremath{\use:c{g_matlab_sym_\tl_to_str:n{#1}_tl}} }
-        { \hbox{\sl#1\/\kern.05em} }
+        { \hbox{\fontfamily{lmvtt}\slshape#1\/\kern.05em} }
     }
 } 
+
+\def\xwebComment#1{
+    \5%                % 0.5em will be discarded on line break
+    \hskip 1.5em
+    \begingroup
+    \color{blue}\small\texttt\%
+    {\xweb_tex
+    \xwebCommentHook
+    #1%
+    }%
+    \endgroup
+}
+
 \ExplSyntaxOff
 
 % hacks:
