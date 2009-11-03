@@ -40,6 +40,38 @@ end
  
  
  
+swap_x_y  =  @(vec) vec([2 1 3]); 
+swap_x_z  =  @(vec) vec([3 2 1]); 
+swap_y_z  =  @(vec) vec([1 3 2]); 
+ 
+Rx  =  @(theta) [1 0 0; 0 cosd(theta) -sind(theta); 0 sind(theta) cosd(theta)] ; 
+Ry  =  @(theta) [cosd(theta) 0 sind(theta); 0 1 0; -sind(theta) 0 cosd(theta)] ; 
+Rz  =  @(theta) [cosd(theta) -sind(theta) 0; sind(theta) cosd(theta) 0; 0 0 1] ; 
+ 
+Rx_180  =  Rx(180); 
+Rx_090  =  Rx( 90); 
+Rx_270  =  Rx(-90); 
+Ry_180  =  Ry(180); 
+Ry_090  =  Ry( 90); 
+Ry_270  =  Ry(-90); 
+Rz_180  =  Rz(180); 
+ 
+identity_function  =  @(inp) inp; 
+ 
+rotate_round_x  =  @(vec) Rx_180 * vec ; 
+rotate_round_y  =  @(vec) Ry_180 * vec ; 
+rotate_round_z  =  @(vec) Rz_180 * vec ; 
+rotate_none  =  identity_function ; 
+ 
+rotate_z_to_x  =  @(vec)  Ry_090 * vec ; 
+rotate_x_to_z  =  @(vec)  Ry_270 * vec ; 
+ 
+rotate_z_to_y  =  @(vec)  Rx_090 * vec ; 
+rotate_y_to_z  =  @(vec)  Rx_270 * vec ; 
+ 
+ 
+ 
+ 
 displ  =  reshape(displ,[3 1]); % column vector 
  
 J1  =  [ J1r  *  cosd(J1p)  *  cosd(J1t)  ;  ... 
@@ -57,142 +89,75 @@ force_components  =  repmat(NaN,[9 3]);
  
  
  
-Rx  =  @(theta) [1 0 0; 0 cosd(theta) -sind(theta); 0 sind(theta) cosd(theta)] ; 
-Ry  =  @(theta) [cosd(theta) 0 sind(theta); 0 1 0; -sind(theta) 0 cosd(theta)] ; 
-Rz  =  @(theta) [cosd(theta) -sind(theta) 0; sind(theta) cosd(theta) 0; 0 0 1] ; 
- 
-rotate_z_to_x  =  @(vec)  Ry( 90) * vec ; 
-rotate_x_to_z  =  @(vec)  Ry(-90) * vec ; 
-flip_x_z  =  @(vec) abs(rotate_x_to_z(vec)) ; 
- 
-rotate_z_to_y  =  @(vec)  Rx(-90) * vec ; 
-rotate_y_to_z  =  @(vec)  Rx( 90) * vec ; 
-flip_y_z  =  @(vec) abs(rotate_y_to_z(vec)) ; 
- 
-reverse_z  =  @(vec) Ry(180) * vec ; 
-reverse_y  =  @(vec) Rz(180) * vec ; 
- 
-reverse_none  =  @(vec) vec ; 
- 
- 
- 
- 
- 
-size1_rot  =  flip_x_z(size1); 
-size2_rot  =  flip_x_z(size2); 
-d_rot   =  rotate_x_to_z(displ); 
-J1_rot  =  rotate_x_to_z(J1); 
-J2_rot  =  rotate_x_to_z(J2); 
- 
-if J2_rot(2) < 0 
-  coord_transform  =  reverse_y 
-else 
-  coord_transform  =  reverse_none 
-end 
- 
-   d_trans  =  coord_transform( d_rot); 
-  J1_trans  =  coord_transform(J1_rot); 
-  J2_trans  =  coord_transform(J2_rot); 
- 
-forces_x_x  =  forces_z_z(size1_rot,size2_rot,d_trans,J1_trans,J2_trans); 
-force_components(1,:)  =  rotate_z_to_x( coord_transform(forces_x_x) ); 
- 
-forces_x_y  =  forces_z_y(size1_rot,size2_rot,d_trans,J1_trans,J2_trans); 
-force_components(2,:)  =  rotate_z_to_x( coord_transform(forces_x_y) ); 
- 
-forces_x_z  =  forces_z_y(size1_rot,size2_rot,d_trans,J1_trans,J2_trans); 
-force_components(3,:)  =  rotate_z_to_x( coord_transform(forces_x_z) ); 
- 
- 
- 
- 
-size1_rot  =  flip_y_z(size1); 
-size2_rot  =  flip_y_z(size2); 
-d_rot      =  rotate_y_to_z( displ ); 
-J1_rot     =  rotate_y_to_z( J1    ); 
-J2_rot     =  rotate_y_to_z( J2    ); 
- 
-if J2_rot(2) < 0 
-  coord_transform  =  reverse_y ; 
-else 
-  coord_transform  =  reverse_none ; 
-end 
- 
-   d_trans  =  coord_transform( d_rot); 
-  J1_trans  =  coord_transform(J1_rot); 
-  J2_trans  =  coord_transform(J2_rot); 
- 
-forces_y_x  =  forces_z_x(size1_rot,size2_rot,d_trans,J1_trans,J2_trans); 
-force_components(4,:)  =  rotate_z_to_y( coord_transform(forces_y_x) ); 
- 
-forces_y_y  =  forces_z_z(size1_rot,size2_rot,d_trans,J1_trans,J2_trans); 
-force_components(5,:)  =  rotate_z_to_y( coord_transform(forces_y_y) ); 
- 
-forces_y_z  =  forces_z_y(size1_rot,size2_rot,d_trans,J1_trans,J2_trans); 
-force_components(6,:)  =  rotate_z_to_y( coord_transform(forces_y_z) ); 
- 
- 
- 
- 
- 
-if J1(3) < 0 
-  coord_transform  =  reverse_z 
-else 
-  coord_transform  =  reverse_none 
-end 
- 
-   d_trans  =  coord_transform(displ); 
-  J1_trans  =  coord_transform(J1); 
-  J2_trans  =  coord_transform(J2); 
- 
-forces_z_z  =  forces_z_z( size1,size2,d_trans,J1_trans,J2_trans ); 
-force_components(7,:)  =  coord_transform(forces_z_z); 
- 
-forces_z_y  =  forces_z_y( size1,size2,d_trans,J1_trans,J2_trans ); 
-force_components(8,:)  =  coord_transform(forces_z_y); 
- 
-forces_z_x  =  forces_z_x( size1,size2,d_trans,J1_trans,J2_trans ); 
-force_components(9,:)  =  coord_transform(forces_z_x); 
- 
- 
- 
- 
- 
 disp('  ') 
 disp('CALCULATING FORCES') 
 disp('==================') 
 disp('Displacement:') 
-disp(displ) 
+disp(displ') 
 disp('Magnetisations:') 
-disp(J1) 
-disp(J2) 
+disp(J1') 
+disp(J2') 
  
  
  
-disp('Forces z-x:') 
-disp(forces_z_x) 
-disp('Forces z-y:') 
-disp(forces_z_y) 
-disp('Forces z-z:') 
-disp(forces_z_z) 
  
  
+size1_rot  =  swap_x_z(size1); 
+size2_rot  =  swap_x_z(size2); 
+d_rot   =  rotate_x_to_z(displ); 
+J1_rot  =  rotate_x_to_z(J1); 
+J2_rot  =  rotate_x_to_z(J2); 
  
 disp('Forces x-x:') 
-disp(forces_x_x) 
+forces_x_x  =  forces_calc_z_z(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+force_components(1,:)  =  rotate_z_to_x( forces_x_x ); 
+ 
 disp('Forces x-y:') 
-disp(forces_x_y) 
+forces_x_y  =  forces_calc_z_y(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+force_components(2,:)  =  rotate_z_to_x( forces_x_y ); 
+ 
 disp('Forces x-z:') 
-disp(forces_x_z) 
+forces_x_z  =  forces_calc_z_y(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+force_components(3,:)  =  rotate_z_to_x( forces_x_z ); 
  
  
+ 
+ 
+ 
+size1_rot  =  swap_y_z(size1); 
+size2_rot  =  swap_y_z(size2); 
+d_rot      =  rotate_y_to_z( displ ); 
+J1_rot     =  rotate_y_to_z( J1    ); 
+J2_rot     =  rotate_y_to_z( J2    ); 
  
 disp('Forces y-x:') 
-disp(forces_y_x) 
+forces_y_x  =  forces_calc_z_x(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+force_components(4,:)  =  rotate_z_to_y( forces_y_x ); 
+ 
 disp('Forces y-y:') 
-disp(forces_y_y) 
+forces_y_y  =  forces_calc_z_z(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+force_components(5,:)  =  rotate_z_to_y( forces_y_y ); 
+ 
 disp('Forces y-z:') 
-disp(forces_y_z) 
+forces_y_z  =  forces_calc_z_y(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+force_components(6,:)  =  rotate_z_to_y( forces_y_z ); 
+ 
+ 
+ 
+ 
+ 
+ 
+disp('Forces z-z:') 
+forces_z_z  =  forces_calc_z_z( size1,size2,displ,J1,J2 ); 
+force_components(7,:)  =  forces_z_z; 
+ 
+disp('Forces z-y:') 
+forces_z_y  =  forces_calc_z_y( size1,size2,displ,J1,J2 ); 
+force_components(8,:)  =  forces_z_y; 
+ 
+disp('Forces z-x:') 
+forces_z_x  =  forces_calc_z_x( size1,size2,displ,J1,J2 ); 
+force_components(9,:)  =  forces_z_x; 
  
  
  
@@ -201,30 +166,24 @@ forces_out  =  sum(force_components);
  
  
  
-end 
  
  
  
- 
- 
-function forces_xyz  =  forces_z_z(size1,size2,offset,J1,J2) 
+function forces_xyz  =  forces_calc_z_z(size1,size2,offset,J1,J2) 
 % You probably want to call 
 %   warning off MATLAB:divideByZero 
 %   warning off MATLAB:log:logOfZero 
  
-if length(J1) == 3 
-  J1  =  J1(3); 
-end 
-if length(J2) == 3 
-  J2  =  J2(3); 
-end 
- 
- 
+J1  =  J1(3); 
+J2  =  J2(3); 
  
 if (J1==0 || J2==0) 
-  forces_xyz  =  [0; 0; 0]; 
+  disp('Zero magnetisation.') 
+  forces_xyz   =   [0; 0; 0]; 
   return; 
 end 
+ 
+ 
  
 dx  =  offset(1); 
 dy  =  offset(2); 
@@ -247,8 +206,6 @@ u  =  dx + A * (-1).^index_j - a * (-1).^index_h;
 v  =  dy + B * (-1).^index_l - b * (-1).^index_k; 
 w  =  dz + C * (-1).^index_q - c * (-1).^index_p; 
 r  =  sqrt(u.^2+v.^2+w.^2); 
- 
- 
  
  
  
@@ -276,18 +233,52 @@ fy  =  index_sum.*f_y;
 fz  =  index_sum.*f_z; 
  
 magconst  =  J1 * J2/(4 * pi * (4 * pi * 1e-7)); 
-forces_xyz  =  magconst.*[ sum(fx(:)) sum(fy(:)) sum(fz(:)) ] ; 
+forces_xyz  =  magconst.*[ sum(fx(:)) ; sum(fy(:)) ; sum(fz(:)) ] ; 
+ 
+disp(forces_xyz') 
  
 end 
  
  
  
  
-function forces_xyz  =  forces_z_x(size1,size2,offset,J1,J2) 
+function forces_xyz  =  forces_calc_z_y(size1,size2,offset,J1,J2) 
  
-swap_x_y  =  @(vec) [vec(2); vec(1); vec(3)]; 
+J1m  =  J1(3); 
+J2m  =  J2(2); 
  
-forces_xyz  =  forces_z_y( ... 
+if (J1m==0 || J2m==0) 
+  disp('Zero magnetisation.') 
+  forces_xyz  =  [0; 0; 0]; 
+  return; 
+end 
+ 
+if     ( J1m>0 && J2m>0 ) 
+  rotate_transform  =  rotate_none; 
+elseif ( J1m<0 && J2m>0 ) 
+  rotate_transform  =  rotate_round_y; 
+elseif ( J1m>0 && J2m<0 ) 
+  rotate_transform  =  rotate_round_z; 
+elseif ( J1m<0 && J2m<0 ) 
+  rotate_transform  =  rotate_round_x; 
+end 
+ 
+forces_tmp  =  forces_calc_z_y_plusplus(  ... 
+            size1,size2,  ... 
+         rotate_transform(offset),  ... 
+         rotate_transform(J1),      ... 
+         rotate_transform(J2)       ... 
+          ); 
+forces_xyz  =  rotate_transform( forces_tmp); 
+disp(forces_xyz') 
+ 
+end 
+ 
+ 
+ 
+function forces_xyz  =  forces_calc_z_x(size1,size2,offset,J1,J2) 
+ 
+forces_xyz  =  forces_calc_z_y( ... 
   swap_x_y(size1), swap_x_y(size2), swap_x_y(offset), ... 
   J1, swap_x_y(J2) ); 
  
@@ -295,21 +286,22 @@ forces_xyz  =  swap_x_y( forces_xyz );
  
 end 
  
-function forces_xyz  =  forces_z_y(size1,size2,offset,J1,J2) 
- 
-if length(J1) == 3 
-  J1  =  J1(3); 
-end 
-if length(J2) == 3 
-  J2  =  J2(2); 
-end 
  
  
  
-if (J1==0 || J2==0) 
-  forces_xyz  =  [0; 0; 0]; 
-  return; 
-end 
+ 
+function forces_xyz  =  forces_calc_z_y_plusplus(size1,size2,offset,J1,J2) 
+ 
+J1  =  J1(3); 
+J2  =  J2(2); 
+ 
+disp('Offset') 
+disp(offset') 
+disp('Magnetisations') 
+disp([J1 J2]) 
+ 
+ 
+ 
  
 dx  =  offset(1); 
 dy  =  offset(2); 
@@ -332,8 +324,6 @@ u  =  dx + A * (-1).^index_j - a * (-1).^index_h;
 v  =  dy + B * (-1).^index_l - b * (-1).^index_k; 
 w  =  dz + C * (-1).^index_q - c * (-1).^index_p; 
 r  =  sqrt(u.^2+v.^2+w.^2); 
- 
- 
  
  
  
@@ -367,13 +357,14 @@ fy  =  index_sum.*f_y;
 fz  =  index_sum.*f_z; 
  
 magconst  =  J1 * J2/(4 * pi * (4 * pi * 1e-7)); 
-forces_xyz  =  magconst.*[ sum(fx(:)) sum(fy(:)) sum(fz(:)) ] ; 
- 
+forces_xyz  =  magconst.*[ sum(fx(:)) ; sum(fy(:)) ; sum(fz(:)) ] ; 
  
 end 
  
  
  
  
+ 
+end 
  
 

@@ -1,5 +1,6 @@
  
  
+clc; 
  
 f  =  []; 
  
@@ -14,8 +15,8 @@ for ii  =  [1, -1]
   for jj  =  [1, -1] 
  
     magnet_float.magdir  =  ii * [90 0];  % $\pm y$ 
-    displ  =  jj * [0 0 0.1];  % $\pm z$ 
-    f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ+eps); 
+    displ  =  jj * [1e-12 1e-12 0.1];  % $\pm z$ 
+    f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ); 
  
     pause 
  
