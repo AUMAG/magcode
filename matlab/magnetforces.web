@@ -457,9 +457,7 @@ function out = atan1(x,y)
   out(ind) = atan(x(ind)./y(ind));
 end
 
-@ When users type \texttt{help magnetforces} this is what they see. This is
-  designed to be displayed in a fixed-width font so the output here will be
-  fairly ugly.
+@ When users type \texttt{help magnetforces} this is what they see.
 
 @< Matlab help text @>=
 

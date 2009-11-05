@@ -328,11 +328,6 @@ f_z  =   ...
   - u .* w .* atan1( u .* v , w .* r )  ... 
   - 0.5  *  v .* r; 
  
-if( any(isnan(f_z(:))) ) 
-  disp(f_z) 
-  ERROR 
-end 
- 
 f_x  =  index_sum.*f_x; 
 f_y  =  index_sum.*f_y; 
 f_z  =  index_sum.*f_z; 
