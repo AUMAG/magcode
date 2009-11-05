@@ -171,9 +171,6 @@ forces_out  =  sum(force_components);
  
  
 function forces_xyz  =  forces_calc_z_z(size1,size2,offset,J1,J2) 
-% You probably want to call 
-%   warning off MATLAB:divideByZero 
-%   warning off MATLAB:log:logOfZero 
  
 J1  =  J1(3); 
 J2  =  J2(3); 

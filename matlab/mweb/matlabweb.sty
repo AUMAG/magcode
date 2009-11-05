@@ -1,15 +1,12 @@
 
-\documentclass{article}
-\usepackage{amsmath}
-\usepackage[hyperref]{webfiles}
-\usepackage{biblatex}
-\bibliography{journals,phd}
-\usepackage[colorlinks]{hyperref}
-\usepackage{bookmark}
-\usepackage{expl3}
+\ProvidesPackage{matlabweb}
+\RequirePackage[hyperref]{webfiles}
+\RequirePackage[colorlinks]{hyperref}
+%\RequirePackage{bookmark}
+\RequirePackage{expl3}
 \ExplSyntaxOn
 \clist_map_inline:nn
-   {assert,function, eval, feval, global, nargchk, break, else, elseif, end,
+   {NaN,assert,function, eval, feval, global, nargchk, break, else, elseif, end,
    error, for, if, return, while, input, keyboard, menu,
    pause, dbclear, dbcont, dbdown, dbquit, dbstack,
    dbstatus, dbstep, dbstop, dbtype, dbup, dbmex,
@@ -187,8 +184,4 @@
 \renewcommand\hat{\text{\ttfamily\char`\^}}
 \def\xwebOr#1$\V${\text{\scshape or}$}
 
-\begin{document}
-\webfile{\WEBNAME}
-
-\printbibliography
-\end{document}
+\endinput

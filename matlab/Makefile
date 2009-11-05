@@ -2,39 +2,36 @@
 NAME = magnetforces
 SRC = $(NAME).web
 SCPT = $(NAME).m
-DOC = $(NAME).pdf
-DRV = mweb-driver
+DRV = magnetocode-matlab
+DOC = $(DRV).pdf
 DIR = /tmp/mweb
-MWEB = $(DIR)/mweb.tex $(DIR)/swebbind.sty $(DIR)/webfiles.sty
+MWEB = $(DIR)/mweb.tex $(DIR)/swebbind.sty $(DIR)/webfiles.sty $(DIR)/matlabweb.sty
 
 all: $(SCPT) $(DOC)
-tangle: $(SCPT)
+code: $(SCPT)
 
 $(SCPT):  $(SRC)
 	mtangle $(SRC)
 
-$(DOC): $(DIR)/$(DRV).pdf
-	cp -f $(DIR)/$(DRV).pdf $(DOC)
+$(DOC): $(DIR)/$(DOC)
+	cp -f $< $@
 
-$(DIR)/$(DRV).pdf: $(DIR)/$(SRC) $(DIR)/$(DRV).tex $(MWEB)
+$(DIR)/$(DOC): $(DIR)/$(SRC) $(DIR)/$(DRV).tex $(MWEB)
 	cd $(DIR)/; mweave $(SRC)
-	cd $(DIR)/; pdflatex "\def\WEBNAME{$(NAME)}\input{$(DRV)}"
+	cd $(DIR)/; pdflatex -draftmode $(DRV)
 	cd $(DIR)/; bibtex $(DRV)
-	cd $(DIR)/; pdflatex "\def\WEBNAME{$(NAME)}\input{$(DRV)}"
-	cd $(DIR)/; pdflatex "\def\WEBNAME{$(NAME)}\input{$(DRV)}"
+	cd $(DIR)/; pdflatex $(DRV)
 
 $(DIR)/$(SRC): $(SRC)
 	mkdir -p /tmp/mweb/
-	cp $(SRC) $(DIR)/$(SRC)
+	cp -f $< $@
 
 $(DIR)/$(DRV).tex: $(DRV).tex
-	cp $(DRV).tex $(DIR)/$(DRV).tex
+	cp -f $< $@
 
 $(DIR)/mweb.tex: mweb/mweb.tex
 	cp -f $< $@
 
-$(DIR)/swebbind.sty: mweb/swebbind.sty
+$(DIR)/%.sty: mweb/%.sty
 	cp -f $< $@
 
-$(DIR)/webfiles.sty: mweb/webfiles.sty
-	cp -f $<  $@

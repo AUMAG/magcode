@@ -209,7 +209,7 @@ force_components(6,:) = rotate_z_to_y( forces_y_z );
 
 
 
-@* Functions for calculating forces and stiffnesses. The calculations for
+@*1 Functions for calculating forces and stiffnesses. The calculations for
 forces between differently-oriented cuboid magnets are all directly from the
 literature. The stiffnesses have been derived by differentiating the force
 expressions, but that's the easy part.
@@ -237,9 +237,6 @@ expressions, but that's the easy part.
 @< Parallel magnets force calculation @>=
 
 function forces_xyz = forces_calc_z_z(size1,size2,offset,J1,J2)
-% You probably want to call
-%   warning off MATLAB:divideByZero
-%   warning off MATLAB:log:logOfZero
 
 J1 = J1(3);
 J2 = J2(3);
@@ -392,7 +389,7 @@ w = dz + C*(-1).^index_q - c*(-1).^index_p;
 r = sqrt(u.^2+v.^2+w.^2);
 
 
-@* Setup code.
+@*1 Setup code.
 
 @ When the forces are rotated we use these rotation matrices to avoid
   having to think too hard.
@@ -470,7 +467,8 @@ end
 
 
 
-@* Test files. The chunks that follow are designed to be saved into
+@*1 Test files.
+   The chunks that follow are designed to be saved into
    individual files and executed automatically to check for (a) correctness
    and (b) regression problems as the code evolves.
 
