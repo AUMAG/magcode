@@ -159,23 +159,21 @@
       this may be a bug in the webfiles package}
    \fi\fi\fi}
 \xweb_SetupHrefs
+\def\@oneortwooftwo#1#{#1\@iden}
 \def\xwebPDFOutline#1#2{{%
       \edef\tmpnr{#1}%
-      \edef\name{#2}%
+      \edef\name{\expandafter\@oneortwooftwo#2}%
       \c@xwebModule=\tmpnr\relax
       \ifnum\xweb_hypertype=2
           \edef\anchor{\xweb_anchor}
           \pdfoutline goto name{\anchor}{#1 \name}
       \fi}}
    \def\xweb_pdflink#1#2{%
-       \pdfannotlink
-          attr{/Border [0 0 0]}
-          goto name{#1}
-          \Red #2\Black
-       \pdfendlink}
-   \def\xweb_pdftarget#1#2{
-       \pdfdest name{#1} fitbh
-       #2}
+       \hyperlink{#1}{#2}%
+   }
+   \def\xweb_pdftarget#1#2{%
+       \hypertarget{#1}{#2}%
+   }
 \def\xwebLapStar{\rlap{*}}
 \newcount\xwebGroupLevel
 \newcounter{xwebSecNoEject}
