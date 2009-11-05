@@ -525,6 +525,7 @@ end
 
 magforce_test001a
 magforce_test001b
+magforce_test001c
 
 
 @  This test checks that square magnets produce the same forces in the
@@ -545,13 +546,13 @@ magnet_float.magn = 1.3;
 offset = 0.1;
 
 @< Test $z$--$z$ magnetisations @>
-@< Assert parallel magnetisations tests @>
+@< Assert magnetisations tests @>
 
 @< Test $x$--$x$ magnetisations @>
-@< Assert parallel magnetisations tests @>
+@< Assert magnetisations tests @>
 
 @< Test $y$--$y$ magnetisations @>
-@< Assert parallel magnetisations tests @>
+@< Assert magnetisations tests @>
 
 
 
@@ -621,13 +622,131 @@ dirforces = chop( f(2,:), 8 );
 otherforces = f([1 3],:);
 
 
-@ The checks, common between directions.
+@ This test does the same thing but for orthogonally magnetised magnets.
 
-@< Assert parallel magnetisations tests @>=
+@( magforce_test001b.m @>=
+
+clc;
+
+magnet_fixed.dim = [0.04 0.04 0.04];
+magnet_float.dim =  magnet_fixed.dim;
+
+magnet_fixed.magn = 1.3;
+magnet_float.magn = 1.3;
+
+@< Test ZYZ @>
+@< Assert magnetisations tests @>
+
+@< Test ZXZ @>
+@< Assert magnetisations tests @>
+
+@< Test ZXX @>
+@< Assert magnetisations tests @>
+
+@< Test ZYY @>
+@< Assert magnetisations tests @>
+
+disp('============')
+disp('Tests passed')
+disp('============')
+
+@  $z$--$y$ magnetisations, $z$ displacement.
+
+@< Test ZYZ @>=
+
+fzyz = [];
+
+for ii = [1, -1]
+  for jj = [1, -1]
+    for kk = [1, -1]
+  
+      magnet_fixed.magdir = ii*[0  90];  % $\pm z$
+      magnet_float.magdir = jj*[90 0];  % $\pm y$
+      displ = kk*[0 0 0.1];  % $\pm z$
+      fzyz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+  
+    end
+  end
+end
+
+dirforces = chop( fzyz(2,:), 8 );
+otherforces = fzyz([1 3],:);
+
+@  $z$--$x$ magnetisations, $z$ displacement.
+
+@< Test ZXZ @>=
+
+fzxz = [];
+
+for ii = [1, -1]
+  for jj = [1, -1]
+    for kk = [1, -1]
+  
+      magnet_fixed.magdir = ii*[0  90];  % $\pm z$
+      magnet_float.magdir = [90+jj*90 0];  % $\pm x$
+      displ = kk*[0.1 0 0];  % $\pm x$
+      fzxz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+  
+    end
+  end
+end
+
+dirforces = chop( fzxz(3,:), 8 );
+otherforces = fzxz([1 2],:);
+
+@  $z$--$y$ magnetisations, $y$ displacement.
+
+@< Test ZYY @>=
+
+fzyy = [];
+
+for ii = [1, -1]
+  for jj = [1, -1]
+    for kk = [1, -1]
+  
+      magnet_fixed.magdir = ii*[0  90];  % $\pm z$
+      magnet_float.magdir = jj*[90 0];  % $\pm y$
+      displ = kk*[0 0.1 0];  % $\pm y$
+      fzyy(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+  
+    end
+  end
+end
+
+dirforces = chop( fzyy(3,:), 8 );
+otherforces = fzyy([1 2],:);
+
+@  $z$--$x$ magnetisations, $x$ displacement.
+
+@< Test ZXX @>=
+
+fzxx = [];
+
+for ii = [1, -1]
+  for jj = [1, -1]
+    for kk = [1, -1]
+  
+      magnet_fixed.magdir = ii*[0  90];  % $\pm z$
+      magnet_float.magdir = [90+jj*90 0];  % $\pm x$
+      displ = kk*[0 0 0.1];  % $\pm z$
+      fzxx(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+  
+    end
+  end
+end
+
+dirforces = chop( fzxx(1,:), 8 );
+otherforces = fzxx([2 3],:);
+
+
+
+@ The assertions, common between directions.
+
+@< Assert magnetisations tests @>=
 
 assert ( ...
-	     all(all( abs( otherforces ) < 1e-11 )) , ...
-	     'Horizontal forces should be zero' ...
+	     all( abs( otherforces(:) ) < 1e-11 ) , ...
+	     'Orthogonal forces should be zero' ...
 	   )
 assert ( ...
 	     all( abs(dirforces) == abs(dirforces(1)) ) , ...
@@ -643,13 +762,11 @@ assert ( ...
 	   )
 
 
-@ This test does the same thing but for orthogonally magnetised magnets.
+@ Now try combinations of displacements.
 
-@( magforce_test001b.m @>=
+@( magforce_test001c.m @>=
 
 clc;
-
-f = [];
 
 magnet_fixed.dim = [0.04 0.04 0.04];
 magnet_float.dim =  magnet_fixed.dim;
@@ -657,17 +774,83 @@ magnet_float.dim =  magnet_fixed.dim;
 magnet_fixed.magn = 1.3;
 magnet_float.magn = 1.3;
 
-magnet_fixed.magdir = [0  90];  % $z$
-for ii = [1, -1]
-  for jj = [1, -1]
+@< Test combinations ZZ @>
+@< Assert combinations tests @>
+@< Test combinations ZY @>
+@< Assert combinations tests @>
 
-    magnet_float.magdir = ii*[90 0];  % $\pm y$
-    displ = jj*[0 0 0.1];  % $\pm z$
-    f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+@ Tests.
 
+@< Test combinations ZZ @>=
+f = [];
+
+for ii = [-1 1]
+  for jj = [-1 1]
+    for xx = 0.12*[-1, 1]
+      for yy = 0.12*[-1, 1]
+        for zz = 0.12*[-1, 1]
+          
+              magnet_fixed.magdir = [0  ii*90];  % $z$
+              magnet_float.magdir = [0  jj*90];  % $z$
+              displ = [xx yy zz];
+              f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+        
+        end
+      end
+    end
   end
 end
 
+f = chop( f , 8 );
 
-% chop:
-f( abs(f)<1e-10 ) = 0;
+uniquedir = f(3,:);
+otherdir  = f([1 2],:);
+
+@ Tests.
+
+@< Test combinations ZY @>=
+f = [];
+
+for ii = [-1 1]
+  for jj = [-1 1]
+    for xx = 0.12*[-1, 1]
+      for yy = 0.12*[-1, 1]
+        for zz = 0.12*[-1, 1]
+          
+              magnet_fixed.magdir = [0  ii*90];  % $\pm z$
+              magnet_float.magdir = [jj*90  0];  % $\pm y$
+              displ = [xx yy zz];
+              f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+        
+        end
+      end
+    end
+  end
+end
+
+f = chop( f , 8 );
+
+uniquedir = f(1,:);
+otherdir  = f([2 3],:);
+
+@ Shared tests, again.
+
+@< Assert combinations tests @>=
+
+test1 = abs(diff(abs(f(1,:))))<1e-10 ;
+test2 = abs(diff(abs(f(2,:))))<1e-10 ;
+test3 = abs(diff(abs(f(3,:))))<1e-10 ;
+assert ( all(test1) && all(test2) && all(test3) , ...
+         'All forces in a single direction should be equal' )
+
+test = abs(diff(abs(otherdir))) < 1e-11;
+assert ( all(test) , 'Orthogonal forces should be equal' )
+
+test1 = f(:,1:8) == f(:,25:32);
+test2 = f(:,9:16) == f(:,17:24);
+assert ( all( test1(:) ) && all( test2(:)) , ...
+	     'Reverse magnetisation shouldn''t make a difference' )
+
+disp('============')
+disp('Tests passed')
+disp('============')
