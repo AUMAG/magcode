@@ -254,23 +254,8 @@ if (J1m==0 || J2m==0)
   return; 
 end 
  
-if     ( J1m>0 && J2m>0 ) 
-  rotate_transform  =  rotate_none; 
-elseif ( J1m<0 && J2m>0 ) 
-  rotate_transform  =  rotate_round_y; 
-elseif ( J1m>0 && J2m<0 ) 
-  rotate_transform  =  rotate_round_z; 
-elseif ( J1m<0 && J2m<0 ) 
-  rotate_transform  =  rotate_round_x; 
-end 
  
-forces_tmp  =  forces_calc_z_y_plusplus(  ... 
-            size1,size2,  ... 
-         rotate_transform(offset),  ... 
-         rotate_transform(J1),      ... 
-         rotate_transform(J2)       ... 
-          ); 
-forces_xyz  =  rotate_transform( forces_tmp); 
+forces_xyz  =  forces_calc_z_y_plusplus( size1,size2,offset,J1,J2 ); 
 disp(forces_xyz') 
  
 end 
@@ -295,10 +280,6 @@ function forces_xyz  =  forces_calc_z_y_plusplus(size1,size2,offset,J1,J2)
  
 J1  =  J1(3); 
 J2  =  J2(2); 
- 
-if (J1<0 || J2<0) 
-  error('Positive magnetisations only!') 
-end 
  
  
  
@@ -342,10 +323,15 @@ f_y  =   ...
   - 0.5  *  w .* r; 
  
 f_z  =   ... 
-  0.5  *  ( u.^2 - w.^2 ) .* log( r+v )  ... 
+  0.5  *  multiply_x_log_y( u.^2 - w.^2 , r+v )  ... 
   - multiply_x_log_y( u .* v , r-u )  ... 
   - u .* w .* atan1( u .* v , w .* r )  ... 
   - 0.5  *  v .* r; 
+ 
+if( any(isnan(f_z(:))) ) 
+  disp(f_z) 
+  ERROR 
+end 
  
 f_x  =  index_sum.*f_x; 
 f_y  =  index_sum.*f_y; 

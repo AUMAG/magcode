@@ -282,15 +282,6 @@ disp(forces_xyz')
 end
 
 @ Orthogonal magnets forces given by \textcite{yonnet2009-ldia}.
-Magnetisation of the fixed magnet |J1| is in the positive |z|-direction, and
-the magnetisation of the floating magnet |J2| is in the positive
-|y|-direction. This means we need to perform coordinate system transformation
-if either or both of |J1| and |J2| are negative.
-
-I don't use a general solution here because there's only a small, fixed number
-of possibilities. The general solution is more calculatorily complex.
-
-@ There is a singularity at a displacement of $(0,0,\pm z)$.
 
 @< Orthogonal magnets force calculation @>=
 
@@ -305,23 +296,8 @@ if (J1m==0 || J2m==0)
   return;
 end
 
-if     ( J1m>0 && J2m>0 )
-  rotate_transform = rotate_none;
-elseif ( J1m<0 && J2m>0 )
-  rotate_transform = rotate_round_y;
-elseif ( J1m>0 && J2m<0 )
-  rotate_transform = rotate_round_z;
-elseif ( J1m<0 && J2m<0 )
-  rotate_transform = rotate_round_x;
-end
 
-forces_tmp = forces_calc_z_y_plusplus( ...
-	           size1,size2, ...
-		       rotate_transform(offset), ...
-		       rotate_transform(J1),     ...
-		       rotate_transform(J2)      ...
-	         );
-forces_xyz = rotate_transform( forces_tmp);
+forces_xyz = forces_calc_z_y_plusplus( size1,size2,offset,J1,J2 );
 disp(forces_xyz')
 
 end
@@ -351,10 +327,6 @@ function forces_xyz = forces_calc_z_y_plusplus(size1,size2,offset,J1,J2)
 
 J1 = J1(3);
 J2 = J2(2);
-
-if (J1<0 || J2<0)
-  error('Positive magnetisations only!')
-end
 
 @< Forces initialise variables @>
 
