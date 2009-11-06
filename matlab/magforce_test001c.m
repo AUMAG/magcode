@@ -1,6 +1,7 @@
  
  
-clc; 
+disp('=================') 
+fprintf('TEST 001c: ') 
  
 magnet_fixed.dim  =  [0.04 0.04 0.04]; 
 magnet_float.dim  =   magnet_fixed.dim; 
@@ -50,9 +51,8 @@ test2  =  f(:,9:16) == f(:,17:24);
 assert ( all( test1(:) ) && all( test2(:)) ,  ... 
       'Reverse magnetisation shouldn''t make a difference' ) 
  
-disp('============') 
-disp('Tests passed') 
-disp('============')  
+ 
+ 
  
 f  =  []; 
  
@@ -95,8 +95,10 @@ test2  =  f(:,9:16) == f(:,17:24);
 assert ( all( test1(:) ) && all( test2(:)) ,  ... 
       'Reverse magnetisation shouldn''t make a difference' ) 
  
-disp('============') 
-disp('Tests passed') 
-disp('============')  
+ 
+ 
+ 
+fprintf('passed\n') 
+disp('=================') 
  
 

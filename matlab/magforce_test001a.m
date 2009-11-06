@@ -1,6 +1,7 @@
  
  
-clc; 
+disp('=================') 
+fprintf('TEST 001a: ') 
  
 magnet_fixed.dim  =  [0.04 0.04 0.04]; 
 magnet_float.dim  =  magnet_fixed.dim; 
@@ -132,12 +133,8 @@ assert (  ...
  
  
  
- 
- 
- 
-disp('============') 
-disp('Tests passed') 
-disp('============') 
+fprintf('passed\n') 
+disp('=================') 
  
  
 

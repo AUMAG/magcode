@@ -480,20 +480,21 @@ end
 
    There are many Matlab unit test frameworks but I'll be using a fairly
    low-tech method. In time this test suite should be (somehow) useable for
-   all implementations of \texttt{magnetocode}, not just Matlab.
+   all implementations of \texttt{magnetocode}, not just Matlab. But I haven't
+   thought about doing anything like that, yet.
 
-@  Because I'm lazy, just run the tests manually for now:
+@  Because I'm lazy, just run the tests manually for now.
+   This script must be run twice if it updates itself.
 
 @( testall.m @>=
 
-try
-  dbquit
-end
-unix('~/bin/mtangle magnetforces')
+clc;
+unix('~/bin/mtangle magnetforces');
 
 magforce_test001a
 magforce_test001b
 magforce_test001c
+magforce_test001d
 
 
 @  This test checks that square magnets produce the same forces in the
@@ -504,7 +505,8 @@ magforce_test001c
 
 @( magforce_test001a.m @>=
 
-clc;
+disp('=================')
+fprintf('TEST 001a: ')
 
 magnet_fixed.dim = [0.04 0.04 0.04];
 magnet_float.dim = magnet_fixed.dim;
@@ -522,12 +524,8 @@ offset = 0.1;
 @< Test $y$--$y$ magnetisations @>
 @< Assert magnetisations tests @>
 
-
-
-
-disp('============')
-disp('Tests passed')
-disp('============')
+fprintf('passed\n')
+disp('=================')
 
 
 @ Testing vertical forces.
@@ -594,7 +592,8 @@ otherforces = f([1 3],:);
 
 @( magforce_test001b.m @>=
 
-clc;
+disp('=================')
+fprintf('TEST 001b: ')
 
 magnet_fixed.dim = [0.04 0.04 0.04];
 magnet_float.dim =  magnet_fixed.dim;
@@ -614,9 +613,8 @@ magnet_float.magn = 1.3;
 @< Test ZYY @>
 @< Assert magnetisations tests @>
 
-disp('============')
-disp('Tests passed')
-disp('============')
+fprintf('passed\n')
+disp('=================')
 
 @  $z$--$y$ magnetisations, $z$ displacement.
 
@@ -734,7 +732,8 @@ assert ( ...
 
 @( magforce_test001c.m @>=
 
-clc;
+disp('=================')
+fprintf('TEST 001c: ')
 
 magnet_fixed.dim = [0.04 0.04 0.04];
 magnet_float.dim =  magnet_fixed.dim;
@@ -746,6 +745,9 @@ magnet_float.magn = 1.3;
 @< Assert combinations tests @>
 @< Test combinations ZY @>
 @< Assert combinations tests @>
+
+fprintf('passed\n')
+disp('=================')
 
 @ Tests.
 
@@ -819,6 +821,91 @@ test2 = f(:,9:16) == f(:,17:24);
 assert ( all( test1(:) ) && all( test2(:)) , ...
 	     'Reverse magnetisation shouldn''t make a difference' )
 
-disp('============')
-disp('Tests passed')
-disp('============')
+
+@ Now we want to try non-orthogonal magnetisation.
+
+@( magforce_test001d.m @>=
+
+disp('=================')
+fprintf('TEST 001d: ')
+
+magnet_fixed.dim = [0.04 0.04 0.04];
+magnet_float.dim =  magnet_fixed.dim;
+
+% Fixed parameters:
+magnet_fixed.magn = 1.3;
+magnet_float.magn = 1.3;
+magnet_fixed.magdir = [0  90];  % $z$
+displ = 0.12*[1 1 1];
+
+@< Test XY superposition @>
+@< Assert superposition @>
+@< Test XZ superposition @>
+@< Assert superposition @>
+@< Test planar superposition @>
+@< Assert superposition @>
+
+fprintf('passed\n')
+disp('=================')
+
+@ Test with a magnetisation unit vector of $(1,1,0)$.
+
+@< Test XY superposition @>=
+
+magnet_float.magdir = [45  0];  % $\vec e_x+\vec e_y$
+f1 = magnetforces(magnet_fixed,magnet_float,displ);
+
+% Components:
+magnet_float.magdir = [0  0];  % $\vec e_x$
+fc1 = magnetforces(magnet_fixed,magnet_float,displ);
+
+magnet_float.magdir = [90  0];  % $\vec e_y$
+fc2 = magnetforces(magnet_fixed,magnet_float,displ);
+
+f2 = (fc1+fc2)/sqrt(2);
+
+@ Test with a magnetisation unit vector of $(1,0,1)$.
+
+@< Test XZ superposition @>=
+
+magnet_float.magdir = [0  45];  % $\vec e_y+\vec e_z$
+f1 = magnetforces(magnet_fixed,magnet_float,displ);
+
+% Components:
+magnet_float.magdir = [0  0];  % $\vec e_x$
+fc1 = magnetforces(magnet_fixed,magnet_float,displ);
+
+magnet_float.magdir = [0  90];  % $\vec e_z$
+fc2 = magnetforces(magnet_fixed,magnet_float,displ);
+
+f2 = (fc1+fc2)/sqrt(2);
+
+@ Test with a magnetisation unit vector of $(1,1,1)$.
+  This is about as much as I can be bothered testing for now.
+  Things seem to be working.
+
+@< Test planar superposition @>=
+
+[t p r] = cart2sph(1/sqrt(3),1/sqrt(3),1/sqrt(3));
+magnet_float.magdir = [t p]*180/pi;  % $\vec e_y+\vec e_z+\vec e_z$
+f1 = magnetforces(magnet_fixed,magnet_float,displ);
+
+% Components:
+magnet_float.magdir = [0  0];  % $\vec e_x$
+fc1 = magnetforces(magnet_fixed,magnet_float,displ);
+
+magnet_float.magdir = [90  0];  % $\vec e_y$
+fc2 = magnetforces(magnet_fixed,magnet_float,displ);
+
+magnet_float.magdir = [0  90];  % $\vec e_z$
+fc3 = magnetforces(magnet_fixed,magnet_float,displ);
+
+f2 = (fc1+fc2+fc3)/sqrt(3);
+
+@ The assertion is the same each time.
+
+@< Assert superposition @>=
+assert ( ...
+	     isequal ( chop( f1 , 6 ) , chop ( f2 , 6 ) ) , ...
+	     'Components should sum due to superposition' ...
+	   )
