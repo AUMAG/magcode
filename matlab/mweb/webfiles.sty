@@ -160,20 +160,23 @@
    \fi\fi\fi}
 \xweb_SetupHrefs
 \def\@oneortwooftwo#1#{#1\@iden}
-\def\xwebPDFOutline#1#2{{%
+\def\xwebPDFOutline#1#2{%
+   \begingroup
       \edef\tmpnr{#1}%
       \edef\name{\expandafter\@oneortwooftwo#2}%
       \c@xwebModule=\tmpnr\relax
       \ifnum\xweb_hypertype=2
           \edef\anchor{\xweb_anchor}
           \pdfoutline goto name{\anchor}{#1 \name}
-      \fi}}
-   \def\xweb_pdflink#1#2{%
-       \hyperlink{#1}{#2}%
-   }
-   \def\xweb_pdftarget#1#2{%
-       \hypertarget{#1}{#2}%
-   }
+      \fi
+   \endgroup
+}
+\def\xweb_pdflink#1#2{%
+    \hyperlink{#1}{#2}%
+}
+\def\xweb_pdftarget#1#2{%
+    \hypertarget{#1}{#2}%
+}
 \def\xwebLapStar{\rlap{*}}
 \newcount\xwebGroupLevel
 \newcounter{xwebSecNoEject}
