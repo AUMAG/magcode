@@ -31,7 +31,9 @@ f2  =  (fc1+fc2)/sqrt(2);
 assert (  ... 
       isequal ( chop( f1 , 6 ) , chop ( f2 , 6 ) ) ,  ... 
       'Components should sum due to superposition'  ... 
-    )  
+    ) 
+ 
+ 
  
  
 magnet_float.magdir  =  [0  45];  % $\vec e_y+\vec e_z$ 
@@ -51,7 +53,9 @@ f2  =  (fc1+fc2)/sqrt(2);
 assert (  ... 
       isequal ( chop( f1 , 6 ) , chop ( f2 , 6 ) ) ,  ... 
       'Components should sum due to superposition'  ... 
-    )  
+    ) 
+ 
+ 
  
  
 [t p r]  =  cart2sph(1/sqrt(3),1/sqrt(3),1/sqrt(3)); 
@@ -75,7 +79,9 @@ f2  =  (fc1+fc2+fc3)/sqrt(3);
 assert (  ... 
       isequal ( chop( f1 , 6 ) , chop ( f2 , 6 ) ) ,  ... 
       'Components should sum due to superposition'  ... 
-    )  
+    ) 
+ 
+ 
  
 fprintf('passed\n') 
 disp('=================') 

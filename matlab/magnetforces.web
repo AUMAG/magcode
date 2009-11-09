@@ -13,29 +13,38 @@ integrated M-Lint program, debugger, profiler, and so on. Depending on ones
 work habits, this may be more or less of limiting factor to using `literate
 programming' in this way.
 
-@* Calculating forces between magnets. This is the source to some code to
-calculate the forces (and perhaps torques) between two cuboid-shaped magnets
-with arbitary displacement and magnetisation direction.
+@* Calculating forces between magnets. This is the source of some code to
+calculate the forces and/or stiffnesses and/or torques between two
+cuboid-shaped magnets with arbitary displacements and magnetisation direction.
+(A cuboid is like a three dimensional rectangle; its faces are all orthogonal
+but may have different side lengths.)
 
-If this code works then I'll look at calculating the forces for magnets with
-rotation as well.
+@ The main function is |magnetforces|, which takes three mandatory arguments:
+  |magnet_fixed|, |magnet_float|, and |displ|. These will be described in more
+  detail below.
 
-@ The main function is called |magnetforces|, which takes three arguments:
-  |magnet_fixed|, |magnet_float|, and |displ|. These will be described below.
+  Optional string arguments may be any combination of \verb='force'=, \verb='stiffness'=,
+  \verb='torque'=, or \verb='angular-stiffness'= to indicate which calculations should be output.
+  If no calculation is specified, \verb='force'= is the default.
 
 @( magnetforces.m @>=
 
-function [forces_out] = magnetforces(magnet_fixed, magnet_float, displ)
+function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
 @< Matlab help text @>
 
 @< Extract input variables @>
+@< Parse calculation args @>
 @< Precompute rotation matrices @>
 @< Decompose orthogonal superpositions @>
 @< Calculate all forces @>
+@< Combine results and exit @>
+
 @< Functions for calculating forces and stiffnesses @>
 
 end
+
+@*1 Variables and data structures.
 
 @ First of all, address the data structures required for the input and output.
 Because displacement of a single magnet has three components, plus sizes of
@@ -98,6 +107,68 @@ J2 = [ J2r * cosd(J2p) * cosd(J2t)  ; ...
        J2r * cosd(J2p) * sind(J2t)  ; ...
        J2r * sind(J2p) ];
 
+@*1 Wrangling user input and output.
+
+@ We now have a choice of calculations to take based on the user input.
+  Take the opportunity to bail out in case the user has requested more calculations
+  than provided as outputs to the function.
+
+@< Parse ... @>=
+
+Nvargin = length(varargin);
+
+if ( Nvargin ~=0 && Nvargin ~= nargout )
+  error('Must have as many outputs as calculations requested.')
+end
+
+calc_force_bool = false;
+calc_stiffness_bool = false;
+calc_torque_bool = false;
+calc_angular_stiffness_bool = false;
+
+if Nvargin == 0
+  calc_force_bool = true;
+else
+  for ii = varargin
+    switch ii
+      case 'force'
+        calc_force_bool = true;
+      case 'stiffness'
+        calc_stiffness_bool = true;
+      case 'torque'
+        calc_torque_bool = true;
+      case 'angular-stiffness'
+        calc_angular_stiffness_bool = true;
+      otherwise
+        error(['Unknown calculation option ''',num2str(ii),''''])
+    end
+  end
+end
+
+@ After all of the calculations have occured, they're placed back into
+  |varargout|.
+
+@< Combine results ... @>=
+
+if Nvargin == 0
+  varargout{1} = forces_out;
+else
+  for ii = length(varargin)
+    switch varargin{ii}
+      case 'force'
+        varargout{ii} = forces_out;
+      case 'stiffness'
+        varargout{ii} = stiffnesses_out;
+      case 'torque'
+        varargout{ii} = torques_out;
+      case 'angular-stiffness'
+        varargout{ii} = angular_stiffnesses_out;
+    end
+  end
+end
+
+@*1 The actual mechanics.
+
 @ The expressions we have to calculate the forces assume a fixed magnet with
 positive |z| magnetisation only. Secondly, magnetisation direction of the
 floating magnet may only be in the positive |z|- or |y|-directions.
@@ -109,8 +180,8 @@ proceed as usual and reverse the vertical forces in the last step.
 The orthogonal forces require reflection and/or rotation to get the
 displacements in a form suitable for calculation.
 
-Initialise a $3\times3\times3$ array to store each force component in each
-direction, and fill it up by calculating
+Initialise a $9\times3$ array to store each force component in each
+direction, and then fill 'er up.
 
 @< Calculate all forces @>=
 
@@ -533,7 +604,7 @@ for ii = [1, -1]
     magnet_float.magdir = [0 jj*90];
     for kk = [1, -1]
       displ = kk*[0 0 offset];
-      f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
     end
   end
 end
@@ -553,7 +624,7 @@ for ii = [1, -1]
     magnet_float.magdir = [90+jj*90 0];
     for kk = [1, -1]
       displ = kk*[offset 0 0];
-      f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
     end
   end
 end
@@ -573,7 +644,7 @@ for ii = [1, -1]
     magnet_float.magdir = [jj*90 0];
     for kk = [1, -1]
       displ = kk*[0 offset 0];
-      f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
     end
   end
 end
@@ -623,7 +694,7 @@ for ii = [1, -1]
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = jj*[90 0];  % $\pm y$
       displ = kk*[0 0 0.1];  % $\pm z$
-      fzyz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      fzyz(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
   
     end
   end
@@ -645,7 +716,7 @@ for ii = [1, -1]
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = [90+jj*90 0];  % $\pm x$
       displ = kk*[0.1 0 0];  % $\pm x$
-      fzxz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      fzxz(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
   
     end
   end
@@ -667,7 +738,7 @@ for ii = [1, -1]
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = jj*[90 0];  % $\pm y$
       displ = kk*[0 0.1 0];  % $\pm y$
-      fzyy(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      fzyy(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
   
     end
   end
@@ -689,7 +760,7 @@ for ii = [1, -1]
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = [90+jj*90 0];  % $\pm x$
       displ = kk*[0 0 0.1];  % $\pm z$
-      fzxx(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      fzxx(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
   
     end
   end
@@ -757,7 +828,7 @@ for ii = [-1 1]
               magnet_fixed.magdir = [0  ii*90];  % $z$
               magnet_float.magdir = [0  jj*90];  % $z$
               displ = [xx yy zz];
-              f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+              f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
         
         end
       end
@@ -784,7 +855,7 @@ for ii = [-1 1]
               magnet_fixed.magdir = [0  ii*90];  % $\pm z$
               magnet_float.magdir = [jj*90  0];  % $\pm y$
               displ = [xx yy zz];
-              f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
+              f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
         
         end
       end
@@ -903,3 +974,9 @@ assert ( ...
 	     isequal ( chop( f1 , 6 ) , chop ( f2 , 6 ) ) , ...
 	     'Components should sum due to superposition' ...
 	   )
+
+@  These are \textsc{matlabweb} declarations to improve the formatting
+   of this document. Ignore unless you're editing \texttt{magnetforces.web}.
+
+@d END = end
+@f END TeX

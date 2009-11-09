@@ -1,6 +1,6 @@
  
  
-function [forces_out]  =  magnetforces(magnet_fixed, magnet_float, displ) 
+function [varargout]  =  magnetforces(magnet_fixed, magnet_float, displ, varargin) 
  
  
  
@@ -36,6 +36,39 @@ J2p  =  magnet_float.magdir(2);
 if (J1r<0 || J2r<0) 
   error(['By convention, magnetisation must be positive; ',  ... 
          'change the angle to reverse direction.']) 
+end 
+ 
+ 
+ 
+ 
+Nvargin  =  length(varargin); 
+ 
+if ( Nvargin ~=0 && Nvargin ~= nargout ) 
+  error('Must have as many outputs as calculations requested.') 
+end 
+ 
+calc_force_bool  =  false; 
+calc_stiffness_bool  =  false; 
+calc_torque_bool  =  false; 
+calc_angular_stiffness_bool  =  false; 
+ 
+if Nvargin == 0 
+  calc_force_bool  =  true; 
+else 
+  for ii  =  varargin 
+    switch ii 
+      case 'force' 
+        calc_force_bool  =  true; 
+      case 'stiffness' 
+        calc_stiffness_bool  =  true; 
+      case 'torque' 
+        calc_torque_bool  =  true; 
+      case 'angular-stiffness' 
+        calc_angular_stiffness_bool  =  true; 
+      otherwise 
+        error(['Unknown calculation option ''',num2str(ii),'''']) 
+    end 
+  end 
 end 
  
  
@@ -164,6 +197,27 @@ force_components(9,:)  =  forces_z_x;
  
  
 forces_out  =  sum(force_components); 
+ 
+ 
+ 
+ 
+if Nvargin == 0 
+  varargout{1}  =  forces_out; 
+else 
+  for ii  =  length(varargin) 
+    switch varargin{ii} 
+      case 'force' 
+        varargout{ii}  =  forces_out; 
+      case 'stiffness' 
+        varargout{ii}  =  stiffnesses_out; 
+      case 'torque' 
+        varargout{ii}  =  torques_out; 
+      case 'angular-stiffness' 
+        varargout{ii}  =  angular_stiffnesses_out; 
+    end 
+  end 
+end 
+ 
  
  
  

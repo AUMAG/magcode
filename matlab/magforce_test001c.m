@@ -21,7 +21,7 @@ for ii  =  [-1 1]
               magnet_fixed.magdir  =  [0  ii * 90];  % $z$ 
               magnet_float.magdir  =  [0  jj * 90];  % $z$ 
               displ  =  [xx yy zz]; 
-              f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ); 
+              f(:, end+1)  =  magnetforces(magnet_fixed,magnet_float,displ); 
  
         end 
       end 
@@ -65,7 +65,7 @@ for ii  =  [-1 1]
               magnet_fixed.magdir  =  [0  ii * 90];  % $\pm z$ 
               magnet_float.magdir  =  [jj * 90  0];  % $\pm y$ 
               displ  =  [xx yy zz]; 
-              f(:,end+1)  =  magnetforces(magnet_fixed,magnet_float,displ); 
+              f(:, end+1)  =  magnetforces(magnet_fixed,magnet_float,displ); 
  
         end 
       end 
