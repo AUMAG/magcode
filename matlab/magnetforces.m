@@ -17,30 +17,6 @@ function [varargout]  =  magnetforces(magnet_fixed, magnet_float, displ, varargi
  
  
  
-a1  =  0.5 * magnet_fixed.dim(1); 
-b1  =  0.5 * magnet_fixed.dim(2); 
-c1  =  0.5 * magnet_fixed.dim(3); 
-size1  =  [a1; b1; c1]; 
-a2  =  0.5 * magnet_float.dim(1); 
-b2  =  0.5 * magnet_float.dim(2); 
-c2  =  0.5 * magnet_float.dim(3); 
-size2  =  [a2; b2; c2]; 
- 
-J1r  =  magnet_fixed.magn; 
-J2r  =  magnet_float.magn; 
-J1t  =  magnet_fixed.magdir(1); 
-J2t  =  magnet_float.magdir(1); 
-J1p  =  magnet_fixed.magdir(2); 
-J2p  =  magnet_float.magdir(2); 
- 
-if (J1r<0 || J2r<0) 
-  error(['By convention, magnetisation must be positive; ',  ... 
-         'change the angle to reverse direction.']) 
-end 
- 
- 
- 
- 
 Nvargin  =  length(varargin); 
  
 if ( Nvargin ~=0 && Nvargin ~= nargout ) 
@@ -70,6 +46,47 @@ else
     end 
   end 
 end 
+ 
+ 
+ 
+ 
+ 
+a1  =  0.5 * magnet_fixed.dim(1); 
+b1  =  0.5 * magnet_fixed.dim(2); 
+c1  =  0.5 * magnet_fixed.dim(3); 
+size1  =  [a1; b1; c1]; 
+a2  =  0.5 * magnet_float.dim(1); 
+b2  =  0.5 * magnet_float.dim(2); 
+c2  =  0.5 * magnet_float.dim(3); 
+size2  =  [a2; b2; c2]; 
+ 
+J1r  =  magnet_fixed.magn; 
+J2r  =  magnet_float.magn; 
+J1t  =  magnet_fixed.magdir(1); 
+J2t  =  magnet_float.magdir(1); 
+J1p  =  magnet_fixed.magdir(2); 
+J2p  =  magnet_float.magdir(2); 
+ 
+ 
+ 
+ 
+if calc_force_bool 
+  force_components  =  repmat(NaN,[9 3]); 
+end 
+ 
+if calc_stiffness_bool 
+  stiffness_components  =  repmat(NaN,[9 3]); 
+end 
+ 
+if calc_torque_bool 
+  torque_components  =  repmat(NaN,[9 3]); 
+end 
+ 
+if calc_angular_stiffness_bool 
+  angular_stiffness_components  =  repmat(NaN,[9 3]); 
+end 
+ 
+ 
  
  
  
@@ -119,12 +136,11 @@ J2  =  [ J2r  *  cosd(J2p)  *  cosd(J2t)  ;  ...
  
  
  
-force_components  =  repmat(NaN,[9 3]); 
  
  
  
 debug_disp('  ') 
-debug_disp('CALCULATING FORCES') 
+debug_disp('CALCULATING THINGS') 
 debug_disp('==================') 
 debug_disp('Displacement:') 
 debug_disp(displ') 
@@ -180,16 +196,15 @@ force_components(6,:)  =  rotate_z_to_y( forces_y_z );
  
  
  
- 
-debug_disp('Forces z-z:') 
+debug_disp('z-z:') 
 forces_z_z  =  forces_calc_z_z( size1,size2,displ,J1,J2 ); 
 force_components(7,:)  =  forces_z_z; 
  
-debug_disp('Forces z-y:') 
+debug_disp('z-y:') 
 forces_z_y  =  forces_calc_z_y( size1,size2,displ,J1,J2 ); 
 force_components(8,:)  =  forces_z_y; 
  
-debug_disp('Forces z-x:') 
+debug_disp('z-x:') 
 forces_z_x  =  forces_calc_z_x( size1,size2,displ,J1,J2 ); 
 force_components(9,:)  =  forces_z_x; 
  
@@ -197,6 +212,7 @@ force_components(9,:)  =  forces_z_x;
  
  
 forces_out  =  sum(force_components); 
+ 
  
  
  
@@ -224,18 +240,19 @@ end
  
  
  
-function forces_xyz  =  forces_calc_z_z(size1,size2,offset,J1,J2) 
+ 
+function calc_out  =  forces_calc_z_z(size1,size2,offset,J1,J2) 
  
 J1  =  J1(3); 
 J2  =  J2(3); 
  
+ 
+ 
 if (J1==0 || J2==0) 
   debug_disp('Zero magnetisation.') 
-  forces_xyz   =   [0; 0; 0]; 
+  calc_out   =   [0; 0; 0]; 
   return; 
 end 
- 
- 
  
 dx  =  offset(1); 
 dy  =  offset(2); 
@@ -252,7 +269,7 @@ C  =  size2(3);
 index_sum  =  (-1).^(index_h+index_j+index_k+index_l+index_p+index_q); 
  
 % (Using this vectorised method is less efficient than using six |for| 
-% loops over |[0, 1]|. To be addressed.) 
+% loops over |[0, 1]|! To be addressed, it really makes much difference.) 
  
 u  =  dx + A * (-1).^index_j - a * (-1).^index_h; 
 v  =  dy + B * (-1).^index_l - b * (-1).^index_k; 
@@ -261,66 +278,61 @@ r  =  sqrt(u.^2+v.^2+w.^2);
  
  
  
- 
-f_x  =   ... 
+component_x  =   ... 
   + 0.5 * (v.^2-w.^2).*log(r-u)  ... 
   + u.*v.*log(r-v)  ... 
   + v.*w.*atan2(u.*v,r.*w)  ... 
   + 0.5 * r.*u; 
  
-f_y  =   ... 
+component_y  =   ... 
   + 0.5 * (u.^2-w.^2).*log(r-v)  ... 
   + u.*v.*log(r-u)  ... 
   + u.*w.*atan2(u.*v,r.*w) ... 
   + 0.5 * r.*v; 
  
-f_z  =   ... 
+component_z  =   ... 
   - u.*w.*log(r-u)  ... 
   - v.*w.*log(r-v)  ... 
   + u.*v.*atan2(u.*v,r.*w)  ... 
   - r.*w; 
  
-fx  =  index_sum.*f_x; 
-fy  =  index_sum.*f_y; 
-fz  =  index_sum.*f_z; 
- 
-magconst  =  J1 * J2/(4 * pi * (4 * pi * 1e-7)); 
-forces_xyz  =  magconst.*[ sum(fx(:)) ; sum(fy(:)) ; sum(fz(:)) ] ; 
- 
-debug_disp(forces_xyz') 
- 
-end 
  
  
+component_x  =  index_sum.*component_x; 
+component_y  =  index_sum.*component_y; 
+component_z  =  index_sum.*component_z; 
  
+calc_out  =  J1 * J2/(4 * pi * (4 * pi * 1e-7)) .*  ... 
+  [ sum(component_x(:)) ; 
+    sum(component_y(:)) ; 
+    sum(component_z(:)) ] ; 
  
- 
- 
-function forces_xyz  =  forces_calc_z_x(size1,size2,offset,J1,J2) 
- 
-forces_xyz  =  forces_calc_z_y( ... 
-  swap_x_y(size1), swap_x_y(size2), swap_x_y(offset), ... 
-  J1, swap_x_y(J2) ); 
- 
-forces_xyz  =  swap_x_y( forces_xyz ); 
+debug_disp(calc_out') 
  
 end 
  
  
  
  
-function forces_xyz  =  forces_calc_z_y(size1,size2,offset,J1,J2) 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+function calc_out  =  forces_calc_z_y(size1,size2,offset,J1,J2) 
  
 J1  =  J1(3); 
 J2  =  J2(2); 
  
+ 
+ 
 if (J1==0 || J2==0) 
   debug_disp('Zero magnetisation.') 
-  forces_xyz  =  [0; 0; 0]; 
+  calc_out   =   [0; 0; 0]; 
   return; 
 end 
- 
- 
  
 dx  =  offset(1); 
 dy  =  offset(2); 
@@ -337,7 +349,7 @@ C  =  size2(3);
 index_sum  =  (-1).^(index_h+index_j+index_k+index_l+index_p+index_q); 
  
 % (Using this vectorised method is less efficient than using six |for| 
-% loops over |[0, 1]|. To be addressed.) 
+% loops over |[0, 1]|! To be addressed, it really makes much difference.) 
  
 u  =  dx + A * (-1).^index_j - a * (-1).^index_h; 
 v  =  dy + B * (-1).^index_l - b * (-1).^index_k; 
@@ -346,8 +358,7 @@ r  =  sqrt(u.^2+v.^2+w.^2);
  
  
  
- 
-f_x  =   ... 
+component_x  =   ... 
   - multiply_x_log_y ( v .* w , r-u )  ... 
   + multiply_x_log_y ( v .* u , r+w )  ... 
   + multiply_x_log_y ( u .* w , r+v )  ... 
@@ -355,26 +366,45 @@ f_x  =   ...
   - 0.5  *  v.^2 .* atan1( u .* w , v .* r )  ... 
   - 0.5  *  w.^2 .* atan1( u .* v , w .* r ); 
  
-f_y  =   ... 
+component_y  =   ... 
   0.5  *  multiply_x_log_y( u.^2 - v.^2 , r+w )  ... 
   - multiply_x_log_y( u .* w , r-u )  ... 
   - u .* v .* atan1( u .* w , v .* r )  ... 
   - 0.5  *  w .* r; 
  
-f_z  =   ... 
+component_z  =   ... 
   0.5  *  multiply_x_log_y( u.^2 - w.^2 , r+v )  ... 
   - multiply_x_log_y( u .* v , r-u )  ... 
   - u .* w .* atan1( u .* v , w .* r )  ... 
   - 0.5  *  v .* r; 
  
-f_x  =  index_sum.*f_x; 
-f_y  =  index_sum.*f_y; 
-f_z  =  index_sum.*f_z; 
  
-forces_xyz  =  J1 * J2/(4 * pi * (4 * pi * 1e-7)) .*  ... 
-  [ sum(f_x(:)) ; sum(f_y(:)) ; sum(f_z(:)) ] ; 
  
-debug_disp(forces_xyz') 
+component_x  =  index_sum.*component_x; 
+component_y  =  index_sum.*component_y; 
+component_z  =  index_sum.*component_z; 
+ 
+calc_out  =  J1 * J2/(4 * pi * (4 * pi * 1e-7)) .*  ... 
+  [ sum(component_x(:)) ; 
+    sum(component_y(:)) ; 
+    sum(component_z(:)) ] ; 
+ 
+debug_disp(calc_out') 
+ 
+end 
+ 
+ 
+ 
+ 
+ 
+ 
+function calc_out  =  forces_calc_z_x(size1,size2,offset,J1,J2) 
+ 
+forces_xyz  =  forces_calc_z_y( ... 
+  swap_x_y(size1), swap_x_y(size2), swap_x_y(offset), ... 
+  J1, swap_x_y(J2) ); 
+ 
+calc_out  =  swap_x_y( forces_xyz ); 
  
 end 
  

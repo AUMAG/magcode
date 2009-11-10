@@ -33,11 +33,13 @@ function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
 @< Matlab help text @>
 
-@< Extract input variables @>
 @< Parse calculation args @>
+@< Initialise main variables @>
+
 @< Precompute rotation matrices @>
 @< Decompose orthogonal superpositions @>
-@< Calculate all forces @>
+@< Calculate everything @>
+
 @< Combine results and exit @>
 
 @< Functions for calculating forces and stiffnesses @>
@@ -62,7 +64,7 @@ $(0,1,0)_{\text{cartesian}} \equiv (\pi/2,0,1)_{\text{spherical}}$\\
 $(0,0,1)_{\text{cartesian}} \equiv (0,\pi/2,1)_{\text{spherical}}$
 \end{quote}
 
-@< Extract ... @>=
+@< Initialise main variables @>=
 
 a1 = 0.5*magnet_fixed.dim(1);
 b1 = 0.5*magnet_fixed.dim(2);
@@ -80,10 +82,6 @@ J2t = magnet_float.magdir(1);
 J1p = magnet_fixed.magdir(2);
 J2p = magnet_float.magdir(2);
 
-if (J1r<0 || J2r<0)
-  error(['By convention, magnetisation must be positive; ', ...
-         'change the angle to reverse direction.'])
-end
 
 @ Superposition is used to turn an arbitrary magnetisation angle into a set of
 orthogonal magnetisations.
@@ -106,6 +104,7 @@ J1 = [ J1r * cosd(J1p) * cosd(J1t)  ; ...
 J2 = [ J2r * cosd(J2p) * cosd(J2t)  ; ...
        J2r * cosd(J2p) * sind(J2t)  ; ...
        J2r * sind(J2p) ];
+
 
 @*1 Wrangling user input and output.
 
@@ -145,6 +144,7 @@ else
   end
 end
 
+
 @ After all of the calculations have occured, they're placed back into
   |varargout|.
 
@@ -167,6 +167,7 @@ else
   end
 end
 
+
 @*1 The actual mechanics.
 
 @ The expressions we have to calculate the forces assume a fixed magnet with
@@ -183,15 +184,14 @@ displacements in a form suitable for calculation.
 Initialise a $9\times3$ array to store each force component in each
 direction, and then fill 'er up.
 
-@< Calculate all forces @>=
 
-force_components = repmat(NaN,[9 3]);
+@< Calculate everything @>=
 
 @< Print diagnostics @>
 
-@< Calculate forces |x| @>
-@< Calculate forces |y| @>
-@< Calculate forces |z| @>
+@< Calculate |x| @>
+@< Calculate |y| @>
+@< Calculate |z| @>
 
 forces_out = sum(force_components);
 
@@ -202,7 +202,7 @@ forces_out = sum(force_components);
 @< Print ... @>=
 
 debug_disp('  ')
-debug_disp('CALCULATING FORCES')
+debug_disp('CALCULATING THINGS')
 debug_disp('==================')
 debug_disp('Displacement:')
 debug_disp(displ')
@@ -213,17 +213,17 @@ debug_disp(J2')
 @ The easy one first, where our magnetisation components align with the
   direction expected by the force functions.
 
-@< Calculate forces |z| @>=
+@< Calculate |z| @>=
 
-debug_disp('Forces z-z:')
+debug_disp('z-z:')
 forces_z_z = forces_calc_z_z( size1,size2,displ,J1,J2 );
 force_components(7,:) = forces_z_z;
 
-debug_disp('Forces z-y:')
+debug_disp('z-y:')
 forces_z_y = forces_calc_z_y( size1,size2,displ,J1,J2 );
 force_components(8,:) = forces_z_y;
 
-debug_disp('Forces z-x:')
+debug_disp('z-x:')
 forces_z_x = forces_calc_z_x( size1,size2,displ,J1,J2 );
 force_components(9,:) = forces_z_x;
 
@@ -235,7 +235,7 @@ force_components(9,:) = forces_z_x;
   After the forces are calculated, rotate them back to the original
   coordinate system.
 
-@< Calculate forces |x| @>=
+@< Calculate |x| @>=
 
 size1_rot = swap_x_z(size1);
 size2_rot = swap_x_z(size2);
@@ -258,7 +258,7 @@ force_components(3,:) = rotate_z_to_x( forces_x_z );
 
 @ Same again, this time making |y| the `up' direction.
 
-@< Calculate forces |y| @>=
+@< Calculate |y| @>=
 
 size1_rot = swap_y_z(size1);
 size2_rot = swap_y_z(size2);
@@ -278,6 +278,28 @@ debug_disp('Forces y-z:')
 forces_y_z = forces_calc_z_y(size1_rot,size2_rot,d_rot,J1_rot,J2_rot);
 force_components(6,:) = rotate_z_to_y( forces_y_z );
 
+
+@ You might have noticed that the initialisation of the |force_components|
+  (and other) variables has not yet been listed.
+  That's because the code is boring.
+
+@< Initialise main variables @>+=
+
+if calc_force_bool
+  force_components = repmat(NaN,[9 3]);
+end
+
+if calc_stiffness_bool
+  stiffness_components = repmat(NaN,[9 3]);
+end
+
+if calc_torque_bool
+  torque_components = repmat(NaN,[9 3]);
+end
+
+if calc_angular_stiffness_bool
+  angular_stiffness_components = repmat(NaN,[9 3]);
+end
 
 
 @*1 Functions for calculating forces and stiffnesses. The calculations for
@@ -307,84 +329,49 @@ expressions, but that's the easy part.
 
 @< Parallel magnets force calculation @>=
 
-function forces_xyz = forces_calc_z_z(size1,size2,offset,J1,J2)
+function calc_out = forces_calc_z_z(size1,size2,offset,J1,J2)
 
 J1 = J1(3);
 J2 = J2(3);
 
-if (J1==0 || J2==0) 
-  debug_disp('Zero magnetisation.')
-  forces_xyz  =  [0; 0; 0]; 
-  return; 
-end 
+@< Initialise subfunction variables @>
 
-@< Forces initialise variables @>
-
-f_x = ...
+component_x = ...
   + 0.5*(v.^2-w.^2).*log(r-u) ...
   + u.*v.*log(r-v) ...
   + v.*w.*atan2(u.*v,r.*w) ...
   + 0.5*r.*u;
 
-f_y = ...
+component_y = ...
   + 0.5*(u.^2-w.^2).*log(r-v) ...
   + u.*v.*log(r-u) ...
   + u.*w.*atan2(u.*v,r.*w)...
   + 0.5*r.*v;
 
-f_z = ...
+component_z = ...
   - u.*w.*log(r-u) ...
   - v.*w.*log(r-v) ...
   + u.*v.*atan2(u.*v,r.*w) ...
   - r.*w;
 
-fx = index_sum.*f_x;
-fy = index_sum.*f_y;
-fz = index_sum.*f_z;
-
-magconst = J1*J2/(4*pi*(4*pi*1e-7));
-forces_xyz = magconst.*[ sum(fx(:)) ; sum(fy(:)) ; sum(fz(:)) ] ;
-
-debug_disp(forces_xyz')
-
-end
+@< Finish up @>
 
 
 
-@ Don't bother with rotation matrices for the |z|--|x| case; just
-  reflect the coordinate system by swapping the components.
-
-@< Orthogonal magnets force calculation @>+=
-
-function forces_xyz = forces_calc_z_x(size1,size2,offset,J1,J2)
-
-forces_xyz = forces_calc_z_y(...
-  swap_x_y(size1), swap_x_y(size2), swap_x_y(offset),...
-  J1, swap_x_y(J2) );
-
-forces_xyz = swap_x_y( forces_xyz );
-
-end
 
 
 @ Orthogonal magnets forces given by \textcite{yonnet2009-ldia}.
 
 @< Orthogonal magnets force calculation @>=
 
-function forces_xyz = forces_calc_z_y(size1,size2,offset,J1,J2)
+function calc_out = forces_calc_z_y(size1,size2,offset,J1,J2)
 
 J1 = J1(3);
 J2 = J2(2);
 
-if (J1==0 || J2==0)
-  debug_disp('Zero magnetisation.')
-  forces_xyz = [0; 0; 0];
-  return;
-end
+@< Initialise subfunction variables @>
 
-@< Forces initialise variables @>
-
-f_x = ...
+component_x = ...
   - multiply_x_log_y ( v .* w , r-u ) ...
   + multiply_x_log_y ( v .* u , r+w ) ...
   + multiply_x_log_y ( u .* w , r+v ) ...
@@ -392,26 +379,100 @@ f_x = ...
   - 0.5 * v.^2 .* atan1( u .* w , v .* r ) ...
   - 0.5 * w.^2 .* atan1( u .* v , w .* r );
 
-f_y = ...
+component_y = ...
   0.5 * multiply_x_log_y( u.^2 - v.^2 , r+w ) ...
   - multiply_x_log_y( u .* w , r-u ) ...
   - u .* v .* atan1( u .* w , v .* r ) ...
   - 0.5 * w .* r;
 
-f_z = ...
+component_z = ...
   0.5 * multiply_x_log_y( u.^2 - w.^2 , r+v ) ...
   - multiply_x_log_y( u .* v , r-u ) ...
   - u .* w .* atan1( u .* v , w .* r ) ...
   - 0.5 * v .* r;
 
-f_x = index_sum.*f_x;
-f_y = index_sum.*f_y;
-f_z = index_sum.*f_z;
+@< Finish up @>
 
-forces_xyz = J1*J2/(4*pi*(4*pi*1e-7)) .* ...
-  [ sum(f_x(:)) ; sum(f_y(:)) ; sum(f_z(:)) ] ;
+@ Don't bother with rotation matrices for the |z|--|x| case; just
+  reflect the coordinate system by swapping the components.
+  Don't need to swap |J1| because it should only contain $z$ components
+  anyway. (This is assumption isn't tested because it it's wrong we're in
+  more trouble anyway; this should all be taken care of earlier when the
+  magnetisation components were separated out.)
 
-debug_disp(forces_xyz')
+@< Orthogonal magnets force calculation @>+=
+
+function calc_out = forces_calc_z_x(size1,size2,offset,J1,J2)
+
+forces_xyz = forces_calc_z_y(...
+  swap_x_y(size1), swap_x_y(size2), swap_x_y(offset),...
+  J1, swap_x_y(J2) );
+
+calc_out = swap_x_y( forces_xyz );
+
+end
+
+@ Stiffness calculations are derived\footnote{Literally.} from the forces.
+
+@< Parallel magnets stiffness calculation @>=
+
+function calc_out = stiffnesses_calc_z_z(size1,size2,offset,J1,J2)
+
+J1 = J1(3);
+J2 = J2(3);
+
+@< Initialise subfunction variables @>
+
+component_x = ...
+  - r ...
+  - (u.^2.*v)./(u.^2+w.^2) ...
+  - v.*log(r-v) ;
+
+component_y = ...
+  - r ...
+  - (v.^2.*u)./(v.^2+w.^2) ...
+  - u.*log(r-u) ;
+
+component_z = - component_x - component_y;
+
+@< Finish up @>
+
+
+@ Orthogonal magnets stiffnesses derived from \textcite{yonnet2009-ldia}.
+  First the $z$--$y$ magnetisation.
+
+@< Orthogonal magnets stiffness calculation @>=
+
+function calc_out = stiffnesses_calc_z_y(size1,size2,offset,J1,J2)
+
+J1 = J1(3);
+J2 = J2(2);
+
+@< Initialise subfunction variables @>
+
+component_x =  -((u.^2.*v)/(u.^2 + v.^2)) - (u.^2.*w)/(u.^2 + w.^2) + ...
+     -  u.*atan((v.*w)/(r.*u)) - w.*log(r + v) - v.*log(r + w);
+
+component_y =  v/2. - (u.^2.*v)/(u.^2 + v.^2) + (u.*v.*w)/(v.^2 + w.^2) + ...
+     -  u.*atan((u.*w)/(r.*v)) + v.*log(r + w);
+
+component_z = - component_x - component_z;
+
+@< Finish up @>
+
+
+@  Now the $z$--$x$ magnetisation, which is just $z$--$y$ reflected.
+   (See discussion for the equivalent force calculation.)
+
+@< Orthogonal magnets stiffness calculation @>+=
+
+function calc_out = stiffnesses_calc_z_x(size1,size2,offset,J1,J2)
+
+stiffnesses_xyz = stiffnesses_calc_z_y(...
+  swap_x_y(size1), swap_x_y(size2), swap_x_y(offset),...
+  J1, swap_x_y(J2) );
+
+calc_out = swap_x_y( stiffnesses_xyz );
 
 end
 
@@ -420,7 +481,13 @@ end
   has already been rounded down to zero if necessary; i.e., that we don't need
   to check for |J1| or |J2| are less than |1e-12| or whatever.
 
-@< Forces initialise variables @>=
+@< Initialise subfunction variables @>=
+
+if (J1==0 || J2==0) 
+  debug_disp('Zero magnetisation.')
+  calc_out  =  [0; 0; 0]; 
+  return; 
+end 
 
 dx = offset(1);
 dy = offset(2);
@@ -437,12 +504,29 @@ C = size2(3);
 index_sum = (-1).^(index_h+index_j+index_k+index_l+index_p+index_q);
 
 % (Using this vectorised method is less efficient than using six |for|
-% loops over |[0, 1]|. To be addressed.)
+% loops over |[0, 1]|! To be addressed, it really makes much difference.)
 
 u = dx + A*(-1).^index_j - a*(-1).^index_h;
 v = dy + B*(-1).^index_l - b*(-1).^index_k;
 w = dz + C*(-1).^index_q - c*(-1).^index_p;
 r = sqrt(u.^2+v.^2+w.^2);
+
+@ And some shared finishing code.
+
+@< Finish up @>=
+
+component_x = index_sum.*component_x;
+component_y = index_sum.*component_y;
+component_z = index_sum.*component_z;
+
+calc_out = J1*J2/(4*pi*(4*pi*1e-7)) .* ...
+  [ sum(component_x(:)) ;
+    sum(component_y(:)) ;
+    sum(component_z(:)) ] ;
+
+debug_disp(calc_out')
+
+end
 
 
 @*1 Setup code.
