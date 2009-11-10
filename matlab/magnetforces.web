@@ -128,8 +128,8 @@ calc_angular_stiffness_bool = false;
 if Nvargin == 0
   calc_force_bool = true;
 else
-  for ii = varargin
-    switch ii
+  for ii = 1:Nvargin 
+    switch varargin{ii}
       case 'force'
         calc_force_bool = true;
       case 'stiffness'
@@ -139,7 +139,7 @@ else
       case 'angular-stiffness'
         calc_angular_stiffness_bool = true;
       otherwise
-        error(['Unknown calculation option ''',num2str(ii),''''])
+        error(['Unknown calculation option ''',varargin{ii},''''])
     end
   end
 end
@@ -153,7 +153,7 @@ end
 if Nvargin == 0
   varargout{1} = forces_out;
 else
-  for ii = length(varargin)
+  for ii = 1:Nvargin
     switch varargin{ii}
       case 'force'
         varargout{ii} = forces_out;
@@ -194,6 +194,7 @@ direction, and then fill 'er up.
 @< Calculate |z| @>
 
 forces_out = sum(force_components);
+torques_out = torque_components(9,:);
 
 @ Let's print information to the terminal to aid debugging.
   This is especially important (for me) when looking at the rotated
@@ -215,17 +216,24 @@ debug_disp(J2')
 
 @< Calculate |z| @>=
 
-debug_disp('z-z:')
-forces_z_z = forces_calc_z_z( size1,size2,displ,J1,J2 );
-force_components(7,:) = forces_z_z;
+if calc_force_bool
+  debug_disp('z-z:')
+  forces_z_z = forces_calc_z_z( size1,size2,displ,J1,J2 );
+  force_components(9,:) = forces_z_z;
 
-debug_disp('z-y:')
-forces_z_y = forces_calc_z_y( size1,size2,displ,J1,J2 );
-force_components(8,:) = forces_z_y;
+  debug_disp('z-y:')
+  forces_z_y = forces_calc_z_y( size1,size2,displ,J1,J2 );
+  force_components(8,:) = forces_z_y;
 
-debug_disp('z-x:')
-forces_z_x = forces_calc_z_x( size1,size2,displ,J1,J2 );
-force_components(9,:) = forces_z_x;
+  debug_disp('z-x:')
+  forces_z_x = forces_calc_z_x( size1,size2,displ,J1,J2 );
+  force_components(7,:) = forces_z_x;
+end
+
+if calc_torque_bool
+  torque_components(9,:) = torques_calc_z_z( size1,size2,displ,J1,J2 );
+end
+
 
 
 @ The other forces (i.e., |x| and |y| components) require a rotation to get
@@ -311,6 +319,12 @@ expressions, but that's the easy part.
 
 @< Parallel magnets force calculation @>
 @< Orthogonal magnets force calculation @>
+
+@< Parallel magnets stiffness calculation @>
+@< Orthogonal magnets stiffness calculation @>
+
+@< Parallel magnets torque calculation @>
+
 @< Helper functions @>
 
 @ The expressions here follow directly from \textcite{akoun1984}.
@@ -488,7 +502,7 @@ end
   then converted into rotations with a vector cross product of their
   `lever arms', which in this case are the floating magnet half-lengths.
 
-@< Parallel magnets torques calculation @>=
+@< Parallel magnets torque calculation @>=
 
 function calc_out = torques_calc_z_z(size1,size2,offset,J1,J2)
 
@@ -528,7 +542,7 @@ lever_arms(2,:,:,:) = B*(-1).^index2_l;
 lever_arms(3,:,:,:) = C*(-1).^index2_q;
 
 calc_torques = cross(lever_arms,corner_forces);
-calc_out = sum(sum(sum(zz,2),3),4);
+calc_out = sum(sum(sum(calc_torques,2),3),4);
 
 debug_disp(calc_out')
 
