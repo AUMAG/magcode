@@ -416,8 +416,7 @@ component_y_ii = ...
 
 @< Finish up @>
 
-@ Don't bother with rotation matrices for the |z|--|x| case; just
-  reflect the coordinate system by swapping the components.
+@ 
   Don't need to swap |J1| because it should only contain $z$ components
   anyway. (This is assumption isn't tested because it it's wrong we're in
   more trouble anyway; this should all be taken care of earlier when the
@@ -428,10 +427,10 @@ component_y_ii = ...
 function calc_out = forces_calc_z_x(size1,size2,offset,J1,J2)
 
 forces_xyz = forces_calc_z_y(...
-  swap_x_y(size1), swap_x_y(size2), swap_x_y(offset),...
-  J1, swap_x_y(J2) );
+  rotate_x_to_y(size1), rotate_x_to_y(size2), rotate_x_to_y(offset),...
+  J1, rotate_x_to_y(J2) );
 
-calc_out = swap_x_y( forces_xyz );
+calc_out = rotate_y_to_x( forces_xyz );
 
 end
 
@@ -484,18 +483,17 @@ component_z = - component_x - component_z;
 @< Finish up @>
 
 
-@  Now the $z$--$x$ magnetisation, which is just $z$--$y$ reflected.
-   (See discussion for the equivalent force calculation.)
+@  Now the $z$--$x$ magnetisation, which is $z$--$y$ rotated.
 
 @< Orthogonal magnets stiffness calculation @>+=
 
 function calc_out = stiffnesses_calc_z_x(size1,size2,offset,J1,J2)
 
 stiffnesses_xyz = stiffnesses_calc_z_y(...
-  swap_x_y(size1), swap_x_y(size2), swap_x_y(offset),...
-  J1, swap_x_y(J2) );
+  rotate_x_to_y(size1), rotate_x_to_y(size2), rotate_x_to_y(offset),...
+  J1, rotate_x_to_y(J2) );
 
-calc_out = swap_x_y( stiffnesses_xyz );
+calc_out = rotate_y_to_x(stiffnesses_xyz);
 
 end
 
@@ -649,6 +647,8 @@ Ry_180 = Ry(180);
 Ry_090 = Ry( 90);
 Ry_270 = Ry(-90);
 Rz_180 = Rz(180);
+Rz_090 = Rz( 90);
+Rz_270 = Rz(-90);
 
 identity_function = @@(inp) inp;
 
@@ -659,9 +659,12 @@ rotate_none = identity_function ;
 
 rotate_z_to_x = @@(vec)  Ry_090*vec ;
 rotate_x_to_z = @@(vec)  Ry_270*vec ;
-                                        
+
 rotate_z_to_y = @@(vec)  Rx_090*vec ;
 rotate_y_to_z = @@(vec)  Rx_270*vec ;
+
+rotate_x_to_y = @@(vec)  Rz_090*vec ;
+rotate_y_to_x = @@(vec)  Rz_270*vec ;
 
 @ The equations contain some odd singularities. Specifically, the equations
   contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
@@ -1153,7 +1156,7 @@ f2 = (fc1+fc2+fc3)/sqrt(3);
 
 @< Assert superposition @>=
 assert ( ...
-	     isequal ( chop( f1 , 6 ) , chop ( f2 , 6 ) ) , ...
+	     isequal ( chop( f1 , 5 ) , chop ( f2 , 5 ) ) , ...
 	     'Components should sum due to superposition' ...
 	   )
 
