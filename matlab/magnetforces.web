@@ -24,7 +24,7 @@ but may have different side lengths.)
   detail below.
 
   Optional string arguments may be any combination of \verb='force'=, \verb='stiffness'=,
-  \verb='torque'=, or \verb='angular-stiffness'= to indicate which calculations should be output.
+  \verb='torque'= to indicate which calculations should be output.
   If no calculation is specified, \verb='force'= is the default.
 
 @( magnetforces.m @>=
@@ -121,7 +121,6 @@ end
 calc_force_bool = false;
 calc_stiffness_bool = false;
 calc_torque_bool = false;
-calc_angular_stiffness_bool = false;
 
 if Nvargin == 0
   calc_force_bool = true;
@@ -134,8 +133,6 @@ else
         calc_stiffness_bool = true;
       case 'torque'
         calc_torque_bool = true;
-      case 'angular-stiffness'
-        calc_angular_stiffness_bool = true;
       otherwise
         error(['Unknown calculation option ''',varargin{ii},''''])
     end
@@ -159,8 +156,6 @@ else
         varargout{ii} = stiffnesses_out;
       case 'torque'
         varargout{ii} = torques_out;
-      case 'angular-stiffness'
-        varargout{ii} = angular_stiffnesses_out;
     end
   end
 end
@@ -191,17 +186,7 @@ direction, and then fill 'er up.
 @< Calculate |y| @>
 @< Calculate |z| @>
 
-if calc_force_bool
-  forces_out = sum(force_components);
-end
-
-if calc_stiffness_bool
-  stiffnesses_out = sum(stiffness_components);
-end
-
-if calc_torque_bool
-  torques_out = torque_components(9,:);
-end
+@< Combine calculations @>
 
 @ Let's print some information to the terminal to aid debugging.
   This is especially important (for me) when looking at the rotated
@@ -327,6 +312,24 @@ if calc_stiffness_bool
   stiffness_components(4,:) = rotate_z_to_y( stiffnesses_calc_z_x( size1_rot,size2_rot,d_rot,J1_rot,J2_rot ) );
 end
 
+
+@ Finally sum all the components in each direction to get the total forces.
+
+@< Combine calculations @>=
+
+if calc_force_bool
+  forces_out = sum(force_components);
+end
+
+if calc_stiffness_bool
+  stiffnesses_out = sum(stiffness_components);
+end
+
+if calc_torque_bool
+  torques_out = torque_components(9,:);
+end
+
+
 @ You might have noticed that the initialisation of the |force_components|
   (and other) variables has not yet been listed.
   That's because the code is boring.
@@ -343,10 +346,6 @@ end
 
 if calc_torque_bool
   torque_components = repmat(NaN,[9 3]);
-end
-
-if calc_angular_stiffness_bool
-  angular_stiffness_components = repmat(NaN,[9 3]);
 end
 
 
