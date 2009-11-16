@@ -732,20 +732,9 @@ if (J1==0 || J2==0)
   return; 
 end 
 
-dx = offset(1);
-dy = offset(2);
-dz = offset(3);
-
-a = size1(1);
-b = size1(2);
-c = size1(3);
-A = size2(1);
-B = size2(2);
-C = size2(3);
-
-u = dx + A*(-1).^index_j - a*(-1).^index_i;
-v = dy + B*(-1).^index_l - b*(-1).^index_k;
-w = dz + C*(-1).^index_q - c*(-1).^index_p;
+u = offset(1) + size2(1)*(-1).^index_j - size1(1)*(-1).^index_i;
+v = offset(2) + size2(2)*(-1).^index_l - size1(2)*(-1).^index_k;
+w = offset(3) + size2(3)*(-1).^index_q - size1(3)*(-1).^index_p;
 r = sqrt(u.^2+v.^2+w.^2);
 
 @ Here are some variables used above that only needs to be computed once (and is slow).
