@@ -54,6 +54,10 @@ the faces another three, plus magnetisation strength and direction (two) makes
 nine in total, we use one of Matlab's structures to pass the information into
 the function. Otherwise we'd have an overwhelming number of input arguments.
 
+The input variables |magnet.dim| should be the entire side lengths of the
+magnets; these dimensions are halved when performing all of the calculations.
+(Because that's just how the maths is.)
+
 We use spherical coordinates to represent magnetisation angle, where |phi| is
 the angle from the horizontal plane ($-\pi/2\le \phi \le\pi/2$) and |theta|
 is the angle around the horizontal plane ($0\le\theta\le2\pi$). This follows
@@ -596,7 +600,7 @@ calc_out = rotate_y_to_x(stiffnesses_xyz);
 
 end
 
-@ Torques are actually just calculated from the corner- components of the
+@ Torques are actually just calculated from the corner-components of the
   forces. This means that when we calculate both the torques and forces at
   the same time, we should be re-using the intermediate results. I'll do that
   as soon as I see that there is a performance problem with repeating the
@@ -604,9 +608,8 @@ end
 
   The code below is a little more vectorised than makes for easy reading,
   but should still be fairly straightforward. After each force between each
-  magnet corner is calculated, all of the fixed magnet forces are summed,
-  leaving $2\times2\times2$ corner forces on the floating magnet. These are
-  then converted into rotations with a vector cross product of their
+  magnet corner is calculated, these are
+  then converted into torques with a vector cross product of their
   `lever arms', which in this case are the floating magnet half-lengths.
 
 @< Parallel magnets torque calculation @>=
@@ -644,8 +647,63 @@ fx = 0.5*(v^2-w^2)*log(r-u) + u*v*log(r-v) + v*w*atan(u*v/(r*w)) + 0.5*r*u;
 fy = 0.5*(u^2-w^2)*log(r-v) + u*v*log(r-u) + u*w*atan(u*v/(r*w)) + 0.5*r*v;
 fz =         - u*w*log(r-u) - v*w*log(r-v) + u*v*atan(u*v/(r*w)) - r*w;
 
-torque_single = cross([lx;ly;lz],[fx;fy;fz]) * (-1)^(ii+jj+kk+ll+pp+qq);
-torque_xyz = torque_xyz + torque_single;
+torque_single = cross([lx;ly;lz],[fx;fy;fz]);
+
+torque_x = ...
+  1/2*(-lz*(u^2-w^2)+2*ly*v*w)*log(r-v)...
+  -u*(lz*v+ly*w)*log(r-u)...
+  +u*(-lz*w+ly*v)*atan1(u*v,r*w)...
+  +r/2*(-lz*v-2*ly*w)...
+;
+
+torque_x2 = ...
+  ly*fz-fy*lz...
+  +ly*2*v*w*log(r-v)... WRONG (simplified)
+;
+
+torque_x3 = ly*fz-lz*fy;
+
+torque_y = ...
+  +1/2*(lz*(v^2-w^2)+2*lx*u*w)*log(r-u)...
+  +v*(lz*u+lx*w)*log(r-v)...
+  +v*(lz*w-lx*u)*atan1(u*v,w*r)...
+  +r/2*(lz*u+2*lx*w)...
+;
+
+torque_y2 = fx*lz-fz*lx; % CORRECT!
+torque_y3 = fx*lz-fz*lx;
+
+torque_z = ...
+  +1/2*(-ly*(v^2-w^2)+2*lx*u*v)*log(r-u)...
+  -1/2*(lx*(u^2-w^2) + lx*(u^2+w^2))*log(r-v)...
+  +(-ly*v*w+(-1)^jj*u*w)*atan1(u*v,w*r)...
+  -1/2*(ly*u+lx*v)*r...
+;
+
+torque_z2 = ...
+  -1/2*ly*(v^2-w^2)*log(r-u)...
+  -ly*v*w*atan1(u*v,w*r)...
+  -1/2*lx*(u^2+w^2)*log(r-v)... SHOULD BE u*v*log(r-v)
+  -1/2*ly*u*r...
+  -1/2*lx*(u^2-w^2)*log(r-v)...
+  +lx*u*v*log(r-u)...
+  +((-1)^jj*u*w)*atan1(u*v,w*r)...
+  -1/2*lx*v*r...
+;
+
+torque_z3 = -fx*ly+fy*lx;
+
+assert( chop(torque_x,5) == chop(torque_x2,5) );
+assert( chop(torque_y,5) == chop(torque_y2,5) );
+assert( chop(torque_z,5) == chop(torque_z2,5) );
+
+assert( chop(torque_single(1),5) == chop(torque_x3,5) );
+assert( chop(torque_single(2),5) == chop(torque_y3,5) );
+assert( chop(torque_single(3),5) == chop(torque_z3,5) );
+
+torque_single = [torque_x; torque_y; torque_z];
+
+torque_xyz = torque_xyz + torque_single * (-1)^(ii+jj+kk+ll+pp+qq);
 
 end
 end
