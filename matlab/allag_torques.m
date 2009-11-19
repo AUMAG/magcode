@@ -1,4 +1,19 @@
 %% An incorrect example of calculating the torques between magnets
+%
+% This is the accompanying code to a letter written Nov. 2009,
+% commenting on a recent publication by Allag & Yonnet in the Oct.
+% issue of the IEEE Transactions on Magnetics: "3-D Analytical
+% Calculation of the Torque and Force Exerted Between Two Cuboidal Magnets"
+%     <http://dx.doi.org/10.1109/TMAG.2009.2025047>
+%
+% Copyright 2009 Will Robertson
+%
+% Released under the Apache License v2.0:
+%    <http://www.apache.org/licenses/LICENSE-2.0>
+% This means, in essense, that you may freely modify and distribute this
+% code provided that you acknowledge your changes to the work and retain
+% my copyright. See the License text for the specific language governing
+% permissions and limitations under the License.
 
 %% Initialise
 
@@ -164,3 +179,6 @@ disp([corners chop(f_corner_z,3) chop(ty_corner_z,3)])
 
 fprintf(['\nThese forces are not symmetrical and therefore invalidate the argument\n',...
              'that the corner forces can be used for calculating torques.\n'])
+
+
+
