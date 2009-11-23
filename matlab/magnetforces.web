@@ -9,9 +9,20 @@ cross-referencing, maths typesetting, structured formatting, bibliography
 generation, and so on.
 
 The downside is obviously that you miss out on Matlab's IDE with its
-integrated M-Lint program, debugger, profiler, and so on. Depending on ones
-work habits, this may be more or less of limiting factor to using `literate
-programming' in this way.
+integrated M-Lint program, debugger, profiler, and so on. Depending on one's
+work habits, this may be more or less of limiting factor to using literate
+programming in this way.
+
+@ This work consists of the source file \texttt{magnetforces.web} and its
+  associated derived files. It is released under the Apache License v2.0.%
+     \footnote{\url{http://www.apache.org/licenses/LICENSE-2.0}}
+
+  This means, in essense, that you may freely modify and distribute this
+  code provided that you acknowledge your changes to the work and retain
+  my copyright. See the License text for the specific language governing
+  permissions and limitations under the License.
+
+  Copyright \textcopyright\ 2009 Will Robertson.
 
 @* Calculating forces between magnets. This is the source of some code to
 calculate the forces and/or stiffnesses between two
