@@ -38,6 +38,27 @@ but may have different side lengths.)
   and/or \verb='stiffness'= to indicate which calculations should be output.
   If no calculation is specified, \verb='force'= is the default.
 
+\begin{center}
+\begin{tabular}{@@{}lll@@{}}
+\hline
+ Inputs:
+ & |magnet_fixed| & structure describing first magnet \\
+ & |magnet_float| & structure describing the second magnet \\
+ & |displ| & displacement between the magnets \\
+ & [\emph{what to calculate}] & `force' and/or `stiffness' \\
+\hline
+ Outputs:
+ & |forces| & forces on the second magnet \\
+ & |stiffnesses| & stiffnesses on the second magnet \\
+\hline
+ Magnet properties:
+ & |dim|    & size of each magnet \\
+ & |magn|   & magnetisation magnitude \\
+ & |magdir| & magnetisation direction \\
+\hline
+\end{tabular}
+\end{center}
+
 @( magnetforces.m @>=
 
 function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
@@ -1186,6 +1207,30 @@ assert ( ...
 @ This function uses \texttt{magnetforces.m} to compute the forces between
   two multipole magnet arrays. As before, we can calculate either force and/or
   stiffness in all three directions.
+
+\begin{center}
+\begin{tabular}{@@{}lll@@{}}
+\hline
+ Inputs:
+ & |fixed_array| & structure describing first magnet array \\
+ & |float_array| & structure describing the second magnet array \\
+ & |displ| & displacement between first magnet of each array \\
+ & [\emph{what to calculate}] & `force' and/or `stiffness' \\
+\hline
+ Outputs:
+ & |forces| & forces on the second array \\
+ & |stiffnesses| & stiffnesses on the second array \\
+\hline
+ Array properties:
+ & |mcount| & |[i j k]| magnets in each direction \\
+ & |msize|  & size of each magnet \\
+ & |mgap|   & gap between successive magnets \\
+ & |magn|   & magnetisation magnitude \\
+ & |magdir_fn| & function to calculate the magnetisation direction \\
+\hline
+\end{tabular}
+\end{center}
+
 
 @( multipoleforces.m @>=
 

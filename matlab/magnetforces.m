@@ -12,8 +12,6 @@ function [varargout]  =  magnetforces(magnet_fixed, magnet_float, displ, varargi
  
  
  
- 
- 
   
 Nvargin  =  length(varargin); 
  
@@ -93,13 +91,6 @@ Rz_180  =  Rz(180);
 Rz_090  =  Rz( 90); 
 Rz_270  =  Rz(-90); 
  
-identity_function  =  @(inp) inp; 
- 
-rotate_round_x  =  @(vec) Rx_180 * vec ; 
-rotate_round_y  =  @(vec) Ry_180 * vec ; 
-rotate_round_z  =  @(vec) Rz_180 * vec ; 
-rotate_none  =  identity_function ; 
- 
 rotate_z_to_x  =  @(vec)  Ry_090 * vec ; 
 rotate_x_to_z  =  @(vec)  Ry_270 * vec ; 
  
@@ -108,6 +99,7 @@ rotate_y_to_z  =  @(vec)  Rx_270 * vec ;
  
 rotate_x_to_y  =  @(vec)  Rz_090 * vec ; 
 rotate_y_to_x  =  @(vec)  Rz_270 * vec ; 
+ 
  
  
   
@@ -399,22 +391,22 @@ component_z_ii  =   ...
  multiply_x_log_y( S.*T , R-S ) ... 
 ; 
  
-if 0 
-xx  =  component_x(:); 
-xx_ii  =  component_x_ii(:); 
-assert( all( xx == xx_ii ) ) 
+if 1 
+xx  =  index_sum.*component_x; 
+xx_ii  =  index_sum.*component_x_ii; 
+assert( abs(sum(xx(:)) - sum(xx_ii(:))) < 1e-8 ) 
 end 
  
-if 0 
-yy  =  component_y(:); 
-yy_ii  =  component_y_ii(:); 
-assert( all( abs(abs(yy) - abs(yy_ii)) < 1e-4 ) ) 
+if 1 
+yy  =  index_sum.*component_y; 
+yy_ii  =  index_sum.*component_y_ii; 
+assert( abs(sum(yy(:)) - sum(yy_ii(:))) < 1e-8 ) 
 end 
  
-if 0 
-zz  =  component_z(:); 
-zz_ii  =  component_z_ii(:); 
-assert( all( abs(abs(zz) - abs(zz_ii)) < 1e-4 ) ) 
+if 1 
+zz  =  index_sum.*component_z; 
+zz_ii  =  index_sum.*component_z_ii; 
+assert( abs(sum(zz(:)) - sum(zz_ii(:))) < 1e-8 ) 
 end 
  
 if 1 
@@ -586,10 +578,12 @@ function out  =  atan1(x,y)
   out(ind)  =  atan(x(ind)./y(ind)); 
 end 
  
+ 
   
 function debug_disp(str) 
   %disp(str) 
 end 
+ 
  
  
  
