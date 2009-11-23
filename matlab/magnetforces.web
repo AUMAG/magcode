@@ -1189,7 +1189,7 @@ assert ( ...
 
 @( multipoleforces.m @>=
 
-function [varargout] = magnetforces(array_fixed, array_float, displ, varargin)
+function [varargout] = multipoleforces(fixed_array, float_array, displ, varargin)
 
 @< Matlab help text (multipole) @>
 
@@ -1204,11 +1204,11 @@ function [varargout] = magnetforces(array_fixed, array_float, displ, varargin)
 
 @< Calculate array forces @>=
 
-if calc_forces_bool
+if calc_force_bool
   array_forces = repmat(NaN,[M N 3]);
 end
 
-if calc_stiffnesses_bool
+if calc_stiffness_bool
   array_stiffnesses = repmat(NaN,[M N 3]);
 end
 
@@ -1230,12 +1230,12 @@ for mm = 1:M
 
     displ = displ - fixed_magnet_loc(mm,:) + float_magnet_loc(nn,:);
 
-    if calc_forces_bool
+    if calc_force_bool
       array_forces(mm,nn,:) = ...
           magnetforces(fixed_magnet, float_magnet, displ,'force');
     end
 
-    if calc_stiffnesses_bool
+    if calc_stiffness_bool
       array_stiffnesses(mm,nn,:) = ...
           magnetforces(fixed_magnet, float_magnet, displ,'stiffness');
     end
@@ -1243,11 +1243,11 @@ for mm = 1:M
   end
 end
 
-if calc_forces_bool
+if calc_force_bool
   forces_out = squeeze(sum(sum(array_forces,1),2));
 end
 
-if calc_stiffnesses_bool
+if calc_stiffness_bool
   stiffnesses_out = squeeze(sum(sum(array_stiffnesses,1),2));
 end
 
@@ -1260,6 +1260,16 @@ end
 
 M = prod(fixed_array.mcount);
 N = prod(float_array.mcount);
+
+fixed_magnet_loc = repmat(NaN,[M 3]);
+float_magnet_loc = repmat(NaN,[N 3]);
+
+fixed_magnet_magdir = repmat(NaN,[M 2]);
+float_magnet_magdir = repmat(NaN,[N 2]);
+
+@ Size of each magnet.
+
+@< Create arrays ... @>+=
 
 if length(fixed_array.msize) == 3
   fixed_magnet_dim_array = ...
@@ -1277,6 +1287,10 @@ else
   error('Not yet implemented.')
 end
 
+@ Magnetisation strength of each magnet.
+
+@< Create arrays ... @>+=
+
 if length(fixed_array.magn) == 1
   fixed_magnet_magn = repmat(fixed_array.magn,[M 1]);
 else
@@ -1288,6 +1302,10 @@ if length(float_array.magn) == 1
 else
   error('Not yet implemented.')
 end
+
+@ Gaps, if any, between each magnet.
+
+@< Create arrays ... @>+=
 
 if length(fixed_array.mgap) == 3
   fixed_gaps = fixed_array.mgap;
@@ -1305,8 +1323,9 @@ else
   error('Not yet implemented.')
 end
 
-fixed_magnet_loc = repmat(NaN,[M 3]);
-float_magnet_loc = repmat(NaN,[N 3]);
+@ Location of each magnet.
+
+@< Create arrays ... @>+=
 
 ii = 0;
 for xx = 1:fixed_array.mcount(1)
@@ -1314,7 +1333,7 @@ for xx = 1:fixed_array.mcount(1)
     for zz = 1:fixed_array.mcount(3)
       ii = ii + 1;
       fixed_magnet_loc(ii,:) = ...
-        [xx-1; yy-1; zz-1].*(fixed_magnet_dim_array(xx,yy,zz,:)+fixed_gaps);
+        [xx-1; yy-1; zz-1].*(squeeze(fixed_magnet_dim_array(xx,yy,zz,:))+fixed_gaps);
     end
   end
 end
@@ -1325,13 +1344,36 @@ for xx = 1:float_array.mcount(1)
     for zz = 1:float_array.mcount(3)
       ii = ii + 1;
       float_magnet_loc(ii,:) = ...
-        [xx-1; yy-1; zz-1].*(float_magnet_dim_array(xx,yy,zz,:)+float_gaps);
+        [xx-1; yy-1; zz-1].*(squeeze(float_magnet_dim_array(xx,yy,zz,:))+float_gaps);
+    end
+  end
+end
+
+@ Magnetisation direction of each magnet.
+
+@< Create arrays ... @>+=
+
+ii = 0;
+for xx = 1:fixed_array.mcount(1)
+  for yy = 1:fixed_array.mcount(2)
+    for zz = 1:fixed_array.mcount(3)
+      ii = ii + 1;
+      fixed_magnet_magdir(ii,:) = fixed_array.magdir_fn(xx,yy,zz);
     end
   end
 end
 
 
-% TODO: fixed_magnet_magdir
+ii = 0;
+for xx = 1:float_array.mcount(1)
+  for yy = 1:float_array.mcount(2)
+    for zz = 1:float_array.mcount(3)
+      ii = ii + 1;
+      float_magnet_magdir(ii,:) = float_array.magdir_fn(xx,yy,zz);
+    end
+  end
+end
+
 
 
 @ When users type \texttt{help multipoleforces} this is what they see.
@@ -1343,6 +1385,33 @@ end
 @% Finish this off later.   
 @%
 
+@*1 Test files for multipole arrays.
+
+@( multiforce_test001a.m @>=
+
+W = 4;
+
+fixed_array = ...
+  struct(...
+	'mcount', [5 1 1], ...
+	'msize', [0.01 0.01 0.01], ...
+	'mgap', 0, ...
+	'magn', 1, ...
+	'magdir_fn', @@(ii,jj,kk) [0 +90+(ii-1)/W*360] ...
+  );
+
+float_array = ...
+  struct(...
+	'mcount', [5 1 1], ...
+	'msize', [0.01 0.01 0.01], ...
+	'mgap', 0, ...
+	'magn', 1, ...
+	'magdir_fn', @@(ii,jj,kk) [0 -90-(ii-1)/W*360] ...
+  );
+
+displ = [0 0 0.04];
+
+multipoleforces(fixed_array, float_array, displ)
 
 
 @  These are \textsc{matlabweb} declarations to improve the formatting
