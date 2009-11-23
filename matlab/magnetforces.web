@@ -436,6 +436,8 @@ end
 @< Finish up @>
 
 @ This is the same calculation with Janssen's equations instead.
+  By default this code never runs, but if you like it can be enabled
+  to prove that the equations are consistent.
 
 @< Test against Janssen results @>=
 
@@ -469,22 +471,22 @@ component_z_ii = ...
 	multiply_x_log_y( S.*T , R-S )...
 ;
 
-if 0
-xx = component_x(:);
-xx_ii = component_x_ii(:);
-assert( all( xx == xx_ii ) )
+if 1
+xx = index_sum.*component_x;
+xx_ii = index_sum.*component_x_ii;
+assert( abs(sum(xx(:)) - sum(xx_ii(:))) < 1e-8 )
 end
 
-if 0
-yy = component_y(:);
-yy_ii = component_y_ii(:);
-assert( all( abs(abs(yy) - abs(yy_ii)) < 1e-4 ) )
+if 1
+yy = index_sum.*component_y;
+yy_ii = index_sum.*component_y_ii;
+assert( abs(sum(yy(:)) - sum(yy_ii(:))) < 1e-8 )
 end
 
-if 0
-zz = component_z(:);
-zz_ii = component_z_ii(:);
-assert( all( abs(abs(zz) - abs(zz_ii)) < 1e-4 ) )
+if 1
+zz = index_sum.*component_z;
+zz_ii = index_sum.*component_z_ii;
+assert( abs(sum(zz(:)) - sum(zz_ii(:))) < 1e-8 )
 end
 
 if 1
