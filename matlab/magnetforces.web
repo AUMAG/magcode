@@ -42,7 +42,7 @@ but may have different side lengths.)
 
 function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
-@< Matlab help text @>
+@< Matlab help text (forces) @>
 
 @< Parse calculation args @>
 @< Initialise main variables @>
@@ -612,8 +612,8 @@ v = offset(2) + size2(2)*(-1).^index_l - size1(2)*(-1).^index_k;
 w = offset(3) + size2(3)*(-1).^index_q - size1(3)*(-1).^index_p;
 r = sqrt(u.^2+v.^2+w.^2);
 
-@ Here are some variables used above that only needs to be computed once (and is slow).
-  The idea here is to vectorise instead of use |for| loops because it allows
+@ Here are some variables used above that only need to be computed once.
+  The idea here is to vectorise instead of using |for| loops because it allows
   more convenient manipulation of the data later on.
 
 @< Initialise main variables @>+=
@@ -670,13 +670,6 @@ Rz_180 = Rz(180);
 Rz_090 = Rz( 90);
 Rz_270 = Rz(-90);
 
-identity_function = @@(inp) inp;
-
-rotate_round_x = @@(vec) Rx_180*vec ;
-rotate_round_y = @@(vec) Ry_180*vec ;
-rotate_round_z = @@(vec) Rz_180*vec ;
-rotate_none = identity_function ;
-
 rotate_z_to_x = @@(vec)  Ry_090*vec ;
 rotate_x_to_z = @@(vec)  Ry_270*vec ;
 
@@ -686,12 +679,13 @@ rotate_y_to_z = @@(vec)  Rx_270*vec ;
 rotate_x_to_y = @@(vec)  Rz_090*vec ;
 rotate_y_to_x = @@(vec)  Rz_270*vec ;
 
-@ The equations contain some odd singularities. Specifically, the equations
+
+@ The equations contain two singularities. Specifically, the equations
   contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
   and $y$ are zero since $\log(0)$ is negative infinity.
 
   This function computes $x \log(y)$, special-casing the singularity to output
-  zero, instead.
+  zero, instead. (This is indeed the value of the limit.)
 
 @< Helper functions @>=
 
@@ -701,7 +695,7 @@ function out = multiply_x_log_y(x,y)
 end
 
 @   Also, we're using |atan| instead of |atan2| (otherwise the wrong results
-	are calculated. I guess I don't totally understand that), which becomes
+	are calculated --- I guess I don't totally understand that), which becomes
 	a problem when trying to compute |atan(0/0)| since |0/0| is |NaN|.
 	
 	This function computes |atan| but takes two arguments.
@@ -714,6 +708,7 @@ function out = atan1(x,y)
   out(ind) = atan(x(ind)./y(ind));
 end
 
+
 @  This function is for easy debugging; in normal use it gobbles its argument
    but will print diagnostics when required.
 
@@ -723,16 +718,15 @@ function debug_disp(str)
   %disp(str)
 end
 
+
 @ When users type \texttt{help magnetforces} this is what they see.
 
-@< Matlab help text @>=
+@< Matlab help text (forces) @>=
 
 @%% MAGNETFORCES  Calculate forces between two cuboid magnets
 @%
 @% Finish this off later.   
 @%
-
-
 
 
 
@@ -1180,6 +1174,27 @@ assert ( ...
 	     'Components should sum due to superposition' ...
 	   )
 
+
+
+
+
+@* Forces between (multipole) magnet arrays.
+
+@ Here we go again.
+
+@( multipoleforces.m @>=
+
+@< Matlab help text (multipole) @>
+
+
+@ When users type \texttt{help multipoleforces} this is what they see.
+
+@< Matlab help text (multipole) @>=
+
+@%% MULTIPOLEFORCES  Calculate forces between two multipole arrays of magnets
+@%
+@% Finish this off later.   
+@%
 
 
 
