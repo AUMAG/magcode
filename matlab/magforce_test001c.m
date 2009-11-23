@@ -1,5 +1,4 @@
- 
- 
+  
 disp('=================') 
 fprintf('TEST 001c: ') 
  
@@ -9,8 +8,7 @@ magnet_float.dim  =   magnet_fixed.dim;
 magnet_fixed.magn  =  1.3; 
 magnet_float.magn  =  1.3; 
  
- 
-f  =  []; 
+ f  =  []; 
  
 for ii  =  [-1 1] 
   for jj  =  [-1 1] 
@@ -35,8 +33,7 @@ uniquedir  =  f(3,:);
 otherdir   =  f([1 2],:); 
  
  
- 
- 
+  
 test1  =  abs(diff(abs(f(1,:))))<1e-10 ; 
 test2  =  abs(diff(abs(f(2,:))))<1e-10 ; 
 test3  =  abs(diff(abs(f(3,:))))<1e-10 ; 
@@ -53,8 +50,7 @@ assert ( all( test1(:) ) && all( test2(:)) ,  ...
  
  
  
- 
-f  =  []; 
+ f  =  []; 
  
 for ii  =  [-1 1] 
   for jj  =  [-1 1] 
@@ -79,8 +75,7 @@ uniquedir  =  f(1,:);
 otherdir   =  f([2 3],:); 
  
  
- 
- 
+  
 test1  =  abs(diff(abs(f(1,:))))<1e-10 ; 
 test2  =  abs(diff(abs(f(2,:))))<1e-10 ; 
 test3  =  abs(diff(abs(f(3,:))))<1e-10 ; 

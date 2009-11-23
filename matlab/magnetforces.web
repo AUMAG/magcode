@@ -14,7 +14,7 @@ work habits, this may be more or less of limiting factor to using `literate
 programming' in this way.
 
 @* Calculating forces between magnets. This is the source of some code to
-calculate the forces and/or stiffnesses and/or torques between two
+calculate the forces and/or stiffnesses between two
 cuboid-shaped magnets with arbitary displacements and magnetisation direction.
 (A cuboid is like a three dimensional rectangle; its faces are all orthogonal
 but may have different side lengths.)
@@ -23,8 +23,8 @@ but may have different side lengths.)
   |magnet_fixed|, |magnet_float|, and |displ|. These will be described in more
   detail below.
 
-  Optional string arguments may be any combination of \verb='force'=, \verb='stiffness'=,
-  \verb='torque'= to indicate which calculations should be output.
+  Optional string arguments may be any combination of \verb='force'=,
+  and/or \verb='stiffness'= to indicate which calculations should be output.
   If no calculation is specified, \verb='force'= is the default.
 
 @( magnetforces.m @>=
@@ -120,7 +120,6 @@ end
 
 calc_force_bool = false;
 calc_stiffness_bool = false;
-calc_torque_bool = false;
 
 if Nvargin == 0
   calc_force_bool = true;
@@ -131,8 +130,6 @@ else
         calc_force_bool = true;
       case 'stiffness'
         calc_stiffness_bool = true;
-      case 'torque'
-        calc_torque_bool = true;
       otherwise
         error(['Unknown calculation option ''',varargin{ii},''''])
     end
@@ -154,8 +151,6 @@ else
         varargout{ii} = forces_out;
       case 'stiffness'
         varargout{ii} = stiffnesses_out;
-      case 'torque'
-        varargout{ii} = torques_out;
     end
   end
 end
@@ -230,10 +225,6 @@ if calc_stiffness_bool
   stiffness_components(7,:) = stiffnesses_calc_z_x( size1,size2,displ,J1,J2 );
 end
 
-if calc_torque_bool
-  debug_disp('z-z torque')
-  torque_components(9,:) = torques_calc_z_z( size1,size2,displ,J1,J2 );
-end
 
 
 
@@ -325,10 +316,6 @@ if calc_stiffness_bool
   stiffnesses_out = sum(stiffness_components);
 end
 
-if calc_torque_bool
-  torques_out = torque_components(9,:);
-end
-
 
 @ You might have noticed that the initialisation of the |force_components|
   (and other) variables has not yet been listed.
@@ -344,10 +331,6 @@ if calc_stiffness_bool
   stiffness_components = repmat(NaN,[9 3]);
 end
 
-if calc_torque_bool
-  torque_components = repmat(NaN,[9 3]);
-end
-
 
 @*1 Functions for calculating forces and stiffnesses. The calculations for
 forces between differently-oriented cuboid magnets are all directly from the
@@ -361,8 +344,6 @@ expressions, but that's the easy part.
 
 @< Parallel magnets stiffness calculation @>
 @< Orthogonal magnets stiffness calculation @>
-
-@< Parallel magnets torque calculation @>
 
 @< Helper functions @>
 
@@ -599,125 +580,6 @@ calc_out = rotate_y_to_x(stiffnesses_xyz);
 
 end
 
-@ Torques are actually just calculated from the corner-components of the
-  forces. This means that when we calculate both the torques and forces at
-  the same time, we should be re-using the intermediate results. I'll do that
-  as soon as I see that there is a performance problem with repeating the
-  calculations.
-
-  The code below is a little more vectorised than makes for easy reading,
-  but should still be fairly straightforward. After each force between each
-  magnet corner is calculated, these are
-  then converted into torques with a vector cross product of their
-  `lever arms', which in this case are the floating magnet half-lengths.
-
-@< Parallel magnets torque calculation @>=
-
-function calc_out = torques_calc_z_z(size1,size2,offset,J1,J2)
-
-J1 = J1(3);
-J2 = J2(3);
-
-if (J1==0 || J2==0) 
-  debug_disp('Zero magnetisation.')
-  calc_out  =  [0; 0; 0]; 
-  return; 
-end 
-
-torque_xyz = zeros(3,1);
-
-for ii = [0, 1]
-for jj = [0, 1]
-for kk = [0, 1]
-for ll = [0, 1]
-for pp = [0, 1]
-for qq = [0, 1]
-
-lx = size2(1)*(-1)^jj;
-ly = size2(2)*(-1)^ll;
-lz = size2(3)*(-1)^qq;
-
-u = offset(1) + lx - size1(1)*(-1)^ii;
-v = offset(2) + ly - size1(2)*(-1)^kk;
-w = offset(3) + lz - size1(3)*(-1)^pp;
-r = sqrt(u^2+v^2+w^2);
-
-fx = 0.5*(v^2-w^2)*log(r-u) + u*v*log(r-v) + v*w*atan(u*v/(r*w)) + 0.5*r*u;
-fy = 0.5*(u^2-w^2)*log(r-v) + u*v*log(r-u) + u*w*atan(u*v/(r*w)) + 0.5*r*v;
-fz =         - u*w*log(r-u) - v*w*log(r-v) + u*v*atan(u*v/(r*w)) - r*w;
-
-torque_single = cross([lx;ly;lz],[fx;fy;fz]);
-
-torque_x = ...
-  1/2*(-lz*(u^2-w^2)+2*ly*v*w)*log(r-v)...
-  -u*(lz*v+ly*w)*log(r-u)...
-  +u*(-lz*w+ly*v)*atan1(u*v,r*w)...
-  +r/2*(-lz*v-2*ly*w)...
-;
-
-torque_x2 = ...
-  ly*fz-fy*lz...
-  +ly*2*v*w*log(r-v)... WRONG (simplified)
-;
-
-torque_x3 = ly*fz-lz*fy;
-
-torque_y = ...
-  +1/2*(lz*(v^2-w^2)+2*lx*u*w)*log(r-u)...
-  +v*(lz*u+lx*w)*log(r-v)...
-  +v*(lz*w-lx*u)*atan1(u*v,w*r)...
-  +r/2*(lz*u+2*lx*w)...
-;
-
-torque_y2 = fx*lz-fz*lx; % CORRECT!
-torque_y3 = fx*lz-fz*lx;
-
-torque_z = ...
-  +1/2*(-ly*(v^2-w^2)+2*lx*u*v)*log(r-u)...
-  -1/2*(lx*(u^2-w^2) + lx*(u^2+w^2))*log(r-v)...
-  +(-ly*v*w+(-1)^jj*u*w)*atan1(u*v,w*r)...
-  -1/2*(ly*u+lx*v)*r...
-;
-
-torque_z2 = ...
-  -1/2*ly*(v^2-w^2)*log(r-u)...
-  -ly*v*w*atan1(u*v,w*r)...
-  -1/2*lx*(u^2+w^2)*log(r-v)... SHOULD BE u*v*log(r-v)
-  -1/2*ly*u*r...
-  -1/2*lx*(u^2-w^2)*log(r-v)...
-  +lx*u*v*log(r-u)...
-  +((-1)^jj*u*w)*atan1(u*v,w*r)...
-  -1/2*lx*v*r...
-;
-
-torque_z3 = -fx*ly+fy*lx;
-
-assert( chop(torque_x,5) == chop(torque_x2,5) );
-assert( chop(torque_y,5) == chop(torque_y2,5) );
-assert( chop(torque_z,5) == chop(torque_z2,5) );
-
-assert( chop(torque_single(1),5) == chop(torque_x3,5) );
-assert( chop(torque_single(2),5) == chop(torque_y3,5) );
-assert( chop(torque_single(3),5) == chop(torque_z3,5) );
-
-torque_single = [torque_x; torque_y; torque_z];
-
-torque_xyz = torque_xyz + torque_single * (-1)^(ii+jj+kk+ll+pp+qq);
-
-end
-end
-end
-end
-end
-end
-
-calc_out = J1*J2*magconst*torque_xyz;
-
-debug_disp(calc_out')
-
-end
-
-
 
 @ Some shared setup code. First |return| early if either of the magnetisations
   are zero --- that's the trivial solution. Assume that the magnetisation
@@ -730,7 +592,7 @@ if (J1==0 || J2==0)
   debug_disp('Zero magnetisation.')
   calc_out  =  [0; 0; 0]; 
   return; 
-end 
+end
 
 u = offset(1) + size2(1)*(-1).^index_j - size1(1)*(-1).^index_i;
 v = offset(2) + size2(2)*(-1).^index_l - size1(2)*(-1).^index_k;
@@ -739,7 +601,7 @@ r = sqrt(u.^2+v.^2+w.^2);
 
 @ Here are some variables used above that only needs to be computed once (and is slow).
   The idea here is to vectorise instead of use |for| loops because it allows
-  more convenient manipulation of the data later on (mainly for the torques).
+  more convenient manipulation of the data later on.
 
 @< Initialise main variables @>+=
 
@@ -1301,17 +1163,9 @@ f2 = (fc1+fc2+fc3)/sqrt(3);
 
 @< Assert superposition @>=
 assert ( ...
-	     isequal ( chop( f1 , 5 ) , chop ( f2 , 5 ) ) , ...
+	     isequal ( chop( f1 , 4 ) , chop ( f2 , 4 ) ) , ...
 	     'Components should sum due to superposition' ...
 	   )
-
-
-@*2 Torques testing.
-
-@ Just to see that things are working, for now!
-
-@( magforce_test001e.m @>=
-
 
 
 

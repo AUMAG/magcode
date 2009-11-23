@@ -1,5 +1,4 @@
- 
- 
+  
 disp('=================') 
 fprintf('TEST 001b: ') 
  
@@ -9,8 +8,7 @@ magnet_float.dim  =   magnet_fixed.dim;
 magnet_fixed.magn  =  1.3; 
 magnet_float.magn  =  1.3; 
  
- 
- 
+  
 fzyz  =  []; 
  
 for ii  =  [1, -1] 
@@ -30,8 +28,7 @@ dirforces  =  chop( fzyz(2,:), 8 );
 otherforces  =  fzyz([1 3],:); 
  
  
- 
- 
+  
 assert (  ... 
       all( abs( otherforces(:) ) < 1e-11 ) ,  ... 
       'Orthogonal forces should be zero'  ... 
@@ -52,8 +49,7 @@ assert (  ...
  
  
  
- 
- 
+  
 fzxz  =  []; 
  
 for ii  =  [1, -1] 
@@ -73,8 +69,7 @@ dirforces  =  chop( fzxz(3,:), 8 );
 otherforces  =  fzxz([1 2],:); 
  
  
- 
- 
+  
 assert (  ... 
       all( abs( otherforces(:) ) < 1e-11 ) ,  ... 
       'Orthogonal forces should be zero'  ... 
@@ -95,8 +90,7 @@ assert (  ...
  
  
  
- 
- 
+  
 fzxx  =  []; 
  
 for ii  =  [1, -1] 
@@ -118,8 +112,7 @@ otherforces  =  fzxx([2 3],:);
  
  
  
- 
- 
+  
 assert (  ... 
       all( abs( otherforces(:) ) < 1e-11 ) ,  ... 
       'Orthogonal forces should be zero'  ... 
@@ -140,8 +133,7 @@ assert (  ...
  
  
  
- 
- 
+  
 fzyy  =  []; 
  
 for ii  =  [1, -1] 
@@ -161,8 +153,7 @@ dirforces  =  chop( fzyy(3,:), 8 );
 otherforces  =  fzyy([1 2],:); 
  
  
- 
- 
+  
 assert (  ... 
       all( abs( otherforces(:) ) < 1e-11 ) ,  ... 
       'Orthogonal forces should be zero'  ... 
