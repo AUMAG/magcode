@@ -37,132 +37,9 @@ end
  
  
   
-if ~isfield(fixed_array,'type') 
-  fixed_array.type  =  'generic'; 
-end 
+fixed_array  =  complete_array_from_input(fixed_array); 
+float_array  =  complete_array_from_input(float_array); 
  
-switch fixed_array.type 
- 
-end 
- 
-fixed_array.total  =  prod(fixed_array.mcount); 
-fixed_array.loc  =  repmat(NaN,[fixed_array.total 3]); 
-fixed_array.magdir  =  repmat(NaN,[fixed_array.total 2]); 
- 
-float_array.total  =  prod(float_array.mcount); 
-float_array.loc  =  repmat(NaN,[float_array.total 3]); 
-float_array.magdir  =  repmat(NaN,[float_array.total 2]); 
- 
- 
-  
-if length(fixed_array.msize) == 3 
-  fixed_array.dim_array  =   ... 
-      repmat(reshape(fixed_array.msize,[1 1 1 3]), fixed_array.mcount); 
-  fixed_array.dim  =  reshape(fixed_array.dim_array, [fixed_array.total 3]); 
-else 
-  error('Not yet implemented.') 
-end 
- 
-if length(float_array.msize) == 3 
-  float_array.dim_array  =   ... 
-      repmat(reshape(float_array.msize,[1 1 1 3]), float_array.mcount); 
-  float_array.dim  =  reshape(float_array.dim_array, [float_array.total 3]); 
-else 
-  error('Not yet implemented.') 
-end 
- 
- 
-  
-if length(fixed_array.magn) == 1 
-  fixed_array.magn  =  repmat(fixed_array.magn,[fixed_array.total 1]); 
-else 
-  error('Not yet implemented.') 
-end 
- 
-if length(float_array.magn) == 1 
-  float_array.magn  =  repmat(float_array.magn,[float_array.total 1]); 
-else 
-  error('Not yet implemented.') 
-end 
- 
-  
-if length(fixed_array.mgap) == 3 
-  fixed_gaps  =  fixed_array.mgap; 
-elseif length(fixed_array.mgap) == 1 
-  fixed_gaps  =  repmat(fixed_array.mgap, [3 1]); 
-else 
-  error('Not yet implemented.') 
-end 
- 
-if length(float_array.mgap) == 3 
-  float_gaps  =  float_array.mgap; 
-elseif length(float_array.mgap) == 1 
-  float_gaps  =  repmat(float_array.mgap, [3 1]); 
-else 
-  error('Not yet implemented.') 
-end 
- 
- 
-  
-ii  =  0; 
-for xx  =  1:fixed_array.mcount(1) 
-  for yy  =  1:fixed_array.mcount(2) 
-    for zz  =  1:fixed_array.mcount(3) 
-      ii  =  ii + 1; 
-      fixed_array.magdir(ii,:)  =  fixed_array.magdir_fn(xx,yy,zz); 
-    end 
-  end 
-end 
- 
-debug_disp('Fixed magnetisation directions') 
-debug_disp(mod(fixed_array.magdir,360)) 
- 
-ii  =  0; 
-for xx  =  1:float_array.mcount(1) 
-  for yy  =  1:float_array.mcount(2) 
-    for zz  =  1:float_array.mcount(3) 
-      ii  =  ii + 1; 
-      float_array.magdir(ii,:)  =  float_array.magdir_fn(xx,yy,zz); 
-    end 
-  end 
-end 
- 
-debug_disp('Float magnetisation directions') 
-debug_disp(mod(float_array.magdir,360)) 
- 
- 
-  
-ii  =  0; 
-for xx  =  1:fixed_array.mcount(1) 
-  for yy  =  1:fixed_array.mcount(2) 
-    for zz  =  1:fixed_array.mcount(3) 
-      ii  =  ii + 1; 
-      fixed_array.loc(ii,:)  =   ... 
-        [xx-1; yy-1; zz-1].*(squeeze(fixed_array.dim_array(xx,yy,zz,:))+fixed_gaps); 
-    end 
-  end 
-end 
- 
-debug_disp('Fixed magnet locations:') 
-debug_disp(fixed_array.loc) 
- 
-ii  =  0; 
-for xx  =  1:float_array.mcount(1) 
-  for yy  =  1:float_array.mcount(2) 
-    for zz  =  1:float_array.mcount(3) 
-      ii  =  ii + 1; 
-      float_array.loc(ii,:)  =   ... 
-        [xx-1; yy-1; zz-1].*(squeeze(float_array.dim_array(xx,yy,zz,:))+float_gaps); 
-    end 
-  end 
-end 
- 
-debug_disp('Float magnet locations:') 
-debug_disp(float_array.loc) 
- 
- 
- 
-  
 if calc_force_bool 
   array_forces  =  repmat(NaN,[fixed_array.total float_array.total 3]); 
 end 
@@ -170,6 +47,7 @@ end
 if calc_stiffness_bool 
   array_stiffnesses  =  repmat(NaN,[fixed_array.total float_array.total 3]); 
 end 
+ 
  
 for mm  =  1:fixed_array.total 
  
@@ -229,9 +107,94 @@ end
  
  
  
+  
+  
+function array_out  =  complete_array_from_input(array) 
+ 
+if ~isfield(array,'type') 
+  array.type  =  'generic'; 
+end 
+ 
+array.total  =  prod(array.mcount); 
+array.loc  =  repmat(NaN,[array.total 3]); 
+array.magdir  =  repmat(NaN,[array.total 2]); 
+ 
+  
+if length(array.msize) == 3 
+  array.dim_array  =   ... 
+      repmat(reshape(array.msize,[1 1 1 3]), array.mcount); 
+  array.dim  =  reshape(array.dim_array, [array.total 3]); 
+else 
+  error('Not yet implemented.') 
+end 
+ 
+ 
+ 
+  
+if length(array.magn) == 1 
+  array.magn  =  repmat(array.magn,[array.total 1]); 
+else 
+  error('Not yet implemented.') 
+end 
+ 
+ 
+ 
+  
+if length(array.mgap) == 3 
+  array.gaps  =  array.mgap; 
+elseif length(array.mgap) == 1 
+  array.gaps  =  repmat(array.mgap, [3 1]); 
+else 
+  error('Not yet implemented.') 
+end 
+ 
+ 
+ 
+  
+ii  =  0; 
+for xx  =  1:array.mcount(1) 
+  for yy  =  1:array.mcount(2) 
+    for zz  =  1:array.mcount(3) 
+      ii  =  ii + 1; 
+      array.magdir(ii,:)  =  array.magdir_fn(xx,yy,zz); 
+    end 
+  end 
+end 
+ 
+debug_disp('Magnetisation directions') 
+debug_disp(mod(array.magdir,360)) 
+ 
+ 
+ 
+  
+ii  =  0; 
+for xx  =  1:array.mcount(1) 
+  for yy  =  1:array.mcount(2) 
+    for zz  =  1:array.mcount(3) 
+      ii  =  ii + 1; 
+      array.loc(ii,:)  =   ... 
+        [xx-1; yy-1; zz-1].*(squeeze(array.dim_array(xx,yy,zz,:))+array.gaps); 
+    end 
+  end 
+end 
+ 
+debug_disp('Magnet locations:') 
+debug_disp(array.loc) 
+ 
+ 
+ 
+ 
+array_out  =  array; 
+ 
+end 
+ 
+ 
+ 
 function debug_disp(str) 
   %disp(str) 
 end 
+ 
+ 
  
 end 
  
