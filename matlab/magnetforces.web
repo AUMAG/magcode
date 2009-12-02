@@ -1242,22 +1242,23 @@ function [varargout] = multipoleforces(fixed_array, float_array, displ, varargin
 @< Calculate array forces @>
 @< Combine results ... @>
 
+end
+
 @< Multipole sub-functions @>
 
-end
 
 @ To calculate the forces between the magnet arrays, let's assume that we have
   two large arrays enumerating the positions and magnetisations of each
   individual magnet in each magnet array.
 
   Required fields for each magnet array:
-\begin{itemize}
-\item[\texttt{total}] $M$ total number of magnets in the array
-\item[\texttt{dim}]   ($M \times 3$) size of each magnet
-\item[\texttt{magn}]   (length M) magnetisation magnitude of each magnet
+\begin{itemize}[nolistsep]
+\item[\texttt{total}]   $M$ total number of magnets in the array
+\item[\texttt{dim}]    ($M \times 3$) size of each magnet
+\item[\texttt{loc}]    ($M \times 3$) location of each magnet
+\item[\texttt{magn}]   ($M \times 1$) magnetisation magnitude of each magnet
 \item[\texttt{magdir}] ($M \times 2$) magnetisation direction of each magnet
                       in spherical coordinates
-\item[\texttt{loc}]   ($M \times 3$) location of each magnet
 \end{itemize}
 
 @< Calculate array forces @>=
@@ -1319,7 +1320,49 @@ end
 
 @ We separate the force calculation from transforming the inputs into an
   intermediate form used for that purpose. This will hopefully allow us a
-  little more flexibility later on.
+  little more flexibility.
+
+As input variables for a linear multipole array,
+we want to use some combination of the following:
+\begin{itemize}
+\item [$w$] wavelength of magnetisation
+\item [$l$] length of the array
+\item [$N$] number of wavelengths
+\item [$d$] magnet length
+\item [$T$] total number of magnets
+\item [$M$] number of magnets per wavelength
+\item [$\phi$] rotation between successive magnets
+\end{itemize}
+And the following are linearly independent:
+\begin{itemize}
+\item [$\phi_0$] magnetisation direction of the first magnet
+\item [$g$] additional gap between adjacent magnet faces (optional)
+\item [$e$] array height (or magnet height)
+\item [$f$] array depth (or magnet depth)
+\end{itemize}
+These are related via the following equations of constraint (except $\phi_0$):
+\begin{align}
+w&=Md & l&=Td & N&=T/M & M &= 360\text{\textdegree}/\phi
+\end{align}
+Taking logarithms and writing in matrix form yields
+\begin{equation}
+\begin{bmatrix}
+1 & 0 & 0 & -1 &  0 & -1 & 0 \\
+0 & 1 & 0 & -1 & -1 &  0 & 0 \\
+0 & 0 & 1 &  0 & -1 &  1 & 0 \\
+0 & 0 & 0 &  0 &  0 &  1 & 1 \\
+\end{bmatrix}
+\log
+\begin{bmatrix}
+w\\l\\N\\d\\T\\M\\\phi
+\end{bmatrix}
+=
+\begin{bmatrix}
+0\\0\\0\\\log(360\text{\textdegree})
+\end{bmatrix}
+\end{equation}
+We can use this matrix to compute whichever variables we need given enough
+inputs.
 
 @< Create arrays from input variables @>=
 
@@ -1329,9 +1372,57 @@ if ~isfield(array,'type')
   array.type = 'generic';
 end
 
+switch array.type
+  case 'generic'
+
+  case 'linear-x'
+    linear_index = 1;
+  otherwise
+    error(['Unknown array type ''',array.type,'''.'])
+end
+
+if strncmp(array.type,'linear',6)
+
+  var_names = {'wavelength','length','Nwaves','mlength',...
+               'Nmag','Nmag_per_wave','magdir_rotate'};
+  
+  variables = repmat(NaN,[7 1]);
+  
+  for ii = 1:length(var_names);
+    disp(var_names(ii));
+    if isfield(array,var_names(ii))
+      variables(ii) = array.(var_names{ii});
+    end
+  end
+  
+  var_matrix = ...
+      [1,  0,  0, -1,  0, -1,  0;
+       0,  1,  0, -1, -1,  0,  0;
+       0,  0,  1,  0, -1,  1,  0;
+       0,  0,  0,  0,  0,  1,  1];
+  
+  var_results = [0 0 0 log(360)]';
+  variables = log(variables);
+  
+  idx = ~isnan(variables);
+  var_known = var_matrix(:,idx)*variables(idx);
+  var_calc = var_matrix(:,~idx)\(var_results-var_known);
+  variables(~idx) = var_calc;
+  variables = exp(variables);
+    
+  for ii = 1:length(var_names);
+    array.(var_names{ii}) = variables(ii);
+  end
+
+  array.Nmag = round(array.Nmag);
+  array.Nmag_per_wave = round(array.Nmag_per_wave);
+
+  array.mcount = ones(1,3);
+  array.mcount(linear_index) = array.Nmag;
+
+end
+
 array.total = prod(array.mcount);
-array.loc = repmat(NaN,[array.total 3]);
-array.magdir = repmat(NaN,[array.total 2]);
 
 @< Array sizes @>
 @< Array magnetisation strengths @>
@@ -1346,6 +1437,10 @@ end
 @ Sizes.
 
 @< Array sizes @>=
+
+if ~isfield(array,'msize')
+  array.msize = [array.mlength array.width array.height];
+end
 
 if length(array.msize) == 3
   array.dim_array = ...
@@ -1371,18 +1466,41 @@ end
 
 @< Array gaps @>=
 
-if length(array.mgap) == 3
-  array.gaps = array.mgap;
-elseif length(array.mgap) == 1
-  array.gaps = repmat(array.mgap, [3 1]);
-else
-  error('Not yet implemented.')
+if ~isfield(array,'mgap')
+  array.mgap = [0; 0; 0];
+end
+
+if length(array.mgap) == 1
+  array.mgap = repmat(array.mgap, [3 1]);
 end
 
 
 @ Magnetisation direction of each magnet.
 
 @< Array magnetisation directions @>=
+
+array.magdir = repmat(NaN,[array.total 2]);
+
+if ~isfield(array,'magdir_rotate_sign')
+  array.magdir_rotate_sign = 1;
+else
+  switch array.face
+    case 'up'
+      array.magdir_rotate_sign = 1;
+    case 'down'
+      array.magdir_rotate_sign = -1;
+    otherwise
+      error('Not sure what this means.')
+  end
+end
+
+if ~isfield(array,'magdir_fn')
+  switch array.type
+    case 'linear-x'
+      array.magdir_fn = @@(ii,jj,kk)  ...
+        [0 array.magdir_first+array.magdir_rotate_sign*array.magdir_rotate*(ii-1)];
+  end
+end
 
 ii = 0;
 for xx = 1:array.mcount(1)
@@ -1402,13 +1520,16 @@ debug_disp(mod(array.magdir,360))
 
 @< Array locs @>=
 
+array.loc = repmat(NaN,[array.total 3]);
+
 ii = 0;
 for xx = 1:array.mcount(1)
   for yy = 1:array.mcount(2)
     for zz = 1:array.mcount(3)
       ii = ii + 1;
       array.loc(ii,:) = ...
-        [xx-1; yy-1; zz-1].*(squeeze(array.dim_array(xx,yy,zz,:))+array.gaps);
+        [xx-1; yy-1; zz-1].*...
+        (squeeze(array.dim_array(xx,yy,zz,:)) + array.mgap);
     end
   end
 end
@@ -1424,7 +1545,7 @@ debug_disp(array.loc)
 @< Create arrays from input variables @>
 
 function debug_disp(str)
-  %disp(str)
+  disp(str)
 end
 
 @ When users type \texttt{help multipoleforces} this is what they see.
@@ -1440,32 +1561,28 @@ end
 
 @( multiforce_test001a.m @>=
 
-% magnets per wavelength:
-W = 2;
-
 fixed_array = ...
   struct(...
-	'mcount', [8 1 1], ...
-	'msize', [0.01 0.01 0.01], ...
-	'mgap', 0, ...
+	'type','linear-x', ...
+	'face','up', ...
+	'length', 0.01, ...
+	'width',  0.01, ...
+	'height', 0.01, ...
+	'Nmag_per_wave', 4, ...
+	'Nwaves', 1, ...
 	'magn', 1, ...
-	'magdir_fn', @@(ii,jj,kk) [0 +90+(ii-1)/W*360] ...
+	'magdir_first', 90 ...
   );
 
-float_array = ...
-  struct(...
-	'mcount', [8 1 1], ...
-	'msize', [0.01 0.01 0.01], ...
-	'mgap', 0, ...
-	'magn', 1, ...
-	'magdir_fn', @@(ii,jj,kk) [0 -90-(ii-1)/W*360] ...
-  );
+float_array = fixed_array;
+float_array.face = 'down';
+float_array.magdir_first = -90;
 
 displ = [0 0 0.02];
 
-multipoleforces(fixed_array, float_array, displ)
+f_total = multipoleforces(fixed_array, float_array, displ)
 
-@ Debug printing.
+
 
 
 
