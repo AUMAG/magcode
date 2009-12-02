@@ -1290,20 +1290,23 @@ for mm = 1:fixed_array.total
       'magdir', float_array.magdir(nn,:) ...
     );
 
-    displ = displ - fixed_array.loc(mm,:) + float_array.loc(nn,:);
+    mag_displ = displ - fixed_array.loc(mm,:) + float_array.loc(nn,:);
 
     if calc_force_bool
       array_forces(mm,nn,:) = ...
-          magnetforces(fixed_magnet, float_magnet, displ,'force');
+          magnetforces(fixed_magnet, float_magnet, mag_displ,'force');
     end
 
     if calc_stiffness_bool
       array_stiffnesses(mm,nn,:) = ...
-          magnetforces(fixed_magnet, float_magnet, displ,'stiffness');
+          magnetforces(fixed_magnet, float_magnet, mag_displ,'stiffness');
     end
 
   end
 end
+
+debug_disp('Forces:')
+debug_disp(reshape(array_forces,[],3))
 
 if calc_force_bool
   forces_out = squeeze(sum(sum(array_forces,1),2));
