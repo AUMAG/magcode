@@ -65,20 +65,23 @@ for mm  =  1:fixed_array.total
       'magdir', float_array.magdir(nn,:)  ... 
     ); 
  
-    displ  =  displ - fixed_array.loc(mm,:) + float_array.loc(nn,:); 
+    mag_displ  =  displ - fixed_array.loc(mm,:) + float_array.loc(nn,:); 
  
     if calc_force_bool 
       array_forces(mm,nn,:)  =   ... 
-          magnetforces(fixed_magnet, float_magnet, displ,'force'); 
+          magnetforces(fixed_magnet, float_magnet, mag_displ,'force'); 
     end 
  
     if calc_stiffness_bool 
       array_stiffnesses(mm,nn,:)  =   ... 
-          magnetforces(fixed_magnet, float_magnet, displ,'stiffness'); 
+          magnetforces(fixed_magnet, float_magnet, mag_displ,'stiffness'); 
     end 
  
   end 
 end 
+ 
+debug_disp('Forces:') 
+debug_disp(reshape(array_forces,[],3)) 
  
 if calc_force_bool 
   forces_out  =  squeeze(sum(sum(array_forces,1),2)); 
@@ -107,6 +110,8 @@ end
  
  
  
+end 
+ 
   
   
 function array_out  =  complete_array_from_input(array) 
@@ -115,11 +120,69 @@ if ~isfield(array,'type')
   array.type  =  'generic'; 
 end 
  
+switch array.type 
+  case 'generic' 
+ 
+  case 'linear-x' 
+    linear_index  =  1; 
+  otherwise 
+    error(['Unknown array type ''',array.type,'''.']) 
+end 
+ 
+array.mcount_extra  =  0; 
+if isfield(array,'Nwaves') 
+  array.mcount_extra  =  1; 
+end 
+ 
+if strncmp(array.type,'linear',6) 
+ 
+  var_names  =  {'wavelength','length','Nwaves','mlength', ... 
+               'Nmag','Nmag_per_wave','magdir_rotate'}; 
+ 
+  variables  =  repmat(NaN,[7 1]); 
+ 
+  for ii  =  1:length(var_names); 
+    if isfield(array,var_names(ii)) 
+      variables(ii)  =  array.(var_names{ii}); 
+    end 
+  end 
+ 
+  var_matrix  =   ... 
+      [1,  0,  0, -1,  0, -1,  0; 
+       0,  1,  0, -1, -1,  0,  0; 
+       0,  0,  1,  0, -1,  1,  0; 
+       0,  0,  0,  0,  0,  1,  1]; 
+ 
+  var_results  =  [0 0 0 log(360)]'; 
+  variables  =  log(variables); 
+ 
+  idx  =  ~isnan(variables); 
+  var_known  =  var_matrix(:,idx) * variables(idx); 
+  var_calc  =  var_matrix(:,~idx)\(var_results-var_known); 
+  variables(~idx)  =  var_calc; 
+  variables  =  exp(variables); 
+ 
+  for ii  =  1:length(var_names); 
+    array.(var_names{ii})  =  variables(ii); 
+  end 
+ 
+  array.Nmag  =  round(array.Nmag) + array.mcount_extra; 
+  array.Nmag_per_wave  =  round(array.Nmag_per_wave); 
+ 
+  array.mlength  =  array.mlength * (array.Nmag-array.mcount_extra)/array.Nmag; 
+ 
+  array.mcount  =  ones(1,3); 
+  array.mcount(linear_index)  =  array.Nmag; 
+ 
+end 
+ 
 array.total  =  prod(array.mcount); 
-array.loc  =  repmat(NaN,[array.total 3]); 
-array.magdir  =  repmat(NaN,[array.total 2]); 
  
   
+if ~isfield(array,'msize') 
+  array.msize  =  [array.mlength array.width array.height]; 
+end 
+ 
 if length(array.msize) == 3 
   array.dim_array  =   ... 
       repmat(reshape(array.msize,[1 1 1 3]), array.mcount); 
@@ -140,17 +203,40 @@ end
  
  
   
-if length(array.mgap) == 3 
-  array.gaps  =  array.mgap; 
-elseif length(array.mgap) == 1 
-  array.gaps  =  repmat(array.mgap, [3 1]); 
-else 
-  error('Not yet implemented.') 
+if ~isfield(array,'mgap') 
+  array.mgap  =  [0; 0; 0]; 
+end 
+ 
+if length(array.mgap) == 1 
+  array.mgap  =  repmat(array.mgap, [3 1]); 
 end 
  
  
  
   
+array.magdir  =  repmat(NaN,[array.total 2]); 
+ 
+if ~isfield(array,'magdir_rotate_sign') 
+  array.magdir_rotate_sign  =  1; 
+else 
+  switch array.face 
+    case 'up' 
+      array.magdir_rotate_sign  =  1; 
+    case 'down' 
+      array.magdir_rotate_sign  =  -1; 
+    otherwise 
+      error('Not sure what this means.') 
+  end 
+end 
+ 
+if ~isfield(array,'magdir_fn') 
+  switch array.type 
+    case 'linear-x' 
+      array.magdir_fn  =  @(ii,jj,kk)   ... 
+        [0 array.magdir_first+array.magdir_rotate_sign * array.magdir_rotate * (ii-1)]; 
+  end 
+end 
+ 
 ii  =  0; 
 for xx  =  1:array.mcount(1) 
   for yy  =  1:array.mcount(2) 
@@ -167,13 +253,16 @@ debug_disp(mod(array.magdir,360))
  
  
   
+array.loc  =  repmat(NaN,[array.total 3]); 
+ 
 ii  =  0; 
 for xx  =  1:array.mcount(1) 
   for yy  =  1:array.mcount(2) 
     for zz  =  1:array.mcount(3) 
       ii  =  ii + 1; 
       array.loc(ii,:)  =   ... 
-        [xx-1; yy-1; zz-1].*(squeeze(array.dim_array(xx,yy,zz,:))+array.gaps); 
+        [xx-1; yy-1; zz-1].* ... 
+        (squeeze(array.dim_array(xx,yy,zz,:)) + array.mgap); 
     end 
   end 
 end 
@@ -191,11 +280,10 @@ end
  
  
 function debug_disp(str) 
-  %disp(str) 
+  disp(str) 
 end 
  
  
  
-end 
  
 
