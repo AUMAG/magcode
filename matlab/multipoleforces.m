@@ -281,7 +281,7 @@ end
  
  
 function debug_disp(str) 
-  disp(str) 
+  %disp(str) 
 end 
  
  

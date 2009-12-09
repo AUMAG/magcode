@@ -65,7 +65,6 @@ end
 magconst  =  1/(4 * pi * (4 * pi * 1e-7)); 
  
 [index_i, index_j, index_k, index_l, index_p, index_q]  =  ndgrid([0 1]); 
-[index2_j, index2_l, index2_q]  =  ndgrid([0 1]); 
  
 index_sum  =  (-1).^(index_i+index_j+index_k+index_l+index_p+index_q); 
  
@@ -73,32 +72,17 @@ index_sum  =  (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
  
  
   
-swap_x_y  =  @(vec) vec([2 1 3]); 
 swap_x_z  =  @(vec) vec([3 2 1]); 
 swap_y_z  =  @(vec) vec([1 3 2]); 
  
-Rx  =  @(theta) [1 0 0; 0 cosd(theta) -sind(theta); 0 sind(theta) cosd(theta)] ; 
-Ry  =  @(theta) [cosd(theta) 0 sind(theta); 0 1 0; -sind(theta) 0 cosd(theta)] ; 
-Rz  =  @(theta) [cosd(theta) -sind(theta) 0; sind(theta) cosd(theta) 0; 0 0 1] ; 
+rotate_z_to_x  =  @(vec)  [0 0  1; 0 1 0; -1 0 0] * vec ; 
+rotate_x_to_z  =  @(vec)  [0 0 -1; 0 1 0;  1 0 0] * vec ; 
  
-Rx_180  =  Rx(180); 
-Rx_090  =  Rx( 90); 
-Rx_270  =  Rx(-90); 
-Ry_180  =  Ry(180); 
-Ry_090  =  Ry( 90); 
-Ry_270  =  Ry(-90); 
-Rz_180  =  Rz(180); 
-Rz_090  =  Rz( 90); 
-Rz_270  =  Rz(-90); 
+rotate_z_to_y  =  @(vec)  [1 0 0; 0 0 -1; 0  1 0] * vec ; 
+rotate_y_to_z  =  @(vec)  [1 0 0; 0 0  1; 0 -1 0] * vec ; 
  
-rotate_z_to_x  =  @(vec)  Ry_090 * vec ; 
-rotate_x_to_z  =  @(vec)  Ry_270 * vec ; 
- 
-rotate_z_to_y  =  @(vec)  Rx_090 * vec ; 
-rotate_y_to_z  =  @(vec)  Rx_270 * vec ; 
- 
-rotate_x_to_y  =  @(vec)  Rz_090 * vec ; 
-rotate_y_to_x  =  @(vec)  Rz_270 * vec ; 
+rotate_x_to_y  =  @(vec)  [0 -1 0;  1 0 0; 0 0 1] * vec ; 
+rotate_y_to_x  =  @(vec)  [0  1 0; -1 0 0; 0 0 1] * vec ; 
  
  
  
