@@ -1494,17 +1494,18 @@ end
 
 array.magdir = repmat(NaN,[array.total 2]);
 
-if ~isfield(array,'magdir_rotate_sign')
-  array.magdir_rotate_sign = 1;
-else
-  switch array.face
-    case 'up'
+switch array.face
+  case 'up'
+    array.magdir_rotate_sign =  1;
+  case 'down'
+    array.magdir_rotate_sign = -1;
+  otherwise
+    if ~isfield(array,'magdir_rotate_sign')
+      disp('huh?')
       array.magdir_rotate_sign = 1;
-    case 'down'
-      array.magdir_rotate_sign = -1;
-    otherwise
-      error('Not sure what this means.')
-  end
+    else
+      error('huh?')
+    end
 end
 
 if ~isfield(array,'magdir_fn')
@@ -1597,6 +1598,36 @@ f_total = multipoleforces(fixed_array, float_array, displ);
 disp('Total force:')
 disp(f_total')
 
+@ Test against single magnet.
+
+@( multiforce_test001b.m @>=
+
+fixed_array = ...
+  struct(...
+	'type','linear-x', ...
+	'face','up', ...
+	'length', 0.01, ...
+	'width',  0.01, ...
+	'height', 0.01, ...
+	'Nmag_per_wave', 1, ...
+	'Nwaves', 1, ...
+	'magn', 1, ...
+	'magdir_first', 90 ...
+  );
+
+float_array = fixed_array;
+float_array.face = 'down';
+float_array.magdir_first = -90;
+
+displ = [0 0 0.02];
+
+f_total = multipoleforces(fixed_array, float_array, displ);
+
+fixed_mag = struct('dim',[0.01 0.01 0.01],'magn',1,'magdir',[0  90]);
+float_mag = struct('dim',[0.01 0.01 0.01],'magn',1,'magdir',[0 -90]);
+f_mag = magnetforces(fixed_mag,float_mag,displ);
+
+assert( chop(f_total(3),6) == chop(f_mag(3),6));
 
 
 

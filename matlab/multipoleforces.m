@@ -216,17 +216,18 @@ end
   
 array.magdir  =  repmat(NaN,[array.total 2]); 
  
-if ~isfield(array,'magdir_rotate_sign') 
-  array.magdir_rotate_sign  =  1; 
-else 
-  switch array.face 
-    case 'up' 
+switch array.face 
+  case 'up' 
+    array.magdir_rotate_sign  =   1; 
+  case 'down' 
+    array.magdir_rotate_sign  =  -1; 
+  otherwise 
+    if ~isfield(array,'magdir_rotate_sign') 
+      disp('huh?') 
       array.magdir_rotate_sign  =  1; 
-    case 'down' 
-      array.magdir_rotate_sign  =  -1; 
-    otherwise 
-      error('Not sure what this means.') 
-  end 
+    else 
+      error('huh?') 
+    end 
 end 
  
 if ~isfield(array,'magdir_fn') 
