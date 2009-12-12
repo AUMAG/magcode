@@ -684,14 +684,14 @@ end
 swap_x_z = @@(vec) vec([3 2 1]);
 swap_y_z = @@(vec) vec([1 3 2]);
 
-rotate_z_to_x = @@(vec)  [0 0  1; 0 1 0; -1 0 0]*vec ;
-rotate_x_to_z = @@(vec)  [0 0 -1; 0 1 0;  1 0 0]*vec ;
+rotate_z_to_x = @@(vec)  [0 0  1; 0 1 0; -1 0 0]*vec ; % Ry( 90)
+rotate_x_to_z = @@(vec)  [0 0 -1; 0 1 0;  1 0 0]*vec ; % Ry(-90)
 
-rotate_z_to_y = @@(vec)  [1 0 0; 0 0 -1; 0  1 0]*vec ;
-rotate_y_to_z = @@(vec)  [1 0 0; 0 0  1; 0 -1 0]*vec ;
+rotate_y_to_z = @@(vec)  [1 0 0; 0 0 -1; 0  1 0]*vec ; % Rx( 90)
+rotate_z_to_y = @@(vec)  [1 0 0; 0 0  1; 0 -1 0]*vec ; % Rx(-90)
 
-rotate_x_to_y = @@(vec)  [0 -1 0;  1 0 0; 0 0 1]*vec ;
-rotate_y_to_x = @@(vec)  [0  1 0; -1 0 0; 0 0 1]*vec ;
+rotate_x_to_y = @@(vec)  [0 -1 0;  1 0 0; 0 0 1]*vec ; % Rz( 90)
+rotate_y_to_x = @@(vec)  [0  1 0; -1 0 0; 0 0 1]*vec ; % Rz(-90)
 
 
 @ The equations contain two singularities. Specifically, the equations
