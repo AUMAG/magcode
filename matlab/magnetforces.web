@@ -67,9 +67,7 @@ function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
 @< Parse calculation args @>
 @< Initialise main variables @>
-
 @< Precompute rotation matrices @>
-@< Decompose orthogonal superpositions @>
 @< Calculate everything @>
 
 @< Combine results and exit @>
@@ -100,20 +98,7 @@ $(0,1,0)_{\text{cartesian}} \equiv (\pi/2,0,1)_{\text{spherical}}$\\
 $(0,0,1)_{\text{cartesian}} \equiv (0,\pi/2,1)_{\text{spherical}}$
 \end{quote}
 
-@< Initialise main variables @>=
-
-size1 = reshape(magnet_fixed.dim/2,[3 1]);
-size2 = reshape(magnet_float.dim/2,[3 1]);
-
-J1r = magnet_fixed.magn;
-J2r = magnet_float.magn;
-J1t = magnet_fixed.magdir(1);
-J2t = magnet_float.magdir(1);
-J1p = magnet_fixed.magdir(2);
-J2p = magnet_float.magdir(2);
-
-
-@ Superposition is used to turn an arbitrary magnetisation angle into a set of
+Superposition is used to turn an arbitrary magnetisation angle into a set of
 orthogonal magnetisations.
 
 Each magnet can potentially have three components, which can result in up
@@ -121,19 +106,37 @@ to nine force calculations for a single magnet.
 
 We don't use Matlab's |sph2cart| here, because it doesn't calculate zero
 accurately (because it uses radians and |cos(pi/2)| can only be evaluated
-to machine precision rather than symbolically).
+to machine precision of pi rather than symbolically).
 
-@< Decompose ... @>=
+@< Initialise main variables @>=
 
-displ = reshape(displ,[3 1]); % column vector
+size1 = reshape(magnet_fixed.dim/2,[3 1]);
+size2 = reshape(magnet_float.dim/2,[3 1]);
+displ = reshape(displ,[3 1]);
 
-J1 = [ J1r * cosd(J1p) * cosd(J1t)  ; ...
-       J1r * cosd(J1p) * sind(J1t)  ; ...
-       J1r * sind(J1p) ];
+if length(magnet_fixed.magdir)==2
+  J1r = magnet_fixed.magn;
+  J1t = magnet_fixed.magdir(1);
+  J1p = magnet_fixed.magdir(2);
+  J1  = [ J1r * cosd(J1p) * cosd(J1t)  ; ...
+          J1r * cosd(J1p) * sind(J1t)  ; ...
+          J1r * sind(J1p) ];
+else
+  J1 = magnet_fixed.magn*magnet_fixed.magdir/norm(magnet_fixed.magdir);
+  J1 = reshape(J1,[3 1]);
+end
 
-J2 = [ J2r * cosd(J2p) * cosd(J2t)  ; ...
-       J2r * cosd(J2p) * sind(J2t)  ; ...
-       J2r * sind(J2p) ];
+if length(magnet_float.magdir)==2
+  J2r = magnet_float.magn;
+  J2t = magnet_float.magdir(1);
+  J2p = magnet_float.magdir(2);
+  J2  = [ J2r * cosd(J2p) * cosd(J2t)  ; ...
+          J2r * cosd(J2p) * sind(J2t)  ; ...
+          J2r * sind(J2p) ];
+else
+  J2 = magnet_float.magn*magnet_float.magdir/norm(magnet_float.magdir);
+  J2 = reshape(J2,[3 1]);
+end
 
 
 @*1 Wrangling user input and output.
