@@ -1,43 +1,61 @@
+%% Setup
+%
+% In case you don't have the various bits'n'pieces that I use to create
+% my Matlab graphics (probably likely).
 
-%% Parallel
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  simple_graph = 1;
+else
+  simple_graph = 0;
+end
 
-magnet_fixed.dim = [0.04 0.04 0.04];
-magnet_float.dim =  magnet_fixed.dim;
 
-magnet_fixed.magn = 1.3;
-magnet_float.magn = 1.3;
+%% Parallel magnets example
+%
+% Reproducing the results of Akoun & Yonnet (1984)
+
+magnet_fixed.dim = [0.02 0.012 0.006];
+magnet_float.dim = [0.012 0.02 0.006];
+
+magnet_fixed.magn = 0.38;
+magnet_float.magn = 0.38;
 
 magnet_fixed.magdir = [0  90]; % z
 magnet_float.magdir = [0  90]; % z
 
-offset = [0 0 0.12];
-N = 51;
-displ = linspace(-0.12, 0.12, N);
+offset = [-0.004 -0.004 0.008];
+N = 1001;
+displ = linspace(0, 0.03, N);
+f1_xyz = repmat(NaN, [3 N]);
 
-%%
-
-f_xyz = repmat(NaN, [3 N]);
 for ii = 1:N
-
-  f_xyz(:,ii) = magnetforces(magnet_fixed,magnet_float,offset+[0 displ(ii) 0]);
-
+  f1_xyz(:,ii) = magnetforces(magnet_fixed,magnet_float,offset+[displ(ii) 0 0]);
 end
 
-%%
-willfig('test'); clf; hold on
-plot(displ,f_xyz(1,:),'UserData','x')
-plot(displ,f_xyz(2,:),'UserData','y')
-plot(displ,f_xyz(3,:),'UserData','z')
-colourplot
-labelplot
+willfig('akoun'); clf; hold on
+plot(displ,f1_xyz(1,:),'Tag','x')
+plot(displ,f1_xyz(2,:),'Tag','y')
+plot(displ,f1_xyz(3,:),'Tag','z')
+xlabel('Horizontal $x$ displacement, m')
+ylabel('Forces, N')
+set(gca,'box','on');
+text(0.004,-0.5,'$F_x$')
+text(0.004, 0.8,'$F_y$')
+text(0.004,-1.7,'$F_z$')
 
-
+if ~simple_graph
+  h1 = draworigin([0 0],'h');
+  set(h1,'linestyle','--');
+  colourplot
+  % labelplot
+  matlabfrag('fig/akoun-repro');
+end
 
 %% Orthogonal
 %
-% Replicating Janssen's plot
-
-! ~/bin/mtangle magnetforces
+% Replicating the results of Janssen et al. (2009)
 
 magnet_fixed.dim = [0.01  0.026 0.014];
 magnet_float.dim = [0.014 0.026 0.01 ];
@@ -49,89 +67,29 @@ magnet_fixed.magdir = [0  90]; % z
 magnet_float.magdir = [0  0];  % x
 
 offset = [0 -0.008 0.015];
-N = 201;
+N = 1001;
 displ = linspace(-0.05, 0.05, N);
 f_xyz = repmat(NaN, [3 N]);
 
 for ii = 1:N
-
   f_xyz(:,ii) = magnetforces(magnet_fixed,magnet_float,offset+[displ(ii) 0 0]);
-
 end
 
-willfig('janssen test2'); clf; hold on
+willfig('janssen'); clf; hold on
 plot(displ,f_xyz(1,:),'Tag','x')
 plot(displ,f_xyz(2,:),'Tag','y')
 plot(displ,f_xyz(3,:),'Tag','z')
-colourplot
-labelplot
+set(gca,'box','on');
+xlabel('Horizontal $x$ displacement, m')
+ylabel('Forces, N')
+text(-0.03,-10,'$F_x$')
+text(0.01,   10,'$F_y$')
+text(-0.025, 10,'$F_z$')
 
-%% Stiffnesses of the above
-
-! ~/bin/mtangle magnetforces
-
-magnet_fixed.dim = [0.01  0.026 0.014];
-magnet_float.dim = [0.014 0.026 0.01 ];
-
-magnet_fixed.magn = 1.23;
-magnet_float.magn = 1.23;
-
-magnet_fixed.magdir = [0  90]; % z
-magnet_float.magdir = [0   0];  % x
-
-offset = [0.02 -0.008 0.015];
-N = 101;
-displ = linspace(-0.05, 0.05, N);
-dx = displ(2)-displ(1);
-f_xyz = repmat(NaN, [3 N]);
-k_xyz = repmat(NaN, [3 N]);
-
-for ii = 1:N
-
-  [f_xyz(:,ii) k_xyz(:,ii)] = magnetforces(magnet_fixed,magnet_float,offset+[displ(ii) 0 0],'force','stiffness');
-
+if ~simple_graph
+  [h1 h2] = draworigin;
+  set([h1 h2],'linestyle','--');
+  colourplot
+  % labelplot
+  matlabfrag('fig/janssen-repro');
 end
-
-fkx = -gradient(f_xyz(1,:),dx);
-
-willfig('test2'); clf; hold on
-subplot(3,2,1);
-plot(displ,f_xyz(1,:))
-title('Force')
-ylabel('x')
-subplot(3,2,2);
-plot(displ,k_xyz(1,:))
-plot(displ,fkx,'.-');
-title('Stiffness')
-
-
-for ii = 1:N
-
-  [f_xyz(:,ii) k_xyz(:,ii)] = magnetforces(magnet_fixed,magnet_float,offset+[0 displ(ii) 0],'force','stiffness');
-
-end
-
-fky = -gradient(f_xyz(2,:),dx);
-
-subplot(3,2,3);
-plot(displ,f_xyz(2,:))
-ylabel('y')
-subplot(3,2,4);
-plot(displ,k_xyz(2,:))
-plot(displ,fky,'.-');
-
-
-for ii = 1:N
-
-  [f_xyz(:,ii) k_xyz(:,ii)] = magnetforces(magnet_fixed,magnet_float,offset+[0 0 displ(ii)],'force','stiffness');
-
-end
-
-fkz = -gradient(f_xyz(3,:),dx);
-
-subplot(3,2,5);
-plot(displ,f_xyz(1,:))
-ylabel('z')
-subplot(3,2,6);
-plot(displ,k_xyz(3,:))
-plot(displ,fkz,'.-');
