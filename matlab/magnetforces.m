@@ -42,13 +42,31 @@ end
   
 size1  =  reshape(magnet_fixed.dim/2,[3 1]); 
 size2  =  reshape(magnet_float.dim/2,[3 1]); 
+displ  =  reshape(displ,[3 1]); 
  
-J1r  =  magnet_fixed.magn; 
-J2r  =  magnet_float.magn; 
-J1t  =  magnet_fixed.magdir(1); 
-J2t  =  magnet_float.magdir(1); 
-J1p  =  magnet_fixed.magdir(2); 
-J2p  =  magnet_float.magdir(2); 
+if length(magnet_fixed.magdir)==2 
+  J1r  =  magnet_fixed.magn; 
+  J1t  =  magnet_fixed.magdir(1); 
+  J1p  =  magnet_fixed.magdir(2); 
+  J1   =  [ J1r  *  cosd(J1p)  *  cosd(J1t)  ;  ... 
+          J1r  *  cosd(J1p)  *  sind(J1t)  ;  ... 
+          J1r  *  sind(J1p) ]; 
+else 
+  J1  =  magnet_fixed.magn * magnet_fixed.magdir/norm(magnet_fixed.magdir); 
+  J1  =  reshape(J1,[3 1]); 
+end 
+ 
+if length(magnet_float.magdir)==2 
+  J2r  =  magnet_float.magn; 
+  J2t  =  magnet_float.magdir(1); 
+  J2p  =  magnet_float.magdir(2); 
+  J2   =  [ J2r  *  cosd(J2p)  *  cosd(J2t)  ;  ... 
+          J2r  *  cosd(J2p)  *  sind(J2t)  ;  ... 
+          J2r  *  sind(J2p) ]; 
+else 
+  J2  =  magnet_float.magn * magnet_float.magdir/norm(magnet_float.magdir); 
+  J2  =  reshape(J2,[3 1]); 
+end 
  
  
   
@@ -70,32 +88,18 @@ index_sum  =  (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
  
  
  
- 
   
 swap_x_z  =  @(vec) vec([3 2 1]); 
 swap_y_z  =  @(vec) vec([1 3 2]); 
  
-rotate_z_to_x  =  @(vec)  [0 0  1; 0 1 0; -1 0 0] * vec ; 
-rotate_x_to_z  =  @(vec)  [0 0 -1; 0 1 0;  1 0 0] * vec ; 
+rotate_z_to_x  =  @(vec)  [0 0  1; 0 1 0; -1 0 0] * vec ; % Ry( 90) 
+rotate_x_to_z  =  @(vec)  [0 0 -1; 0 1 0;  1 0 0] * vec ; % Ry(-90) 
  
-rotate_z_to_y  =  @(vec)  [1 0 0; 0 0 -1; 0  1 0] * vec ; 
-rotate_y_to_z  =  @(vec)  [1 0 0; 0 0  1; 0 -1 0] * vec ; 
+rotate_y_to_z  =  @(vec)  [1 0 0; 0 0 -1; 0  1 0] * vec ; % Rx( 90) 
+rotate_z_to_y  =  @(vec)  [1 0 0; 0 0  1; 0 -1 0] * vec ; % Rx(-90) 
  
-rotate_x_to_y  =  @(vec)  [0 -1 0;  1 0 0; 0 0 1] * vec ; 
-rotate_y_to_x  =  @(vec)  [0  1 0; -1 0 0; 0 0 1] * vec ; 
- 
- 
- 
-  
-displ  =  reshape(displ,[3 1]); % column vector 
- 
-J1  =  [ J1r  *  cosd(J1p)  *  cosd(J1t)  ;  ... 
-       J1r  *  cosd(J1p)  *  sind(J1t)  ;  ... 
-       J1r  *  sind(J1p) ]; 
- 
-J2  =  [ J2r  *  cosd(J2p)  *  cosd(J2t)  ;  ... 
-       J2r  *  cosd(J2p)  *  sind(J2t)  ;  ... 
-       J2r  *  sind(J2p) ]; 
+rotate_x_to_y  =  @(vec)  [0 -1 0;  1 0 0; 0 0 1] * vec ; % Rz( 90) 
+rotate_y_to_x  =  @(vec)  [0  1 0; -1 0 0; 0 0 1] * vec ; % Rz(-90) 
  
  
  
@@ -423,7 +427,7 @@ end
 function calc_out  =  forces_calc_z_x(size1,size2,offset,J1,J2) 
  
 forces_xyz  =  forces_calc_z_y( ... 
-  rotate_x_to_y(size1), rotate_x_to_y(size2), rotate_x_to_y(offset), ... 
+  abs(rotate_x_to_y(size1)), abs(rotate_x_to_y(size2)), rotate_x_to_y(offset), ... 
   J1, rotate_x_to_y(J2) ); 
  
 calc_out  =  rotate_y_to_x( forces_xyz ); 
@@ -539,7 +543,7 @@ end
 function calc_out  =  stiffnesses_calc_z_x(size1,size2,offset,J1,J2) 
  
 stiffnesses_xyz  =  stiffnesses_calc_z_y( ... 
-  rotate_x_to_y(size1), rotate_x_to_y(size2), rotate_x_to_y(offset), ... 
+  abs(rotate_x_to_y(size1)), abs(rotate_x_to_y(size2)), rotate_x_to_y(offset), ... 
   J1, rotate_x_to_y(J2) ); 
  
 calc_out  =  rotate_y_to_x(stiffnesses_xyz); 
@@ -552,7 +556,7 @@ end
   
 function out  =  multiply_x_log_y(x,y) 
   out  =  x.*log(y); 
-  out(isnan(out)) = 0; 
+  out(~isfinite(out)) = 0; 
 end 
  
   
