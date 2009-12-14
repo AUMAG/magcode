@@ -705,7 +705,7 @@ rotate_y_to_x = @@(vec)  [0  1 0; -1 0 0; 0 0 1]*vec ; % Rz(-90)
 
 function out = multiply_x_log_y(x,y)
   out = x.*log(y);
-  out(isnan(out))=0;
+  out(~isfinite(out))=0;
 end
 
 @   Also, we're using |atan| instead of |atan2| (otherwise the wrong results
