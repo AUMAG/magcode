@@ -11,9 +11,9 @@ tic
 
 %% Calculate
 
-if exist('multipole_compare_data.mat')
+if exist('data/multipole_compare_data.mat')
 
-  load multipole_compare_data.mat
+  load data/multipole_compare_data.mat
   
 else
   
@@ -66,7 +66,7 @@ else
   
   toc
   
-  save multipole_compare_data displ_steps zrange ...
+  save data/multipole_compare_data displ_steps zrange ...
     Nmag_per_wave_array Nwaves_array array_height array_length forces
 
 end
