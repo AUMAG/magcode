@@ -753,12 +753,15 @@ end
 @( testall.m @>=
 
 clc;
-unix('~/bin/mtangle magnetforces');
 
 magforce_test001a
 magforce_test001b
 magforce_test001c
 magforce_test001d
+
+multiforce_test002a
+multiforce_test002b
+multiforce_test002c
 
 @*2 Force testing.
 
@@ -1629,7 +1632,12 @@ end
 
 @*1 Test files for multipole arrays.
 
-@( multiforce_test001a.m @>=
+@ Not much here yet.
+
+@( multiforce_test002a.m @>=
+
+disp('=================')
+fprintf('TEST 002a: ')
 
 fixed_array = ...
   struct(...
@@ -1651,12 +1659,19 @@ float_array.magdir_first = -90;
 displ = [0 0 0.02];
 
 f_total = multipoleforces(fixed_array, float_array, displ);
-disp('Total force:')
-disp(f_total')
+
+assert( chop(f_total(3),5)==0.13909 , 'Regression shouldn''t fail');
+
+fprintf('passed\n')
+disp('=================')
+
 
 @ Test against single magnet.
 
-@( multiforce_test001b.m @>=
+@( multiforce_test002b.m @>=
+
+disp('=================')
+fprintf('TEST 002b: ')
 
 fixed_array = ...
   struct(...
@@ -1683,13 +1698,19 @@ fixed_mag = struct('dim',[0.01 0.01 0.01],'magn',1,'magdir',[0  90]);
 float_mag = struct('dim',[0.01 0.01 0.01],'magn',1,'magdir',[0 -90]);
 f_mag = magnetforces(fixed_mag,float_mag,displ);
 
-assert( chop(f_total(3),6) == chop(f_mag(3),6));
+assert( chop(f_total(3),6) == chop(f_mag(3),6) );
+
+fprintf('passed\n')
+disp('=================')
 
 @ Test that linear arrays give consistent results regardless of orientation.
 
-@( multiforce_test001c.m @>=
+@( multiforce_test002c.m @>=
 
-%% Fixed parameters
+disp('=================')
+fprintf('TEST 002c: ')
+
+% Fixed parameters
 
 fixed_array = ...
   struct(...
@@ -1707,28 +1728,57 @@ float_array.magdir_first = -90;
 
 f = repmat(NaN,[3 0]);
 
-%% The varying calculations
+% The varying calculations
 
 fixed_array.type = 'linear-x';
 float_array.type = fixed_array.type;
 fixed_array.face = 'up';
 float_array.face = 'down';
 displ = [0 0 0.02];
-f(:,end+1) = multipoleforces(fixed_array, float_array, displ,'debug');
+f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
+
+fixed_array.type = 'linear-x';
+float_array.type = fixed_array.type;
+fixed_array.face = '+y';
+float_array.face = '-y';
+displ = [0 0.02 0];
+f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
 fixed_array.type = 'linear-y';
 float_array.type = fixed_array.type;
 fixed_array.face = 'up';
 float_array.face = 'down';
 displ = [0 0 0.02];
-f(:,end+1) = multipoleforces(fixed_array, float_array, displ,'debug');
+f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
-f
+fixed_array.type = 'linear-y';
+float_array.type = fixed_array.type;
+fixed_array.face = '+x';
+float_array.face = '-x';
+displ = [0.02 0 0];
+f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
 
-fixed_mag = struct('dim',[0.01 0.01 0.01],'magn',1,'magdir',[-1 0 0]);
-float_mag = struct('dim',[0.01 0.01 0.01],'magn',1,'magdir',[0 0 -1]);
-f_mag = magnetforces(fixed_mag,float_mag,displ,'debug')
+fixed_array.type = 'linear-z';
+float_array.type = fixed_array.type;
+fixed_array.face = '+x';
+float_array.face = '-x';
+displ = [0.02 0 0];
+f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
+
+fixed_array.type = 'linear-z';
+float_array.type = fixed_array.type;
+fixed_array.face = '+y';
+float_array.face = '-y';
+displ = [0 0.02 0];
+f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
+
+assert( all(chop(sum(f),4)==37.31) , ...
+  'Arrays aligned in different directions should produce consistent results.');
+
+fprintf('passed\n')
+disp('=================')
+
 
 
 @  These are \textsc{matlabweb} declarations to improve the formatting
