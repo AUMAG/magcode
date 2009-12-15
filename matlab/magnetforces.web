@@ -152,44 +152,40 @@ end
 
 Nvargin = length(varargin);
 
-if ( Nvargin ~=0 && Nvargin ~= nargout )
-  error('Must have as many outputs as calculations requested.')
-end
+debug_disp = @@(str) disp([]);
 
 calc_force_bool = false;
 calc_stiffness_bool = false;
 
-if Nvargin == 0
-  calc_force_bool = true;
-else
-  for ii = 1:Nvargin 
-    switch varargin{ii}
-      case 'force'
-        calc_force_bool = true;
-      case 'stiffness'
-        calc_stiffness_bool = true;
-      otherwise
-        error(['Unknown calculation option ''',varargin{ii},''''])
-    end
+for ii = 1:Nvargin 
+  switch varargin{ii}
+    case 'debug'
+      debug_disp = @@(str) disp(str);
+    case 'force'
+      calc_force_bool = true;
+    case 'stiffness'
+      calc_stiffness_bool = true;
+    otherwise
+      error(['Unknown calculation option ''',varargin{ii},''''])
   end
 end
 
+if ~calc_force_bool && ~calc_stiffness_bool
+  calc_force_bool = true;
+end
 
 @ After all of the calculations have occured, they're placed back into
   |varargout|.
 
 @< Combine results ... @>=
 
-if Nvargin == 0
-  varargout{1} = forces_out;
-else
-  for ii = 1:Nvargin
-    switch varargin{ii}
-      case 'force'
-        varargout{ii} = forces_out;
-      case 'stiffness'
-        varargout{ii} = stiffnesses_out;
-    end
+varargout{1} = forces_out;
+for ii = 1:Nvargin
+  switch varargin{ii}
+    case 'force'
+      varargout{ii} = forces_out;
+    case 'stiffness'
+      varargout{ii} = stiffnesses_out;
   end
 end
 
@@ -723,15 +719,6 @@ function out = atan1(x,y)
 end
 
 
-@  This function is for easy debugging; in normal use it gobbles its argument
-   but will print diagnostics when required.
-
-@< Helper functions @>+=
-
-function debug_disp(str)
-  %disp(str)
-end
-
 
 @ When users type \texttt{help magnetforces} this is what they see.
 
@@ -1250,10 +1237,9 @@ function [varargout] = multipoleforces(fixed_array, float_array, displ, varargin
 @< Calculate array forces @>
 @< Combine results ... @>
 
-end
-
 @< Multipole sub-functions @>
 
+end
 
 @ To calculate the forces between the magnet arrays, let's assume that we have
   two large arrays enumerating the positions and magnetisations of each
@@ -1627,10 +1613,6 @@ end
 @< Multipole sub-functions @>=
 
 @< Create arrays from input variables @>
-
-function debug_disp(str)
-  %disp(str)
-end
 
 @ When users type \texttt{help multipoleforces} this is what they see.
 
