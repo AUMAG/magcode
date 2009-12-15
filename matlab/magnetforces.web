@@ -287,7 +287,7 @@ if calc_force_bool
   force_components(2,:) = rotate_z_to_x( forces_x_y );
   
   debug_disp('Forces x-z:')
-  forces_x_z = forces_calc_z_y(size1_rot,size2_rot,d_rot,J1_rot,J2_rot);
+  forces_x_z = forces_calc_z_x(size1_rot,size2_rot,d_rot,J1_rot,J2_rot);
   force_components(3,:) = rotate_z_to_x( forces_x_z );
 end
 
