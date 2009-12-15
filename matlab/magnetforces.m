@@ -15,28 +15,27 @@ function [varargout]  =  magnetforces(magnet_fixed, magnet_float, displ, varargi
   
 Nvargin  =  length(varargin); 
  
-if ( Nvargin ~=0 && Nvargin ~= nargout ) 
-  error('Must have as many outputs as calculations requested.') 
-end 
+debug_disp  =  @(str) disp([]); 
  
 calc_force_bool  =  false; 
 calc_stiffness_bool  =  false; 
  
-if Nvargin == 0 
-  calc_force_bool  =  true; 
-else 
-  for ii  =  1:Nvargin 
-    switch varargin{ii} 
-      case 'force' 
-        calc_force_bool  =  true; 
-      case 'stiffness' 
-        calc_stiffness_bool  =  true; 
-      otherwise 
-        error(['Unknown calculation option ''',varargin{ii},'''']) 
-    end 
+for ii  =  1:Nvargin 
+  switch varargin{ii} 
+    case 'debug' 
+      debug_disp  =  @(str) disp(str); 
+    case 'force' 
+      calc_force_bool  =  true; 
+    case 'stiffness' 
+      calc_stiffness_bool  =  true; 
+    otherwise 
+      error(['Unknown calculation option ''',varargin{ii},'''']) 
   end 
 end 
  
+if ~calc_force_bool && ~calc_stiffness_bool 
+  calc_force_bool  =  true; 
+end 
  
  
   
@@ -133,7 +132,7 @@ if calc_force_bool
   force_components(2,:)  =  rotate_z_to_x( forces_x_y ); 
  
   debug_disp('Forces x-z:') 
-  forces_x_z  =  forces_calc_z_y(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+  forces_x_z  =  forces_calc_z_x(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
   force_components(3,:)  =  rotate_z_to_x( forces_x_z ); 
 end 
  
@@ -226,16 +225,13 @@ end
  
  
   
-if Nvargin == 0 
-  varargout{1}  =  forces_out; 
-else 
-  for ii  =  1:Nvargin 
-    switch varargin{ii} 
-      case 'force' 
-        varargout{ii}  =  forces_out; 
-      case 'stiffness' 
-        varargout{ii}  =  stiffnesses_out; 
-    end 
+varargout{1}  =  forces_out; 
+for ii  =  1:Nvargin 
+  switch varargin{ii} 
+    case 'force' 
+      varargout{ii}  =  forces_out; 
+    case 'stiffness' 
+      varargout{ii}  =  stiffnesses_out; 
   end 
 end 
  
@@ -264,21 +260,21 @@ r  =  sqrt(u.^2+v.^2+w.^2);
  
  
 component_x  =   ... 
-  + 0.5 * (v.^2-w.^2).*log(r-u)  ... 
-  + u.*v.*log(r-v)  ... 
-  + v.*w.*atan2(u.*v,r.*w)  ... 
+  + multiply_x_log_y( 0.5 * (v.^2-w.^2), r-u )  ... 
+  + multiply_x_log_y( u.*v, r-v )  ... 
+  + v.*w.*atan1(u.*v,r.*w)  ... 
   + 0.5 * r.*u; 
  
 component_y  =   ... 
-  + 0.5 * (u.^2-w.^2).*log(r-v)  ... 
-  + u.*v.*log(r-u)  ... 
-  + u.*w.*atan2(u.*v,r.*w) ... 
+  + multiply_x_log_y( 0.5 * (u.^2-w.^2), r-v )  ... 
+  + multiply_x_log_y( u.*v, r-u )  ... 
+  + u.*w.*atan1(u.*v,r.*w) ... 
   + 0.5 * r.*v; 
  
 component_z  =   ... 
-  - u.*w.*log(r-u)  ... 
-  - v.*w.*log(r-v)  ... 
-  + u.*v.*atan2(u.*v,r.*w)  ... 
+  - multiply_x_log_y( u.*w, r-u )  ... 
+  - multiply_x_log_y( v.*w, r-v )  ... 
+  + u.*v.*atan1(u.*v,r.*w)  ... 
   - r.*w; 
  
   
@@ -566,11 +562,6 @@ function out  =  atan1(x,y)
   out(ind)  =  atan(x(ind)./y(ind)); 
 end 
  
- 
-  
-function debug_disp(str) 
-  %disp(str) 
-end 
  
  
  

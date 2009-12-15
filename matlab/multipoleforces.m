@@ -12,28 +12,27 @@ function [varargout]  =  multipoleforces(fixed_array, float_array, displ, vararg
   
 Nvargin  =  length(varargin); 
  
-if ( Nvargin ~=0 && Nvargin ~= nargout ) 
-  error('Must have as many outputs as calculations requested.') 
-end 
+debug_disp  =  @(str) disp([]); 
  
 calc_force_bool  =  false; 
 calc_stiffness_bool  =  false; 
  
-if Nvargin == 0 
-  calc_force_bool  =  true; 
-else 
-  for ii  =  1:Nvargin 
-    switch varargin{ii} 
-      case 'force' 
-        calc_force_bool  =  true; 
-      case 'stiffness' 
-        calc_stiffness_bool  =  true; 
-      otherwise 
-        error(['Unknown calculation option ''',varargin{ii},'''']) 
-    end 
+for ii  =  1:Nvargin 
+  switch varargin{ii} 
+    case 'debug' 
+      debug_disp  =  @(str) disp(str); 
+    case 'force' 
+      calc_force_bool  =  true; 
+    case 'stiffness' 
+      calc_stiffness_bool  =  true; 
+    otherwise 
+      error(['Unknown calculation option ''',varargin{ii},'''']) 
   end 
 end 
  
+if ~calc_force_bool && ~calc_stiffness_bool 
+  calc_force_bool  =  true; 
+end 
  
  
   
@@ -52,32 +51,32 @@ displ  =  reshape(displ,[3 1]);
  
 displ_from_array_corners  =  displ + fixed_array.size/2 - float_array.size/2; 
  
-for mm  =  1:fixed_array.total 
+for ii  =  1:fixed_array.total 
  
   fixed_magnet  =  struct( ... 
- 'dim',    fixed_array.dim(mm,:),  ... 
- 'magn',   fixed_array.magn(mm),  ... 
- 'magdir', fixed_array.magdir(mm,:)  ... 
+ 'dim',    fixed_array.dim(ii,:),  ... 
+ 'magn',   fixed_array.magn(ii),  ... 
+ 'magdir', fixed_array.magdir(ii,:)  ... 
   ); 
  
-  for nn  =  1:float_array.total 
+  for jj  =  1:float_array.total 
  
     mag_displ  =  displ_from_array_corners  ... 
-                - fixed_array.magloc(mm,:)' + float_array.magloc(nn,:)' ; 
+                - fixed_array.magloc(ii,:)' + float_array.magloc(jj,:)' ; 
  
     float_magnet  =  struct( ... 
-      'dim',    float_array.dim(nn,:),  ... 
-      'magn',   float_array.magn(nn),  ... 
-      'magdir', float_array.magdir(nn,:)  ... 
+      'dim',    float_array.dim(jj,:),  ... 
+      'magn',   float_array.magn(jj),  ... 
+      'magdir', float_array.magdir(jj,:)  ... 
     ); 
  
     if calc_force_bool 
-      array_forces(mm,nn,:)  =   ... 
+      array_forces(ii,jj,:)  =   ... 
           magnetforces(fixed_magnet, float_magnet, mag_displ,'force'); 
     end 
  
     if calc_stiffness_bool 
-      array_stiffnesses(mm,nn,:)  =   ... 
+      array_stiffnesses(ii,jj,:)  =   ... 
           magnetforces(fixed_magnet, float_magnet, mag_displ,'stiffness'); 
     end 
  
@@ -98,23 +97,18 @@ end
  
  
   
-if Nvargin == 0 
-  varargout{1}  =  forces_out; 
-else 
-  for ii  =  1:Nvargin 
-    switch varargin{ii} 
-      case 'force' 
-        varargout{ii}  =  forces_out; 
-      case 'stiffness' 
-        varargout{ii}  =  stiffnesses_out; 
-    end 
+varargout{1}  =  forces_out; 
+for ii  =  1:Nvargin 
+  switch varargin{ii} 
+    case 'force' 
+      varargout{ii}  =  forces_out; 
+    case 'stiffness' 
+      varargout{ii}  =  stiffnesses_out; 
   end 
 end 
  
  
  
- 
-end 
  
   
   
@@ -126,9 +120,9 @@ end
  
 switch array.type 
   case 'generic' 
-  case 'linear-x',  linear_index  =  1; linear_vect  =  [1 0 0]; 
-  case 'linear-y',  linear_index  =  2; linear_vect  =  [0 1 0]; 
-  case 'linear-z',  linear_index  =  3; linear_vect  =  [0 0 1]; 
+  case 'linear-x',  linear_index  =  1; 
+  case 'linear-y',  linear_index  =  2; 
+  case 'linear-z',  linear_index  =  3; 
   otherwise 
     error(['Unknown array type ''',array.type,'''.']) 
 end 
@@ -138,6 +132,10 @@ switch array.face
   case {'+y','-y'},   facing_index  =  2; 
   case {'up','down'}, facing_index  =  3; 
   case {'+z','-z'},   facing_index  =  3; 
+end 
+ 
+if linear_index == facing_index 
+  error('Arrays cannot face into their alignment direction.') 
 end 
  
 if strncmp(array.type,'linear',6) 
@@ -267,14 +265,14 @@ end
   
 array.magloc  =  repmat(NaN,[array.total 3]); 
 array.magdir  =  array.magloc; 
-magloc_array  =  repmat(NaN,[array.mcount(1) array.mcount(2) array.mcount(3) 3]); 
+arrat.magloc_array  =  repmat(NaN,[array.mcount(1) array.mcount(2) array.mcount(3) 3]); 
  
-ii  =  0; 
-for xx  =  1:array.mcount(1) 
-  for yy  =  1:array.mcount(2) 
-    for zz  =  1:array.mcount(3) 
-      ii  =  ii + 1; 
-      array.magdir(ii,:)  =  array.magdir_fn(xx,yy,zz); 
+nn  =  0; 
+for ii  =  1:array.mcount(1) 
+  for jj  =  1:array.mcount(2) 
+    for kk  =  1:array.mcount(3) 
+      nn  =  nn + 1; 
+      array.magdir(nn,:)  =  array.magdir_fn(ii,jj,kk); 
     end 
   end 
 end 
@@ -334,11 +332,8 @@ end
  
  
  
-function debug_disp(str) 
-  %disp(str) 
+ 
+ 
 end 
- 
- 
- 
  
 
