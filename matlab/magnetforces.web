@@ -1198,28 +1198,46 @@ assert ( ...
   two multipole magnet arrays. As before, we can calculate either force and/or
   stiffness in all three directions.
 
-\begin{center}
+\begin{table}
+\caption{Description of \texttt{multipoleforces} data structures.}
 \begin{tabular}{@@{}lll@@{}}
-\hline
+\toprule
  Inputs:
  & |fixed_array| & structure describing first magnet array \\
  & |float_array| & structure describing the second magnet array \\
  & |displ| & displacement between first magnet of each array \\
  & [\emph{what to calculate}] & `force' and/or `stiffness' \\
-\hline
+\midrule
  Outputs:
  & |forces| & forces on the second array \\
  & |stiffnesses| & stiffnesses on the second array \\
-\hline
- Array properties:
+\midrule
+ Arrays:
+ & |type| & See Table~\ref{array-types} \\
  & |mcount| & |[i j k]| magnets in each direction \\
  & |msize|  & size of each magnet \\
  & |mgap|   & gap between successive magnets \\
  & |magn|   & magnetisation magnitude \\
  & |magdir_fn| & function to calculate the magnetisation direction \\
-\hline
+\bottomrule
 \end{tabular}
-\end{center}
+\end{table}
+
+\begin{table}
+\caption{Possibilities for the \texttt{type} of a multipole array.}
+\label{array-types}
+\begin{tabular}{@@{}>{\ttfamily}ll@@{}}
+\toprule
+generic  & Magnetisation directions \&c.\ are defined manually \\
+linear-x & Linear array aligned with $x$ \\
+linear-y & Linear array aligned with $y$ \\
+linear-z & Linear array aligned with $z$ \\
+planar-xy & Planar array aligned with $x{-}y$ \\
+planar-yz & Planar array aligned with $y{-}z$ \\
+planar-xz & Planar array aligned with $x{-}z$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 
 @( multipoleforces.m @>=
@@ -1322,19 +1340,12 @@ As input variables for a linear multipole array,
 we want to use some combination of the following:
 \begin{itemize}
 \item [$w$] wavelength of magnetisation
-\item [$l$] length of the array
+\item [$l$] length of the array without magnet gaps
 \item [$N$] number of wavelengths
 \item [$d$] magnet length
 \item [$T$] total number of magnets
 \item [$M$] number of magnets per wavelength
 \item [$\phi$] rotation between successive magnets
-\end{itemize}
-And the following are linearly independent:
-\begin{itemize}
-\item [$\phi_0$] magnetisation direction of the first magnet
-\item [$g$] additional gap between adjacent magnet faces (optional)
-\item [$e$] array height (or magnet height)
-\item [$f$] array depth (or magnet depth)
 \end{itemize}
 These are related via the following equations of constraint:
 \begin{align}
@@ -1366,6 +1377,19 @@ forces that are undesirable for stability. We prefer instead to have $T=MN+1$,
 but this cannot be represented by our linear (logarithmic) algebra above.
 Therefore, if the user requests a total number of wavelengths of magnetisation,
 we automatically add one end magnet to restore the symmetry of the forces.
+
+More variables than can be set are:
+\begin{itemize}
+\item [$\phi_0$] magnetisation direction of the first magnet
+\item [$g$] additional gap between adjacent magnet faces (optional)
+\item [$e$] array height (or magnet height)
+\item [$f$] array depth (or magnet depth)
+\end{itemize}
+
+For both technical reasons and reasons of convenience, the length of the array
+$l$ does not take into account any specified magnet gap $g$. In other words,
+$l$ is actually the length of the possibly discontiguous magnetic material;
+the length of the array will be $l+(N-1)g$.
 
 @< Create arrays from input variables @>=
 

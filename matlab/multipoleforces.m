@@ -48,6 +48,9 @@ if calc_stiffness_bool
   array_stiffnesses  =  repmat(NaN,[fixed_array.total float_array.total 3]); 
 end 
  
+displ  =  reshape(displ,[3 1]); 
+ 
+displ_from_array_corners  =  displ + fixed_array.size/2 - float_array.size/2; 
  
 for mm  =  1:fixed_array.total 
  
@@ -59,13 +62,14 @@ for mm  =  1:fixed_array.total
  
   for nn  =  1:float_array.total 
  
+    mag_displ  =  displ_from_array_corners  ... 
+                - fixed_array.magloc(mm,:)' + float_array.magloc(nn,:)' ; 
+ 
     float_magnet  =  struct( ... 
       'dim',    float_array.dim(nn,:),  ... 
       'magn',   float_array.magn(nn),  ... 
       'magdir', float_array.magdir(nn,:)  ... 
     ); 
- 
-    mag_displ  =  displ - fixed_array.magloc(mm,:) + float_array.magloc(nn,:); 
  
     if calc_force_bool 
       array_forces(mm,nn,:)  =   ... 
@@ -279,17 +283,21 @@ magsep_x  =  zeros(size(array.mcount(1)));
 magsep_y  =  zeros(size(array.mcount(2))); 
 magsep_z  =  zeros(size(array.mcount(3))); 
  
-for ii  =  1:array.mcount(1)-1 
-  magsep_x(ii+1)  =  array.msize_array(ii,  1,1,1)/2  ... 
-                 + array.msize_array(ii+1,1,1,1)/2 ; 
+magsep_x(1)  =  array.msize_array(1,1,1,1)/2; 
+magsep_y(1)  =  array.msize_array(1,1,1,2)/2; 
+magsep_z(1)  =  array.msize_array(1,1,1,3)/2; 
+ 
+for ii  =  2:array.mcount(1) 
+  magsep_x(ii)  =  array.msize_array(ii-1,1,1,1)/2  ... 
+               + array.msize_array(ii  ,1,1,1)/2 ; 
 end 
-for jj  =  1:array.mcount(2)-1 
-  magsep_y(jj+1)  =  array.msize_array(1,jj  ,1,2)/2  ... 
-                 + array.msize_array(1,jj+1,1,2)/2 ; 
+for jj  =  2:array.mcount(2) 
+  magsep_y(jj)  =  array.msize_array(1,jj-1,1,2)/2  ... 
+               + array.msize_array(1,jj  ,1,2)/2 ; 
 end 
-for kk  =  1:array.mcount(3)-1 
-  magsep_z(kk+1)  =  array.msize_array(1,1,kk  ,3)/2  ... 
-                 + array.msize_array(1,1,kk+1,3)/2 ; 
+for kk  =  2:array.mcount(3) 
+  magsep_z(kk)  =  array.msize_array(1,1,kk-1,3)/2  ... 
+               + array.msize_array(1,1,kk  ,3)/2 ; 
 end 
  
 magloc_x  =  cumsum(magsep_x); 
@@ -307,6 +315,10 @@ for ii  =  1:array.mcount(1)
 end 
 array.magloc  =  reshape(array.magloc_array,[array.total 3]); 
  
+array.size  =  squeeze( array.magloc_array(end,end,end,:)  ... 
+           - array.magloc_array(1,1,1,:)  ... 
+           + array.msize_array(1,1,1,:)/2  ... 
+           + array.msize_array(end,end,end,:)/2 ); 
  
 debug_disp('Magnetisation directions') 
 debug_disp(array.magdir) 
