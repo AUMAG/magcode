@@ -1388,11 +1388,19 @@ if ~isfield(array,'type')
   array.type = 'generic';
 end
 
+linear_index = 0;
+planar_index = [0 0 0];
+
 switch array.type
   case 'generic'
+  case 'linear',    linear_index = 1;
   case 'linear-x',  linear_index = 1;
   case 'linear-y',  linear_index = 2;
   case 'linear-z',  linear_index = 3;
+  case 'planar',    planar_index = [1 1 0];
+  case 'planar-xy', planar_index = [1 1 0];
+  case 'planar-yz', planar_index = [0 1 1];
+  case 'planar-xz', planar_index = [1 0 1];
   otherwise
     error(['Unknown array type ''',array.type,'''.'])
 end
@@ -1404,8 +1412,14 @@ switch array.face
   case {'+z','-z'},   facing_index = 3;
 end
 
-if linear_index == facing_index
-  error('Arrays cannot face into their alignment direction.')
+if linear_index ~= 0
+  if linear_index == facing_index
+    error('Arrays cannot face into their alignment direction.')
+  end
+elseif planar_index ~= [0 0 0]
+  if find(p==0) ~= facing_index
+    error('Planar arrays can only face into their orthogonal direction')
+  end
 end
 
 if strncmp(array.type,'linear',6)
