@@ -49,7 +49,16 @@ willfig('allag-repro'); clf; hold on;
 
 plot(yrange,forces(:,2),'Tag','y');
 plot(yrange,forces(:,3),'Tag','z');
-set(gca,'box','on','xlim',[yrange(1) yrange(end)],'ylim',[-40 50])
+set(gca,'box','on')
+axis tight
+
+% We want the vertical axis 5% less tight:
+ylim = get(gca,'ylim');
+ylim_range = ylim(2)-ylim(1);
+yp = 0.05;
+ylim = [ylim(1)-yp*ylim_range ylim(2)+yp*ylim_range];
+set(gca,'ylim',ylim);
+
 xlabel('Horizontal $y$ displacement, m')
 ylabel('Force, N')
 text( -0.018 ,40,'$F_z$');

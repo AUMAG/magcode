@@ -75,11 +75,25 @@ for ii = 1:N
   f_xyz(:,ii) = magnetforces(magnet_fixed,magnet_float,offset+[displ(ii) 0 0]);
 end
 
+%% Plot
+
 willfig('janssen'); clf; hold on
 plot(displ,f_xyz(1,:),'Tag','x')
 plot(displ,f_xyz(2,:),'Tag','y')
 plot(displ,f_xyz(3,:),'Tag','z')
 set(gca,'box','on');
+axis tight
+
+% We want the vertical axis 5% less tight:
+ylim = get(gca,'ylim');
+ylim_range = ylim(2)-ylim(1);
+yp = 0.05;
+ylim = [ylim(1)-yp*ylim_range ylim(2)+yp*ylim_range];
+set(gca,'ylim',ylim);
+
+% add some more xticks:
+set(gca,'xtick',[-0.05 -0.025 0 0.025 0.05]);
+
 xlabel('Horizontal $x$ displacement, m')
 ylabel('Forces, N')
 text(-0.03,-10,'$F_x$')
