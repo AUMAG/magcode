@@ -118,11 +118,19 @@ if ~isfield(array,'type')
   array.type  =  'generic'; 
 end 
  
+linear_index  =  0; 
+planar_index  =  [0 0]; 
+ 
 switch array.type 
   case 'generic' 
+  case 'linear',    linear_index  =  1; 
   case 'linear-x',  linear_index  =  1; 
   case 'linear-y',  linear_index  =  2; 
   case 'linear-z',  linear_index  =  3; 
+  case 'planar',    planar_index  =  [1 2]; 
+  case 'planar-xy', planar_index  =  [1 2]; 
+  case 'planar-yz', planar_index  =  [2 3]; 
+  case 'planar-xz', planar_index  =  [1 3]; 
   otherwise 
     error(['Unknown array type ''',array.type,'''.']) 
 end 
@@ -134,67 +142,75 @@ switch array.face
   case {'+z','-z'},   facing_index  =  3; 
 end 
  
-if linear_index == facing_index 
-  error('Arrays cannot face into their alignment direction.') 
-end 
- 
-if strncmp(array.type,'linear',6) 
-    
-var_names  =  {'wavelength','length','Nwaves','mlength', ... 
-             'Nmag','Nmag_per_wave','magdir_rotate'}; 
- 
-mcount_extra  =  0; 
-if isfield(array,'Nwaves') 
-  mcount_extra  =  1; 
-end 
- 
-variables  =  repmat(NaN,[7 1]); 
- 
-for ii  =  1:length(var_names); 
-  if isfield(array,var_names(ii)) 
-    variables(ii)  =  array.(var_names{ii}); 
+if linear_index ~= 0 
+  if linear_index == facing_index 
+    error('Arrays cannot face into their alignment direction.') 
   end 
-end 
- 
-var_matrix  =   ... 
-    [1,  0,  0, -1,  0, -1,  0; 
-     0,  1,  0, -1, -1,  0,  0; 
-     0,  0,  1,  0, -1,  1,  0; 
-     0,  0,  0,  0,  0,  1,  1]; 
- 
-var_results  =  [0 0 0 log(360)]'; 
-variables  =  log(variables); 
- 
-idx  =  ~isnan(variables); 
-var_known  =  var_matrix(:,idx) * variables(idx); 
-var_calc  =  var_matrix(:,~idx)\(var_results-var_known); 
-variables(~idx)  =  var_calc; 
-variables  =  exp(variables); 
- 
-for ii  =  1:length(var_names); 
-  array.(var_names{ii})  =  variables(ii); 
-end 
- 
-array.Nmag  =  round(array.Nmag) + mcount_extra; 
-array.Nmag_per_wave  =  round(array.Nmag_per_wave); 
- 
-array.mlength  =  array.mlength * (array.Nmag-mcount_extra)/array.Nmag; 
+  
+array  =  extrapolate_variables(array); 
  
 array.mcount  =  ones(1,3); 
 array.mcount(linear_index)  =  array.Nmag; 
  
  
+elseif ~isequal( planar_index, [0 0] ) 
+  if any( planar_index == facing_index ) 
+    error('Planar arrays can only face into their orthogonal direction') 
+  end 
+  
+var_names  =  {'length','mlength','wavelength','Nwaves', ... 
+             'Nmag','Nmag_per_wave','magdir_rotate'}; 
+ 
+% In the ['length'] direction 
+tmp_array1  =  struct(); 
+tmp_array2  =  struct(); 
+var_index  =  []; 
+ 
+for ii  =  1:length(var_names) 
+  if isfield(array,var_names(ii)) 
+    tmp_array1.(var_names{ii})  =  array.(var_names{ii})(1); 
+    tmp_array2.(var_names{ii})  =  array.(var_names{ii})(2); 
+  else 
+    var_index  =  [var_index ii]; 
+  end 
+end 
+ 
+tmp_array1  =  extrapolate_variables(tmp_array1); 
+tmp_array2  =  extrapolate_variables(tmp_array2); 
+ 
+for ii  =  var_index 
+  array.(var_names{ii})  =  [tmp_array1.(var_names{ii}) tmp_array2.(var_names{ii})]; 
+end 
+ 
+array.depth   =  array.length(2); 
+array.length  =  array.length(1); 
+ 
+array.mdepth   =  array.mlength(2); 
+array.mlength  =  array.mlength(1); 
+ 
+array.mcount  =  ones(1,3); 
+array.mcount(planar_index)  =  array.Nmag; 
+ 
+ 
  
 end 
+ 
  
   
 array.total  =  prod(array.mcount); 
  
 if ~isfield(array,'msize') 
   array.msize  =  [NaN NaN NaN]; 
-  array.msize(linear_index)  =  array.mlength; 
-  array.msize(facing_index)  =  array.height; 
-  array.msize(isnan(array.msize))  =  array.depth; 
+  if linear_index ~=0 
+    array.msize(linear_index)  =  array.mlength; 
+    array.msize(facing_index)  =  array.height; 
+    array.msize(isnan(array.msize))  =  array.depth; 
+  elseif ~isequal( planar_index, [0 0] ) 
+    array.msize(planar_index)  =  [array.mlength array.mdepth]; 
+    array.msize(facing_index)  =  array.height; 
+  else 
+    error('The array property ''msize'' is not defined and I have no way to infer it.') 
+  end 
 elseif numel(array.msize) == 1 
   array.msize  =  repmat(array.msize,[3 1]); 
 end 
@@ -243,14 +259,37 @@ if ~isfield(array,'magdir_fn')
   magdir_fn_comp{2}  =  @(ii,jj,kk) 0; 
   magdir_fn_comp{3}  =  @(ii,jj,kk) 0; 
  
-  magdir_theta  =  @(nn)  ... 
-    array.magdir_first+magdir_rotate_sign * array.magdir_rotate * (nn-1); 
+  if linear_index ~= 0 
+    magdir_theta  =  @(nn)  ... 
+      array.magdir_first+magdir_rotate_sign * array.magdir_rotate * (nn-1); 
  
-  magdir_fn_comp{linear_index}  =  @(ii,jj,kk)  ... 
-    cosd(magdir_theta(part([ii,jj,kk],linear_index))); 
+    magdir_fn_comp{linear_index}  =  @(ii,jj,kk)  ... 
+      cosd(magdir_theta(part([ii,jj,kk],linear_index))); 
  
-  magdir_fn_comp{facing_index}  =  @(ii,jj,kk)  ... 
-    sind(magdir_theta(part([ii,jj,kk],linear_index))); 
+    magdir_fn_comp{facing_index}  =  @(ii,jj,kk)  ... 
+      sind(magdir_theta(part([ii,jj,kk],linear_index))); 
+ 
+  elseif ~isequal( planar_index, [0 0] ) 
+ 
+    magdir_theta  =  @(nn)  ... 
+      array.magdir_first(1)+magdir_rotate_sign * array.magdir_rotate(1) * (nn-1); 
+ 
+    magdir_phi  =  @(nn)  ... 
+      array.magdir_first(2)+magdir_rotate_sign * array.magdir_rotate(2) * (nn-1); 
+ 
+    magdir_fn_comp{planar_index(1)}  =  @(ii,jj,kk)  ... 
+      cosd(magdir_theta(part([ii,jj,kk],planar_index(2)))); 
+ 
+    magdir_fn_comp{planar_index(2)}  =  @(ii,jj,kk)  ... 
+      cosd(magdir_phi(part([ii,jj,kk],planar_index(1)))); 
+ 
+    magdir_fn_comp{facing_index}  =  @(ii,jj,kk)  ... 
+      sind(magdir_theta(part([ii,jj,kk],planar_index(1))))  ... 
+      + sind(magdir_phi(part([ii,jj,kk],planar_index(2)))); 
+ 
+  else 
+    error('Array property ''magdir_fn'' not defined and I have no way to infer it.') 
+  end 
  
   array.magdir_fn  =  @(ii,jj,kk)    ... 
     [ magdir_fn_comp{1}(ii,jj,kk)  ... 
@@ -330,6 +369,52 @@ array_out  =  array;
 end 
  
  
+ 
+ 
+function array_out  =  extrapolate_variables(array) 
+ 
+var_names  =  {'wavelength','length','Nwaves','mlength', ... 
+             'Nmag','Nmag_per_wave','magdir_rotate'}; 
+ 
+mcount_extra  =  0; 
+if isfield(array,'Nwaves') 
+  mcount_extra  =  1; 
+end 
+ 
+variables  =  repmat(NaN,[7 1]); 
+ 
+for ii  =  1:length(var_names); 
+  if isfield(array,var_names(ii)) 
+    variables(ii)  =  array.(var_names{ii}); 
+  end 
+end 
+ 
+var_matrix  =   ... 
+    [1,  0,  0, -1,  0, -1,  0; 
+     0,  1,  0, -1, -1,  0,  0; 
+     0,  0,  1,  0, -1,  1,  0; 
+     0,  0,  0,  0,  0,  1,  1]; 
+ 
+var_results  =  [0 0 0 log(360)]'; 
+variables  =  log(variables); 
+ 
+idx  =  ~isnan(variables); 
+var_known  =  var_matrix(:,idx) * variables(idx); 
+var_calc  =  var_matrix(:,~idx)\(var_results-var_known); 
+variables(~idx)  =  var_calc; 
+variables  =  exp(variables); 
+ 
+for ii  =  1:length(var_names); 
+  array.(var_names{ii})  =  variables(ii); 
+end 
+ 
+array.Nmag  =  round(array.Nmag) + mcount_extra; 
+array.Nmag_per_wave  =  round(array.Nmag_per_wave); 
+array.mlength  =  array.mlength * (array.Nmag-mcount_extra)/array.Nmag; 
+ 
+array_out  =  array; 
+ 
+end 
  
  
  

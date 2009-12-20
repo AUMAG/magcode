@@ -51,8 +51,12 @@ if length(magnet_fixed.magdir)==2
           J1r  *  cosd(J1p)  *  sind(J1t)  ;  ... 
           J1r  *  sind(J1p) ]; 
 else 
-  J1  =  magnet_fixed.magn * magnet_fixed.magdir/norm(magnet_fixed.magdir); 
-  J1  =  reshape(J1,[3 1]); 
+  if all(magnet_fixed.magdir == [0 0 0]) 
+    J1  =  [0; 0; 0]; 
+  else 
+    J1  =  magnet_fixed.magn * magnet_fixed.magdir/norm(magnet_fixed.magdir); 
+    J1  =  reshape(J1,[3 1]); 
+  end 
 end 
  
 if length(magnet_float.magdir)==2 
@@ -63,8 +67,12 @@ if length(magnet_float.magdir)==2
           J2r  *  cosd(J2p)  *  sind(J2t)  ;  ... 
           J2r  *  sind(J2p) ]; 
 else 
-  J2  =  magnet_float.magn * magnet_float.magdir/norm(magnet_float.magdir); 
-  J2  =  reshape(J2,[3 1]); 
+  if all(magnet_float.magdir == [0 0 0]) 
+    J2  =  [0; 0; 0]; 
+  else 
+    J2  =  magnet_float.magn * magnet_float.magdir/norm(magnet_float.magdir); 
+    J2  =  reshape(J2,[3 1]); 
+  end 
 end 
  
  
