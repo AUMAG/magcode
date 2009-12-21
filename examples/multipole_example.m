@@ -32,23 +32,19 @@ float_array = fixed_array;
 float_array.face = 'down';
 float_array.magdir_first = 90;
 
-displ_steps = 501;
+displ_steps = 201;
 yrange = linspace(-0.08,0.08,displ_steps);
+zgap = repmat([0; 0; 0.015],[1 displ_steps]);
+displ = zgap + [0; 1; 0]*yrange;
 
-zgap = 0.015;
-forces = repmat(NaN,[displ_steps 3]);
-
-for ii = 1:displ_steps
-  displ = [0 yrange(ii) zgap];
-  forces(ii,:) = multipoleforces(fixed_array, float_array, displ);
-end
+forces = multipoleforces(fixed_array, float_array, displ);
 
 %% Plot
 
 willfig('allag-repro'); clf; hold on;
 
-plot(yrange,forces(:,2),'Tag','y');
-plot(yrange,forces(:,3),'Tag','z');
+plot(yrange,forces(2,:),'Tag','y');
+plot(yrange,forces(3,:),'Tag','z');
 set(gca,'box','on')
 set(gca,'ticklength',[0.02 0.05])
 axis tight

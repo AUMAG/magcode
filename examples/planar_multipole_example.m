@@ -33,26 +33,18 @@ float_array.face = 'down';
 float_array.magdir_first = [-90 -90];
 
 displ_steps = 201;
-drange = linspace(-0.08,0.08,displ_steps);
+yrange = linspace(-0.08,0.08,displ_steps);
+zgap = repmat([0; 0; 0.015],[1 displ_steps]);
+displ = zgap + [0; 1; 0]*yrange;
 
-zgap = 0.015;
-forces = repmat(NaN,[displ_steps 3]);
-
-for ii = 1:displ_steps
-  displ = [0 drange(ii) zgap];
-  forces(ii,:) = multipoleforces(fixed_array, float_array, displ);
-  fprintf('%d ... ',ii)
-  if mod(ii,20) == 0
-    fprintf('\n')
-  end
-end
+forces = multipoleforces(fixed_array, float_array, displ);
 
 %% Plot
 
 willfig('planar-patchwork'); clf; hold on;
 
-plot(drange,forces(:,2),'Tag','y');
-plot(drange,forces(:,3),'Tag','z');
+plot(yrange,forces(2,:),'Tag','y');
+plot(yrange,forces(3,:),'Tag','z');
 set(gca,'box','on')
 set(gca,'ticklength',[0.02 0.05])
 axis tight

@@ -55,16 +55,16 @@ fixed_array  =  complete_array_from_input(fixed_array);
 float_array  =  complete_array_from_input(float_array); 
  
 if calc_force_bool 
-  array_forces  =  repmat(NaN,[fixed_array.total float_array.total 3]); 
+  array_forces  =  repmat(NaN,[fixed_array.total float_array.total 3 Ndispl]); 
 end 
  
 if calc_stiffness_bool 
-  array_stiffnesses  =  repmat(NaN,[fixed_array.total float_array.total 3]); 
+  array_stiffnesses  =  repmat(NaN,[fixed_array.total float_array.total 3 Ndispl]); 
 end 
  
-displ  =  reshape(displ,[3 1]); 
- 
-displ_from_array_corners  =  displ + fixed_array.size/2 - float_array.size/2; 
+displ_from_array_corners  =  displ  ... 
+  + repmat(fixed_array.size/2,[1 Ndispl])  ... 
+  - repmat(float_array.size/2,[1 Ndispl]); 
  
 for ii  =  1:fixed_array.total 
  
@@ -76,30 +76,31 @@ for ii  =  1:fixed_array.total
  
   for jj  =  1:float_array.total 
  
-    mag_displ  =  displ_from_array_corners  ... 
-                - fixed_array.magloc(ii,:)' + float_array.magloc(jj,:)' ; 
- 
     float_magnet  =  struct( ... 
       'dim',    float_array.dim(jj,:),  ... 
       'magn',   float_array.magn(jj),  ... 
       'magdir', float_array.magdir(jj,:)  ... 
     ); 
  
-    if calc_force_bool 
-      array_forces(ii,jj,:)  =   ... 
-          magnetforces(fixed_magnet, float_magnet, mag_displ,'force'); 
-    end 
+    for dd  =  1:Ndispl 
  
-    if calc_stiffness_bool 
-      array_stiffnesses(ii,jj,:)  =   ... 
-          magnetforces(fixed_magnet, float_magnet, mag_displ,'stiffness'); 
+      mag_displ  =  displ_from_array_corners(:,dd)  ... 
+                  - fixed_array.magloc(ii,:)' + float_array.magloc(jj,:)' ; 
+ 
+      if calc_force_bool 
+        array_forces(ii,jj,:,dd)  =   ... 
+            magnetforces(fixed_magnet, float_magnet, mag_displ,'force'); 
+      end 
+ 
+      if calc_stiffness_bool 
+        array_stiffnesses(ii,jj,:,dd)  =   ... 
+            magnetforces(fixed_magnet, float_magnet, mag_displ,'stiffness'); 
+      end 
+ 
     end 
  
   end 
 end 
- 
-debug_disp('Forces:') 
-debug_disp(reshape(array_forces,[],3)) 
  
 if calc_force_bool 
   forces_out  =  squeeze(sum(sum(array_forces,1),2)); 
@@ -385,7 +386,7 @@ end
  
  
  
- 
+  
 function array_out  =  extrapolate_variables(array) 
  
 var_names  =  {'wavelength','length','Nwaves','mlength', ... 
@@ -430,6 +431,8 @@ array.mlength  =  array.mlength * (array.Nmag-mcount_extra)/array.Nmag;
 array_out  =  array; 
  
 end 
+ 
+ 
  
  
  
