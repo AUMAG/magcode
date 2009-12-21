@@ -10,10 +10,18 @@ function [varargout]  =  multipoleforces(fixed_array, float_array, displ, vararg
  
  
   
+if size(displ,1) == 3 
+  % all good 
+elseif size(displ,2) == 3 
+  displ  =  transpose(displ); 
+else 
+  error('Displacements matrix should be of size (3, D) where D is the number of displacements.') 
+end 
+ 
+Ndispl  =  size(displ,2); 
+ 
 Nvargin  =  length(varargin); 
- 
 debug_disp  =  @(str) disp([]); 
- 
 calc_force_bool  =  false; 
 calc_stiffness_bool  =  false; 
  
@@ -32,6 +40,13 @@ end
  
 if ~calc_force_bool && ~calc_stiffness_bool 
   calc_force_bool  =  true; 
+end 
+ 
+if calc_force_bool 
+  forces_out  =  repmat(NaN,[3 Ndispl]); 
+end 
+if calc_stiffness_bool 
+  stiffnesses_out  =  repmat(NaN,[3 Ndispl]); 
 end 
  
  

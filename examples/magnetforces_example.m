@@ -25,14 +25,12 @@ magnet_float.magn = 0.38;
 magnet_fixed.magdir = [0  90]; % z
 magnet_float.magdir = [0  90]; % z
 
-offset = [-0.004 -0.004 0.008];
-N = 1001;
+N = 501;
+offset = repmat([-0.004; -0.004; 0.008],[1 N]);
 displ = linspace(0, 0.03, N);
-f1_xyz = repmat(NaN, [3 N]);
+displ_range = offset+[1; 0; 0]*displ;
 
-for ii = 1:N
-  f1_xyz(:,ii) = magnetforces(magnet_fixed,magnet_float,offset+[displ(ii) 0 0]);
-end
+f1_xyz = magnetforces(magnet_fixed,magnet_float,displ_range);
 
 willfig('akoun'); clf; hold on
 plot(displ,f1_xyz(1,:),'Tag','x')
@@ -67,14 +65,12 @@ magnet_float.magn = 1.23;
 magnet_fixed.magdir = [0  90]; % z
 magnet_float.magdir = [0  0];  % x
 
-offset = [0 -0.008 0.015];
-N = 1001;
+N = 501;
+offset = repmat([0; -0.008; 0.015],[1 N]);
 displ = linspace(-0.05, 0.05, N);
-f_xyz = repmat(NaN, [3 N]);
+displ_range = offset+[1; 0; 0]*displ;
 
-for ii = 1:N
-  f_xyz(:,ii) = magnetforces(magnet_fixed,magnet_float,offset+[displ(ii) 0 0]);
-end
+f_xyz = magnetforces(magnet_fixed,magnet_float,displ_range);
 
 %% Plot
 
