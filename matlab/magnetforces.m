@@ -116,6 +116,18 @@ rotate_y_to_x  =  @(vec)  [0  1 0; -1 0 0; 0 0 1] * vec ; % Rz(-90)
  
  
   
+size1_x  =  swap_x_z(size1); 
+size2_x  =  swap_x_z(size2); 
+d_x   =  rotate_x_to_z(displ); 
+J1_x  =  rotate_x_to_z(J1); 
+J2_x  =  rotate_x_to_z(J2); 
+ 
+size1_y  =  swap_y_z(size1); 
+size2_y  =  swap_y_z(size2); 
+d_y      =  rotate_y_to_z( displ ); 
+J1_y     =  rotate_y_to_z( J1    ); 
+J2_y     =  rotate_y_to_z( J2    ); 
+ 
 if calc_force_bool 
   for ii  =  1:Ndispl 
     forces_out(:,ii)   =   single_magnet_force(displ(:,ii)); 
@@ -160,42 +172,30 @@ debug_disp(J2')
  
  
   
-size1_rot  =  swap_x_z(size1); 
-size2_rot  =  swap_x_z(size2); 
-d_rot   =  rotate_x_to_z(displ); 
-J1_rot  =  rotate_x_to_z(J1); 
-J2_rot  =  rotate_x_to_z(J2); 
- 
 debug_disp('Forces x-x:') 
-forces_x_x  =  forces_calc_z_z(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+forces_x_x  =  forces_calc_z_z(size1_x,size2_x,d_x,J1_x,J2_x); 
 force_components(1,:)  =  rotate_z_to_x( forces_x_x ); 
  
 debug_disp('Forces x-y:') 
-forces_x_y  =  forces_calc_z_y(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+forces_x_y  =  forces_calc_z_y(size1_x,size2_x,d_x,J1_x,J2_x); 
 force_components(2,:)  =  rotate_z_to_x( forces_x_y ); 
  
 debug_disp('Forces x-z:') 
-forces_x_z  =  forces_calc_z_x(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+forces_x_z  =  forces_calc_z_x(size1_x,size2_x,d_x,J1_x,J2_x); 
 force_components(3,:)  =  rotate_z_to_x( forces_x_z ); 
  
  
   
-size1_rot  =  swap_y_z(size1); 
-size2_rot  =  swap_y_z(size2); 
-d_rot      =  rotate_y_to_z( displ ); 
-J1_rot     =  rotate_y_to_z( J1    ); 
-J2_rot     =  rotate_y_to_z( J2    ); 
- 
 debug_disp('Forces y-x:') 
-forces_y_x  =  forces_calc_z_x(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+forces_y_x  =  forces_calc_z_x(size1_y,size2_y,d_y,J1_y,J2_y); 
 force_components(4,:)  =  rotate_z_to_y( forces_y_x ); 
  
 debug_disp('Forces y-y:') 
-forces_y_y  =  forces_calc_z_z(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+forces_y_y  =  forces_calc_z_z(size1_y,size2_y,d_y,J1_y,J2_y); 
 force_components(5,:)  =  rotate_z_to_y( forces_y_y ); 
  
 debug_disp('Forces y-z:') 
-forces_y_z  =  forces_calc_z_y(size1_rot,size2_rot,d_rot,J1_rot,J2_rot); 
+forces_y_z  =  forces_calc_z_y(size1_y,size2_y,d_y,J1_y,J2_y); 
 force_components(6,:)  =  rotate_z_to_y( forces_y_z ); 
  
  
@@ -232,49 +232,33 @@ debug_disp(J2')
  
  
   
-size1_rot  =  swap_x_z(size1); 
-size2_rot  =  swap_x_z(size2); 
-d_rot   =  rotate_x_to_z(displ); 
-J1_rot  =  rotate_x_to_z(J1); 
-J2_rot  =  rotate_x_to_z(J2); 
- 
-debug_disp('x-z stiffness:') 
-stiffness_components(3,:)  =  rotate_z_to_x( stiffnesses_calc_z_x( size1_rot,size2_rot,d_rot,J1_rot,J2_rot ) ); 
+debug_disp('x-x stiffness:') 
+stiffness_components(1,:)  =  rotate_z_to_x( stiffnesses_calc_z_z( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
  
 debug_disp('x-y stiffness:') 
-stiffness_components(2,:)  =  rotate_z_to_x( stiffnesses_calc_z_y( size1_rot,size2_rot,d_rot,J1_rot,J2_rot ) ); 
+stiffness_components(2,:)  =  rotate_z_to_x( stiffnesses_calc_z_y( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
  
-debug_disp('x-x stiffness:') 
-stiffness_components(1,:)  =  rotate_z_to_x( stiffnesses_calc_z_z( size1_rot,size2_rot,d_rot,J1_rot,J2_rot ) ); 
- 
- 
-  
-size1_rot  =  swap_y_z(size1); 
-size2_rot  =  swap_y_z(size2); 
-d_rot      =  rotate_y_to_z( displ ); 
-J1_rot     =  rotate_y_to_z( J1    ); 
-J2_rot     =  rotate_y_to_z( J2    ); 
- 
-debug_disp('y-z stiffness:') 
-stiffness_components(6,:)  =  rotate_z_to_y( stiffnesses_calc_z_y( size1_rot,size2_rot,d_rot,J1_rot,J2_rot ) ); 
- 
-debug_disp('y-y stiffness:') 
-stiffness_components(5,:)  =  rotate_z_to_y( stiffnesses_calc_z_z( size1_rot,size2_rot,d_rot,J1_rot,J2_rot ) ); 
+debug_disp('x-z stiffness:') 
+stiffness_components(3,:)  =  rotate_z_to_x( stiffnesses_calc_z_x( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
  
 debug_disp('y-x stiffness:') 
-stiffness_components(4,:)  =  rotate_z_to_y( stiffnesses_calc_z_x( size1_rot,size2_rot,d_rot,J1_rot,J2_rot ) ); 
+stiffness_components(4,:)  =  rotate_z_to_y( stiffnesses_calc_z_x( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
  
+debug_disp('y-y stiffness:') 
+stiffness_components(5,:)  =  rotate_z_to_y( stiffnesses_calc_z_z( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
  
+debug_disp('y-z stiffness:') 
+stiffness_components(6,:)  =  rotate_z_to_y( stiffnesses_calc_z_y( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
  
-  
-debug_disp('z-z stiffness:') 
-stiffness_components(9,:)  =  stiffnesses_calc_z_z( size1,size2,displ,J1,J2 ); 
+debug_disp('z-x stiffness:') 
+stiffness_components(7,:)  =  stiffnesses_calc_z_x( size1,size2,displ,J1,J2 ); 
  
 debug_disp('z-y stiffness:') 
 stiffness_components(8,:)  =  stiffnesses_calc_z_y( size1,size2,displ,J1,J2 ); 
  
-debug_disp('z-x stiffness:') 
-stiffness_components(7,:)  =  stiffnesses_calc_z_x( size1,size2,displ,J1,J2 ); 
+debug_disp('z-z stiffness:') 
+stiffness_components(9,:)  =  stiffnesses_calc_z_z( size1,size2,displ,J1,J2 ); 
+ 
  
  
  
