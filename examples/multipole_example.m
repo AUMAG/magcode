@@ -32,7 +32,7 @@ float_array = fixed_array;
 float_array.face = 'down';
 float_array.magdir_first = 90;
 
-displ_steps = 201;
+displ_steps = 501;
 yrange = linspace(-0.08,0.08,displ_steps);
 
 zgap = 0.015;
@@ -50,6 +50,7 @@ willfig('allag-repro'); clf; hold on;
 plot(yrange,forces(:,2),'Tag','y');
 plot(yrange,forces(:,3),'Tag','z');
 set(gca,'box','on')
+set(gca,'ticklength',[0.02 0.05])
 axis tight
 
 % We want the vertical axis 5% less tight:
@@ -69,5 +70,7 @@ if ~simple_graph
   set([h1 h2],'linestyle','--');
   colourplot
   % labelplot
-  matlabfrag('fig/allag-repro');
+  matlabfrag('fig/allag-repro','dpi',3200);
 end
+
+% save data/multipole_allag_example_data forces yrange

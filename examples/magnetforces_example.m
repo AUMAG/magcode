@@ -41,6 +41,7 @@ plot(displ,f1_xyz(3,:),'Tag','z')
 xlabel('Horizontal $x$ displacement, m')
 ylabel('Forces, N')
 set(gca,'box','on');
+set(gca,'ticklength',[0.02 0.05])
 text(0.004,-0.5,'$F_x$')
 text(0.004, 0.8,'$F_y$')
 text(0.004,-1.7,'$F_z$')
@@ -50,7 +51,7 @@ if ~simple_graph
   set(h1,'linestyle','--');
   colourplot
   % labelplot
-  matlabfrag('fig/akoun-repro');
+  matlabfrag('fig/akoun-repro','dpi',3200);
 end
 
 %% Orthogonal
@@ -82,6 +83,7 @@ plot(displ,f_xyz(1,:),'Tag','x')
 plot(displ,f_xyz(2,:),'Tag','y')
 plot(displ,f_xyz(3,:),'Tag','z')
 set(gca,'box','on');
+set(gca,'ticklength',[0.02 0.05])
 axis tight
 
 % We want the vertical axis 5% less tight:
@@ -105,5 +107,5 @@ if ~simple_graph
   set([h1 h2],'linestyle','--');
   colourplot
   % labelplot
-  matlabfrag('fig/janssen-repro');
+  matlabfrag('fig/janssen-repro','dpi',3200);
 end

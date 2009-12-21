@@ -54,6 +54,7 @@ willfig('planar-patchwork'); clf; hold on;
 plot(drange,forces(:,2),'Tag','y');
 plot(drange,forces(:,3),'Tag','z');
 set(gca,'box','on')
+set(gca,'ticklength',[0.02 0.05])
 axis tight
 
 % We want the vertical axis 5% less tight:
@@ -62,6 +63,7 @@ ylim_range = ylim(2)-ylim(1);
 yp = 0.05;
 ylim = [ylim(1)-yp*ylim_range ylim(2)+yp*ylim_range];
 set(gca,'ylim',ylim);
+
 
 xlabel('Horizontal $y$ displacement, m')
 ylabel('Force, N')
@@ -73,7 +75,7 @@ if ~simple_graph
   set([h1 h2],'linestyle','--');
   colourplot
   % labelplot
-  matlabfrag('fig/planar-patchwork');
+  matlabfrag('fig/planar-patchwork','dpi',3200);
 end
 
-save data/multipole_compare_data forces drange
+% save data/multipole_planar_example_data forces drange
