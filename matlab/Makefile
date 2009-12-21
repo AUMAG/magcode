@@ -2,7 +2,7 @@
 NAME = magnetforces
 SRC = $(NAME).web
 SCPT = $(NAME).m
-DRV = magnetocode-matlab
+DRV = magcode-matlab
 DOC = $(DRV).pdf
 DIR = /tmp/mweb
 MWEB = $(DIR)/mweb.tex $(DIR)/swebbind.sty $(DIR)/webfiles.sty $(DIR)/matlabweb.sty

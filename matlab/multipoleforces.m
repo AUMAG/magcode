@@ -177,10 +177,29 @@ elseif ~isequal( planar_index, [0 0] )
     error('Planar arrays can only face into their orthogonal direction') 
   end 
   
+if isfield(array,'length') 
+  if length(array.length) == 1 
+    if isfield(array.width) 
+      array.length  =  [ array.length array.width ]; 
+    else 
+      array.length  =  [ array.length array.length ]; 
+    end 
+  end 
+end 
+ 
+if isfield(array,'mlength') 
+  if length(array.mlength) == 1 
+    if isfield(array.mwidth) 
+      array.mlength  =  [ array.mlength array.mwidth ]; 
+    else 
+      array.mlength  =  [ array.mlength array.mlength ]; 
+    end 
+  end 
+end 
+ 
 var_names  =  {'length','mlength','wavelength','Nwaves', ... 
              'Nmag','Nmag_per_wave','magdir_rotate'}; 
  
-% In the ['length'] direction 
 tmp_array1  =  struct(); 
 tmp_array2  =  struct(); 
 var_index  =  zeros(size(var_names)); 
@@ -188,7 +207,7 @@ var_index  =  zeros(size(var_names));
 for iii  =  1:length(var_names) 
   if isfield(array,var_names(iii)) 
     tmp_array1.(var_names{iii})  =  array.(var_names{iii})(1); 
-    tmp_array2.(var_names{iii})  =  array.(var_names{iii})(2); 
+    tmp_array2.(var_names{iii})  =  array.(var_names{iii})(end); 
   else 
     var_index(iii)  =  1; 
   end 
@@ -236,10 +255,10 @@ end
 if numel(array.msize) == 3 
   array.msize_array  =   ... 
       repmat(reshape(array.msize,[1 1 1 3]), array.mcount); 
-  array.dim  =  reshape(array.msize_array, [array.total 3]); 
 else 
   error('Magnet size ''msize'' must have three elements (or one element for a cube magnet).') 
 end 
+array.dim  =  reshape(array.msize_array, [array.total 3]); 
  
 if ~isfield(array,'mgap') 
   array.mgap  =  [0; 0; 0]; 
@@ -269,6 +288,10 @@ if ~isfield(array,'magdir_fn')
   switch array.face 
     case {'up','+z','+y','+x'},   magdir_rotate_sign  =   1; 
     case {'down','-z','-y','-x'}, magdir_rotate_sign  =  -1; 
+  end 
+ 
+  if ~isfield(array,'magdir_first') 
+    array.magdir_first  =  magdir_rotate_sign * 90; 
   end 
  
   magdir_fn_comp{1}  =  @(ii,jj,kk) 0; 
