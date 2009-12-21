@@ -51,6 +51,8 @@ end
  
  
   
+part  =  @(x,y) x(y); 
+ 
 fixed_array  =  complete_array_from_input(fixed_array); 
 float_array  =  complete_array_from_input(float_array); 
  
@@ -129,7 +131,7 @@ end
  
   
   
-function array_out  =  complete_array_from_input(array) 
+function array  =  complete_array_from_input(array) 
  
 if ~isfield(array,'type') 
   array.type  =  'generic'; 
@@ -199,10 +201,10 @@ for iii  =  find(var_index)
   array.(var_names{iii})  =  [tmp_array1.(var_names{iii}) tmp_array2.(var_names{iii})]; 
 end 
  
-array.depth   =  array.length(2); 
+array.width   =  array.length(2); 
 array.length  =  array.length(1); 
  
-array.mdepth   =  array.mlength(2); 
+array.mwidth   =  array.mlength(2); 
 array.mlength  =  array.mlength(1); 
  
 array.mcount  =  ones(1,3); 
@@ -212,7 +214,6 @@ array.mcount(planar_index)  =  array.Nmag;
  
 end 
  
- 
   
 array.total  =  prod(array.mcount); 
  
@@ -221,9 +222,9 @@ if ~isfield(array,'msize')
   if linear_index ~=0 
     array.msize(linear_index)  =  array.mlength; 
     array.msize(facing_index)  =  array.height; 
-    array.msize(isnan(array.msize))  =  array.depth; 
+    array.msize(isnan(array.msize))  =  array.width; 
   elseif ~isequal( planar_index, [0 0] ) 
-    array.msize(planar_index)  =  [array.mlength array.mdepth]; 
+    array.msize(planar_index)  =  [array.mlength array.mwidth]; 
     array.msize(facing_index)  =  array.height; 
   else 
     error('The array property ''msize'' is not defined and I have no way to infer it.') 
@@ -259,8 +260,6 @@ end
  
  
   
-part  =  @(x,y) x(y); 
- 
 if ~isfield(array,'magdir_fn') 
  
   if ~isfield(array,'face') 
@@ -382,7 +381,6 @@ debug_disp(array.magloc)
  
  
  
-array_out  =  array; 
 end 
  
  
