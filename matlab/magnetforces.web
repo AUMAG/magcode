@@ -1670,7 +1670,7 @@ if ~isfield(array,'magdir_fn')
       array.magdir_first(1)+magdir_rotate_sign*array.magdir_rotate(1)*(nn-1);
 
     magdir_phi = @@(nn) ...
-      array.magdir_first(2)+magdir_rotate_sign*array.magdir_rotate(2)*(nn-1);
+      array.magdir_first(end)+magdir_rotate_sign*array.magdir_rotate(end)*(nn-1);
     
     magdir_fn_comp{planar_index(1)} = @@(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],planar_index(2))));
