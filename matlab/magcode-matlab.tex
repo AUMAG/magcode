@@ -1,11 +1,11 @@
 
 \documentclass{article}
 \usepackage{amsmath,array,booktabs,enumitem,upquote,shortvrb,underscore}
+\usepackage{matlabweb}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage[hyperref,backref]{biblatex}
 \bibliography{journals,phd}
-\usepackage{matlabweb}
 \MakeShortVerb\|
 \begin{document}
 \title{Forces between magnets\\ and multipole arrays of magnets:\\ A Matlab implementation}
@@ -41,7 +41,7 @@ stiffnesses = magnetforces( ... , 'stiffness');
 
 |magnetforces| takes three mandatory inputs to specify the position and magnetisation of the first and second magnets and the displacement between them.
 Optional arguments appended indicate whether to calculate force or stiffness or both; the output arguments must match to reflect this choice.
-The force\footnote{From now I will omit most mention of calculating stiffnesses; assume whenever I say `force' I mean `force \emph{and} stiffnesse'} is calculated as that imposed on the second magnet; for this reason, I often call the first magnet the `fixed' magnet and the second `floating'. If you wish to calculate the force on the first magnet instead, simply reverse the sign of the output.
+The force\footnote{From now I will omit most mention of calculating stiffnesses; assume whenever I say `force' I mean `force \emph{and} stiffness'} is calculated as that imposed on the second magnet; for this reason, I often call the first magnet the `fixed' magnet and the second `floating'. If you wish to calculate the force on the first magnet instead, simply reverse the sign of the output.
 
 \paragraph{Inputs and outputs}
 The first two inputs are structures containing the following fields:
@@ -62,7 +62,7 @@ In other words, the following unit vectors are equivalent:
 (0,0,1)_{\text{cartesian}} &\equiv (0,90)_{\text{spherical}}
 \end{align*}
 N.B.\ $\theta$ and $\phi$ must be input in degrees, not radians.
-This seemingly odd decision was made in order to calculate quantities such as $cos(\pi/2)=0$ exactly rather than to machine precision.
+This seemingly odd decision was made in order to calculate quantities such as $\cos(\pi/2)=0$ exactly rather than to machine precision.
 
 The third mandatory input is |displ|, which is a matrix of displacement vectors between the two magnets. |displ| should be a $(3\times D)$ matrix,
 where $D$ is the number of displacements over which to calculate the forces.

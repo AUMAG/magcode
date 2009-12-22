@@ -1,19 +1,14 @@
-Calculating the force and torque between magnets
-================================================
+Calculating the force between magnets and multipole arrays of magnets
+=====================================================================
 
-This repository contains code originally written for my PhD for calculating the forces (and stiffnesses) between permanent magnets.
+This repository contains code originally written for my PhD for calculating the forces (and stiffnesses) between permanent magnets and arrays of magnets.
 
 It has been originally written in Matlab, and I plan on adding translations into other programming languages as time permits. Contributions happily accepted.
-
-Research
---------
-
-The underlying maths of this work was not done by me but primarily by a group of French researchers over the last twenty-five years. To the best of my knowledge, this is the first attempt at presenting the work in a unified way, wrapped into a single interface.
 
 Philosophy
 ----------
 
-As time goes by, it becomes increasingly hard to build on the work of our predecessors unless we build tools to abstract the ideas we invent in our research. This code marks my first attempt to freely share, in a useful way, the work of my PhD.
+As time goes by, it becomes increasingly difficult to build on the work of our predecessors unless we build tools to abstract the ideas we invent in our research. This code marks my first attempt to freely share, in a useful way, the work of my PhD.
 
 Installation and information
 ----------------------------
@@ -22,7 +17,7 @@ The `matlab/` subdirectory of this repository contains both the source file
 `magnetforces.web` and the ready-to-use Matlab functions `magnetforces.m` and
 `multipoleforces.m`. After cloning this Git repository, you can simply add the `matlab/` folder to your Matlab path in order to start using the code.
 
-The documentation `magnetocode-matlab.pdf` contains both a user's guide and the documented source code in a literate programming style.
+The documentation `matlab/magcode-matlab.pdf` contains both a user's guide and the documented source code in a literate programming style.
 
 Examples and test suite
 -----------------------
@@ -41,11 +36,14 @@ The `examples/` subdirectory contains a number of files to illustrate the use of
 
 The source code contains a number of automated tests to ensure that future changes don't break existing functionality or start producing incorrect results. These are not included in the repository for clarity; extract them with `mtangle`. 
 
-Licence
--------
+Licence for modification and distribution
+-----------------------------------------
 
-This work is freely modifiable and distributable under the terms and conditions of the Apache License v2. In effect, you are free to do with this code as you wish.
+This work is freely modifiable and distributable under the terms and conditions of the
+[Apache License v2](http://www.apache.org/licenses/LICENSE-2.0).
+In effect, you are free to do with this code as you wish for the development of free or proprietary software.
+Distributions of modified works must retain the original copyright notices and contain a list of modifications made, but this is only an expository notice; please see the licence text for complete details.
 
----------------------
-Will Robertson  
+----------------------------------
+Copyright 2009–2010 Will Robertson  
 wspr81 at gmail dot com
