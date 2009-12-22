@@ -460,29 +460,21 @@ component_z_ii = ...
 	multiply_x_log_y( S.*T , R-S )...
 ;
 
-if 1
 xx = index_sum.*component_x;
 xx_ii = index_sum.*component_x_ii;
 assert( abs(sum(xx(:)) - sum(xx_ii(:))) < 1e-8 )
-end
 
-if 1
 yy = index_sum.*component_y;
 yy_ii = index_sum.*component_y_ii;
 assert( abs(sum(yy(:)) - sum(yy_ii(:))) < 1e-8 )
-end
 
-if 1
 zz = index_sum.*component_z;
 zz_ii = index_sum.*component_z_ii;
 assert( abs(sum(zz(:)) - sum(zz_ii(:))) < 1e-8 )
-end
 
-if 1
 component_x = component_x_ii;
 component_y = component_y_ii;
 component_z = component_z_ii;
-end
 
 @ The improvement in processing time between typing in the actual equals compared
   to just transforming the $z$--$y$ case isn't worth the tedium of actually
@@ -563,7 +555,6 @@ stiffnesses_xyz = stiffnesses_calc_z_y(...
 calc_out = rotate_y_to_x(stiffnesses_xyz);
 
 end
-
 
 @ Some shared setup code. First |return| early if either of the magnetisations
   are zero --- that's the trivial solution. Assume that the magnetisation
