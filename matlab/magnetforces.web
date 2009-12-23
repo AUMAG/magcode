@@ -636,11 +636,12 @@ end
 
 end
 
-@ When the forces are rotated we use these rotation matrices
-  to avoid having to think too hard.
+@ Forces due to magnetisations in $x$ and $y$ are calculated by rotating the
+  original expressions. The rotated magnet sizes and magnetisation vectors
+  are calculated here once only.
 
-  The rotation matrices are input directly to avoid recalculating them each
-  time.
+  The rotation matrices are precalculated to avoid performing the matrix
+  multiplications each time.
 
 @< Precompute rotations @>=
 
@@ -648,14 +649,14 @@ swap_x_y = @@(vec) vec([2 1 3]);
 swap_x_z = @@(vec) vec([3 2 1]);
 swap_y_z = @@(vec) vec([1 3 2]);
 
-rotate_z_to_x = @@(vec)  [0 0  1; 0 1 0; -1 0 0]*vec ; % Ry( 90)
-rotate_x_to_z = @@(vec)  [0 0 -1; 0 1 0;  1 0 0]*vec ; % Ry(-90)
+rotate_z_to_x = @@(vec) [  vec(3);  vec(2); -vec(1) ] ; % Ry( 90)
+rotate_x_to_z = @@(vec) [ -vec(3);  vec(2);  vec(1) ] ; % Ry(-90)
 
-rotate_y_to_z = @@(vec)  [1 0 0; 0 0 -1; 0  1 0]*vec ; % Rx( 90)
-rotate_z_to_y = @@(vec)  [1 0 0; 0 0  1; 0 -1 0]*vec ; % Rx(-90)
+rotate_y_to_z = @@(vec) [  vec(1); -vec(3);  vec(2) ] ; % Rx( 90)
+rotate_z_to_y = @@(vec) [  vec(1);  vec(3); -vec(2) ] ; % Rx(-90)
 
-rotate_x_to_y = @@(vec)  [0 -1 0;  1 0 0; 0 0 1]*vec ; % Rz( 90)
-rotate_y_to_x = @@(vec)  [0  1 0; -1 0 0; 0 0 1]*vec ; % Rz(-90)
+rotate_x_to_y = @@(vec) [ -vec(2);  vec(1);  vec(3) ] ; % Rz( 90)
+rotate_y_to_x = @@(vec) [  vec(2); -vec(1);  vec(3) ] ; % Rz(-90)
 
 size1_x = swap_x_z(size1);
 size2_x = swap_x_z(size2);
@@ -667,7 +668,7 @@ size2_y = swap_y_z(size2);
 J1_y    = rotate_y_to_z(J1);
 J2_y    = rotate_y_to_z(J2);
 
-@ And once per loop per displacement:
+@ And the rotated displacement vectors are calculated once per loop:
 
 @< Precompute displacement rotations @>=
 

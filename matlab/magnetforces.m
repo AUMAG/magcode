@@ -76,14 +76,14 @@ swap_x_y  =  @(vec) vec([2 1 3]);
 swap_x_z  =  @(vec) vec([3 2 1]); 
 swap_y_z  =  @(vec) vec([1 3 2]); 
  
-rotate_z_to_x  =  @(vec)  [0 0  1; 0 1 0; -1 0 0] * vec ; % Ry( 90) 
-rotate_x_to_z  =  @(vec)  [0 0 -1; 0 1 0;  1 0 0] * vec ; % Ry(-90) 
+rotate_z_to_x  =  @(vec) [  vec(3)  vec(2) -vec(1) ] ; % Ry( 90) 
+rotate_x_to_z  =  @(vec) [ -vec(3)  vec(2)  vec(1) ] ; % Ry(-90) 
  
-rotate_y_to_z  =  @(vec)  [1 0 0; 0 0 -1; 0  1 0] * vec ; % Rx( 90) 
-rotate_z_to_y  =  @(vec)  [1 0 0; 0 0  1; 0 -1 0] * vec ; % Rx(-90) 
+rotate_y_to_z  =  @(vec) [  vec(1) -vec(3)  vec(2) ] ; % Rx( 90) 
+rotate_z_to_y  =  @(vec) [  vec(1)  vec(3) -vec(2) ] ; % Rx(-90) 
  
-rotate_x_to_y  =  @(vec)  [0 -1 0;  1 0 0; 0 0 1] * vec ; % Rz( 90) 
-rotate_y_to_x  =  @(vec)  [0  1 0; -1 0 0; 0 0 1] * vec ; % Rz(-90) 
+rotate_x_to_y  =  @(vec) [ -vec(2)  vec(1)  vec(3) ] ; % Rz( 90) 
+rotate_y_to_x  =  @(vec) [  vec(2) -vec(1)  vec(3) ] ; % Rz(-90) 
  
 size1_x  =  swap_x_z(size1); 
 size2_x  =  swap_x_z(size2); 
