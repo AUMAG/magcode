@@ -76,14 +76,14 @@ swap_x_y  =  @(vec) vec([2 1 3]);
 swap_x_z  =  @(vec) vec([3 2 1]); 
 swap_y_z  =  @(vec) vec([1 3 2]); 
  
-rotate_z_to_x  =  @(vec) [  vec(3)  vec(2) -vec(1) ] ; % Ry( 90) 
-rotate_x_to_z  =  @(vec) [ -vec(3)  vec(2)  vec(1) ] ; % Ry(-90) 
+rotate_z_to_x  =  @(vec) [  vec(3);  vec(2); -vec(1) ] ; % Ry( 90) 
+rotate_x_to_z  =  @(vec) [ -vec(3);  vec(2);  vec(1) ] ; % Ry(-90) 
  
-rotate_y_to_z  =  @(vec) [  vec(1) -vec(3)  vec(2) ] ; % Rx( 90) 
-rotate_z_to_y  =  @(vec) [  vec(1)  vec(3) -vec(2) ] ; % Rx(-90) 
+rotate_y_to_z  =  @(vec) [  vec(1); -vec(3);  vec(2) ] ; % Rx( 90) 
+rotate_z_to_y  =  @(vec) [  vec(1);  vec(3); -vec(2) ] ; % Rx(-90) 
  
-rotate_x_to_y  =  @(vec) [ -vec(2)  vec(1)  vec(3) ] ; % Rz( 90) 
-rotate_y_to_x  =  @(vec) [  vec(2) -vec(1)  vec(3) ] ; % Rz(-90) 
+rotate_x_to_y  =  @(vec) [ -vec(2);  vec(1);  vec(3) ] ; % Rz( 90) 
+rotate_y_to_x  =  @(vec) [  vec(2); -vec(1);  vec(3) ] ; % Rz(-90) 
  
 size1_x  =  swap_x_z(size1); 
 size2_x  =  swap_x_z(size2); 
@@ -236,27 +236,27 @@ debug_disp(J2')
   
 debug_disp('x-x stiffness:') 
 stiffness_components(1,:)  =   ... 
-  rotate_z_to_x( stiffnesses_calc_z_z( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
+  swap_x_z( stiffnesses_calc_z_z( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
  
 debug_disp('x-y stiffness:') 
 stiffness_components(2,:)  =   ... 
-  rotate_z_to_x( stiffnesses_calc_z_y( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
+  swap_x_z( stiffnesses_calc_z_y( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
  
 debug_disp('x-z stiffness:') 
 stiffness_components(3,:)  =   ... 
-  rotate_z_to_x( stiffnesses_calc_z_x( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
+  swap_x_z( stiffnesses_calc_z_x( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
  
 debug_disp('y-x stiffness:') 
 stiffness_components(4,:)  =   ... 
-  rotate_z_to_y( stiffnesses_calc_z_x( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
+  swap_y_z( stiffnesses_calc_z_x( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
  
 debug_disp('y-y stiffness:') 
 stiffness_components(5,:)  =   ... 
-  rotate_z_to_y( stiffnesses_calc_z_z( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
+  swap_y_z( stiffnesses_calc_z_z( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
  
 debug_disp('y-z stiffness:') 
 stiffness_components(6,:)  =   ... 
-  rotate_z_to_y( stiffnesses_calc_z_y( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
+  swap_y_z( stiffnesses_calc_z_y( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
  
 debug_disp('z-x stiffness:') 
 stiffness_components(7,:)  =   ... 
@@ -517,7 +517,7 @@ stiffnesses_xyz  =  stiffnesses_calc_z_y( ...
   swap_x_y(size1), swap_x_y(size2), rotate_x_to_y(offset), ... 
   J1, rotate_x_to_y(J2) ); 
  
-calc_out  =  rotate_y_to_x(stiffnesses_xyz); 
+calc_out  =  swap_x_y(stiffnesses_xyz); 
  
 end 
  
