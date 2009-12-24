@@ -35,22 +35,10 @@ fkx = -gradient(f_x(1,:),dd);
 fky = -gradient(f_y(2,:),dd);
 fkz = -gradient(f_z(3,:),dd);
 
-willfig('akoun-force'); clf; hold on
-plot(displ,f_x(1,:),'Tag','x')
-plot(displ,f_y(2,:),'Tag','y')
-plot(displ,f_z(3,:),'Tag','z')
-colourplot
-labelplot
-
-willfig('akoun-stiffness'); clf; hold on
-plot(displ,k_x(1,:),'Tag','x')
-plot(displ,k_y(2,:),'Tag','y')
-plot(displ,k_z(3,:),'Tag','z')
-plot(displ,fkx,'.');
-plot(displ,fky,'.');
-plot(displ,fkz,'.');
-colourplot(2)
-labelplot
+willfig('parallel-stiffness'); clf; hold on
+plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:),'Tag','z')
+plot(displ,fkx,'.',displ,fky,'.',displ,fkz,'.');
+legend('x','y','z')
 
 %% Orthogonal stiffnessnes
 
@@ -87,22 +75,10 @@ fkx = -gradient(f_x(1,:),dd);
 fky = -gradient(f_y(2,:),dd);
 fkz = -gradient(f_z(3,:),dd);
 
-willfig('orth-force'); clf; hold on
-plot(displ,f_x(1,:),'Tag','x')
-plot(displ,f_y(2,:),'Tag','y')
-plot(displ,f_z(3,:),'Tag','z')
-colourplot
-labelplot
-
-willfig('orth-stiffness'); clf; hold on
-plot(displ,k_x(1,:),'Tag','x')
-plot(displ,k_y(2,:),'Tag','y')
-plot(displ,k_z(3,:),'Tag','z')
-plot(displ,fkx,'.');
-plot(displ,fky,'.');
-plot(displ,fkz,'.');
-colourplot(2)
-labelplot
+willfig('orth-stiffness-x'); clf; hold on
+plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:),'Tag','z')
+plot(displ,fkx,'.',displ,fky,'.',displ,fkz,'.');
+legend('x','y','z')
 
 
 %% Orthogonal stiffnessnes again
@@ -115,7 +91,7 @@ magnet_fixed.magn = 1.23;
 magnet_float.magn = 1.23;
 
 magnet_fixed.magdir = [0 0 1];
-magnet_float.magdir = [1 0 0];
+magnet_float.magdir = [0 1 0];
 
 N = 51;
 offset = [0.02 -0.008 0.015];
@@ -141,22 +117,9 @@ fkx = -gradient(f_x(1,:),dd);
 fky = -gradient(f_y(2,:),dd);
 fkz = -gradient(f_z(3,:),dd);
 
-
-willfig('orth2-force'); clf; hold on
-plot(displ,f_x(1,:),'Tag','x')
-plot(displ,f_y(2,:),'Tag','y')
-plot(displ,f_z(3,:),'Tag','z')
-colourplot
-labelplot
-
-willfig('orth2-stiffness'); clf; hold on
-plot(displ,k_x(1,:),'Tag','x')
-plot(displ,k_y(2,:),'Tag','y')
-plot(displ,k_z(3,:),'Tag','z')
-plot(displ,fkx,'.');
-plot(displ,fky,'.');
-plot(displ,fkz,'.');
-colourplot(2)
-labelplot
+willfig('orth-stiffness-y'); clf; hold on
+plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:),'Tag','z')
+plot(displ,fkx,'.',displ,fky,'.',displ,fkz,'.');
+legend('x','y','z')
 
 
