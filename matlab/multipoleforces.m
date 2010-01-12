@@ -182,7 +182,7 @@ elseif ~isequal( planar_index, [0 0] )
   
 if isfield(array,'length') 
   if length(array.length) == 1 
-    if isfield(array.width) 
+    if isfield(array,'width') 
       array.length  =  [ array.length array.width ]; 
     else 
       array.length  =  [ array.length array.length ]; 
