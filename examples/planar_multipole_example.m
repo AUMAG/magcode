@@ -38,9 +38,11 @@ displ = zgap + [0; 1; 0]*yrange;
 
 forces = multipoleforces(fixed_array, float_array, displ);
 
+% save data/multipole_planar_example_data forces yrange
+
 %% Plot
 
-willfig('planar-patchwork'); clf; hold on;
+willfig('planar-halbach'); clf; hold on;
 
 plot(yrange,forces(2,:),'Tag','y');
 plot(yrange,forces(3,:),'Tag','z');
@@ -66,7 +68,6 @@ if ~simple_graph
   set([h1 h2],'linestyle','--');
   colourplot
   % labelplot
-  matlabfrag('fig/planar-patchwork','dpi',3200);
+  matlabfrag('fig/planar-halbach','dpi',3200);
 end
 
-% save data/multipole_planar_example_data forces yrange
