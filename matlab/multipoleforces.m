@@ -139,6 +139,9 @@ function array  =  complete_array_from_input(array)
 if ~isfield(array,'type') 
   array.type  =  'generic'; 
 end 
+if ~isfield(array,'face') 
+  array.face  =  'undefined'; 
+end 
  
 linear_index  =  0; 
 planar_index  =  [0 0]; 
@@ -162,6 +165,7 @@ switch array.face
   case {'+y','-y'},   facing_index  =  2; 
   case {'up','down'}, facing_index  =  3; 
   case {'+z','-z'},   facing_index  =  3; 
+  case 'undefined',   facing_index  =  0; 
 end 
  
 if linear_index ~= 0 
