@@ -629,7 +629,7 @@ if length(magdir)==2
           J_r * cosd(J_p) * sind(J_t)  ; ...
           J_r * sind(J_p) ];
 else
-  if all(magdir == [0 0 0])
+  if all(magdir == zeros(size(magdir)) )
     J = [0; 0; 0];
   else
     J = magn*magdir/norm(magdir);
