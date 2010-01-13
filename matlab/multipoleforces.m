@@ -421,9 +421,16 @@ function array_out  =  extrapolate_variables(array)
 var_names  =  {'wavelength','length','Nwaves','mlength', ... 
              'Nmag','Nmag_per_wave','magdir_rotate'}; 
  
-mcount_extra  =  0; 
 if isfield(array,'Nwaves') 
-  mcount_extra  =  1; 
+  mcount_extra   =   1; 
+else 
+  mcount_extra   =   0; 
+end 
+ 
+if isfield(array,'mlength') 
+  mlength_adjust  =  false; 
+else 
+  mlength_adjust  =  true; 
 end 
  
 variables  =  repmat(NaN,[7 1]); 
@@ -455,7 +462,10 @@ end
  
 array.Nmag  =  round(array.Nmag) + mcount_extra; 
 array.Nmag_per_wave  =  round(array.Nmag_per_wave); 
-array.mlength  =  array.mlength * (array.Nmag-mcount_extra)/array.Nmag; 
+ 
+if mlength_adjust 
+  array.mlength   =   array.mlength  *  (array.Nmag-mcount_extra)/array.Nmag; 
+end 
  
 array_out  =  array; 
  
