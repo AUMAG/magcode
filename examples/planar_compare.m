@@ -21,7 +21,6 @@ end
 array_height = 0.01;
 array_length = 0.05;
 
-
 displ_steps = 30;
 zrange = array_height*(1+linspace(0.001,1,displ_steps));
 gap = repmat( [0; 0; 0], [1 displ_steps] );
@@ -44,8 +43,6 @@ linear1 = ...
 linear2 = linear1;
 linear2.face = 'down';
 
-forces.linear  = multipoleforces(linear1,  linear2, displ, 'debug');
-
 %% Single magnet
 
 single1 = ...
@@ -57,8 +54,6 @@ single1 = ...
 
 single2 = single1;
 single2.magdir = [0;0;-1];
-
-forces.single  = magnetforces(single1,  single2, displ, 'debug');
 
 %% Halbach
 
@@ -77,9 +72,6 @@ halbach1 = ...
 halbach2 = halbach1;
 halbach2.face = 'down';
 
-forces.halbach = multipoleforces(halbach1, halbach2, displ);
-disp('Halbach planar array calculations complete.')
-
 %% Patchwork
 
 patchwork1 = ...
@@ -94,7 +86,6 @@ patchwork1 = ...
 patchwork2 = patchwork1;
 patchwork2.magdir_fn = @(ii,jj,kk) [0; 0; (-1)^(ii+jj)];
 
-forces.patchwork = multipoleforces(patchwork1, patchwork2, displ,'debug');
 
 %% Quasi-Halbach
 
@@ -114,25 +105,27 @@ quasi2.magdir_fn = @(ii,jj,kk)  [  sind(90*ii)*cosd(90*jj) ;
                                    cosd(90*ii)*sind(90*jj) ;
                                   -sind(90*ii)*sind(90*jj) ] ;
 
-forces.quasi = multipoleforces(quasi1,quasi2,displ,'debug');
-
-%%
-
-save(datafile,'forces','zrange');
 
 %%
 
 if exist(datafile,'file')
   % Delete (or rename) the data file to re-run the calculations
   load(datafile)
+else
+  forces.linear  = multipoleforces(linear1,  linear2, displ, 'debug');
+  forces.single  = magnetforces(single1,  single2, displ, 'debug');
+  forces.halbach = multipoleforces(halbach1, halbach2, displ, 'debug');
+  forces.patchwork = multipoleforces(patchwork1, patchwork2, displ,'debug');
+  forces.quasi = multipoleforces(quasi1,quasi2,displ,'debug');
+  save(datafile,'forces','zrange');
 end
 
 %% Plot
 
-willfig('planar-compare','large'); clf; hold on;
+willfig('planar-compare'); clf; hold on;
 
-plot(zrange,forces.single(3,:),   ':' ,'Tag','Single magnet' );
-plot(zrange,forces.patchwork(3,:),'-.','Tag','Patchwork'     );
+plot(zrange,forces.single(3,:),   '.' ,'Tag','Single magnet' );
+plot(zrange,forces.patchwork(3,:),'.--','Tag','Patchwork'     );
 plot(zrange,forces.linear(3,:),   '.-','Tag','Linear Halbach');
 plot(zrange,forces.halbach(3,:),  '--','Tag','Planar Halbach');
 plot(zrange,forces.quasi(3,:),         'Tag','Quasi Halbach' );
