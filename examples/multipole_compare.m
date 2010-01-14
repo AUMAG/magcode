@@ -89,7 +89,7 @@ for nn = 1:length(Nwaves_array)
   end
   
   set(gca,'xlim',[0.009 zrange(end)]/array_height);
-  h1 = draworigin([1 0],'v'); set(h1,'linestyle','--');
+  draworigin([1 0],'v','--');
   colourplot
   labelplot('northeast','vertical','$M$')
   legendshrink
@@ -114,7 +114,7 @@ for ww = 1:length(Nmag_per_wave_array)
   end
   
   set(gca,'xlim',[0.009 zrange(end)]/array_height);
-  h1 = draworigin([1 0],'v'); set(h1,'linestyle','--');
+  draworigin([1 0],'v','--')
   colourplot
   labelplot('northeast','vertical','$N$')
   legendshrink

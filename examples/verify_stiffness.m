@@ -35,8 +35,15 @@ fkx = -gradient(f_x(1,:),dd);
 fky = -gradient(f_y(2,:),dd);
 fkz = -gradient(f_z(3,:),dd);
 
-willfig('parallel-stiffness'); clf; hold on
-plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:),'Tag','z')
+%%
+
+try
+  willfig('parallel-stiffness'); clf; hold on
+catch
+  figure; hold on
+end
+
+plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:))
 plot(displ,fkx,'.',displ,fky,'.',displ,fkz,'.');
 legend('x','y','z')
 
@@ -75,8 +82,15 @@ fkx = -gradient(f_x(1,:),dd);
 fky = -gradient(f_y(2,:),dd);
 fkz = -gradient(f_z(3,:),dd);
 
-willfig('orth-stiffness-x'); clf; hold on
-plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:),'Tag','z')
+%%
+
+try
+  willfig('orth-stiffness-x'); clf; hold on
+catch
+  figure; hold on
+end
+
+plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:))
 plot(displ,fkx,'.',displ,fky,'.',displ,fkz,'.');
 legend('x','y','z')
 
@@ -117,8 +131,15 @@ fkx = -gradient(f_x(1,:),dd);
 fky = -gradient(f_y(2,:),dd);
 fkz = -gradient(f_z(3,:),dd);
 
-willfig('orth-stiffness-y'); clf; hold on
-plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:),'Tag','z')
+%%
+
+try
+  willfig('orth-stiffness-y'); clf; hold on
+catch
+  figure; hold on
+end
+
+plot(displ,k_x(1,:),displ,k_y(2,:),displ,k_z(3,:))
 plot(displ,fkx,'.',displ,fky,'.',displ,fkz,'.');
 legend('x','y','z')
 

@@ -1,21 +1,10 @@
 %% Planar multipole array forces example
 %
-% In which magnetisations are a function of magnet position in x and y.
+% Two "planar Halbach" arrays in opposition.
+% Forces are plotted as a function of horizontal displacement
+% with a fixed vertical gap.
 
 %% Setup
-%
-% In case you don't have the various bits'n'pieces that I use to create
-% my Matlab graphics (probably likely).
-
-if ~exist('willfig','file')
-  close all
-  willfig = @(str) figure;
-  simple_graph = 1;
-else
-  simple_graph = 0;
-end
-
-%% Calculate
 
 fixed_array = ...
   struct(...
@@ -29,45 +18,43 @@ fixed_array = ...
 
 float_array = fixed_array;
 float_array.face = 'down';
-float_array.magdir_first = [-90 -90];
 
-displ_steps = 201;
+displ_steps = 51;
 yrange = linspace(-0.08,0.08,displ_steps);
 zgap = repmat([0; 0; 0.015],[1 displ_steps]);
 displ = zgap + [0; 1; 0]*yrange;
 
-forces = multipoleforces(fixed_array, float_array, displ);
+%% Calculate or load data
 
-% save data/multipole_planar_example_data forces yrange
+datafile = 'data/planar_multipole_example_data.mat';
+if exist(datafile,'file')
+  % Delete (or rename) the data file to re-run the calculations
+  load(datafile)
+else
+  forces = multipoleforces(fixed_array, float_array, displ);
+  save(datafile,'forces','yrange');
+end
 
 %% Plot
 
-willfig('planar-halbach'); clf; hold on;
+try
+  willfig('planar-halbach'); clf; hold on;
+catch
+  figure;
+end
 
-plot(yrange,forces(2,:),'Tag','y');
-plot(yrange,forces(3,:),'Tag','z');
-set(gca,'box','on')
-set(gca,'ticklength',[0.02 0.05])
-axis tight
+plot(yrange,forces([2 3],:));
+set(gca,'box','on','ticklength',[0.02 0.05])
 
-% We want the vertical axis 5% less tight:
-ylim = get(gca,'ylim');
-ylim_range = ylim(2)-ylim(1);
-yp = 0.05;
-ylim = [ylim(1)-yp*ylim_range ylim(2)+yp*ylim_range];
-set(gca,'ylim',ylim);
-
-
-xlabel('Horizontal $y$ displacement, m')
+xlabel('Horizontal $y$-displacement, m')
 ylabel('Force, N')
-text( -0.02, 200,'$F_z$');
-text( -0.03,-100,'$F_y$');
+text( -0.02, 200,'$F_z$','interpreter','LaTeX');
+text( -0.03,-100,'$F_y$','interpreter','LaTeX');
 
-if ~simple_graph
-  [h1 h2] = draworigin;
-  set([h1 h2],'linestyle','--');
+try
+  axistight
+  draworigin([0 0],'--')
   colourplot
-  % labelplot
   matlabfrag('fig/planar-halbach','dpi',3200);
 end
 

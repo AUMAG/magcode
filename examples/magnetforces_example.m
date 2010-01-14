@@ -6,11 +6,10 @@
 if ~exist('willfig','file')
   close all
   willfig = @(str) figure;
-  simple_graph = 1;
+  simple_graph = true;
 else
-  simple_graph = 0;
+  simple_graph = false;
 end
-
 
 %% Parallel magnets example
 %
@@ -38,17 +37,14 @@ plot(displ,f1_xyz(2,:),'Tag','y')
 plot(displ,f1_xyz(3,:),'Tag','z')
 xlabel('Horizontal $x$ displacement, m')
 ylabel('Forces, N')
-set(gca,'box','on');
-set(gca,'ticklength',[0.02 0.05])
-text(0.004,-0.5,'$F_x$')
-text(0.004, 0.8,'$F_y$')
-text(0.004,-1.7,'$F_z$')
+set(gca,'box','on','ticklength',[0.02 0.05])
+text(0.004,-0.5,'$F_x$','interpreter','LaTeX')
+text(0.004, 0.8,'$F_y$','interpreter','LaTeX')
+text(0.004,-1.7,'$F_z$','interpreter','LaTeX')
 
 if ~simple_graph
-  h1 = draworigin([0 0],'h');
-  set(h1,'linestyle','--');
+  draworigin([0 0],'h','--')
   colourplot
-  % labelplot
   matlabfrag('fig/akoun-repro','dpi',3200);
 end
 
@@ -78,30 +74,20 @@ willfig('janssen'); clf; hold on
 plot(displ,f_xyz(1,:),'Tag','x')
 plot(displ,f_xyz(2,:),'Tag','y')
 plot(displ,f_xyz(3,:),'Tag','z')
-set(gca,'box','on');
-set(gca,'ticklength',[0.02 0.05])
-axis tight
-
-% We want the vertical axis 5% less tight:
-ylim = get(gca,'ylim');
-ylim_range = ylim(2)-ylim(1);
-yp = 0.05;
-ylim = [ylim(1)-yp*ylim_range ylim(2)+yp*ylim_range];
-set(gca,'ylim',ylim);
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 % add some more xticks:
 set(gca,'xtick',[-0.05 -0.025 0 0.025 0.05]);
 
 xlabel('Horizontal $x$ displacement, m')
 ylabel('Forces, N')
-text(-0.03,-10,'$F_x$')
-text(0.01,   10,'$F_y$')
-text(-0.025, 10,'$F_z$')
+text(-0.03,-10,'$F_x$','interpreter','LaTeX')
+text( 0.01, 10,'$F_y$','interpreter','LaTeX')
+text(-0.025,10,'$F_z$','interpreter','LaTeX')
 
 if ~simple_graph
-  [h1 h2] = draworigin;
-  set([h1 h2],'linestyle','--');
+  axistight
+  draworigin([0 0],'--')
   colourplot
-  % labelplot
   matlabfrag('fig/janssen-repro','dpi',3200);
 end

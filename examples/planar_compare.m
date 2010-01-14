@@ -3,11 +3,6 @@
 % Calculating the force between multipole magnet arrays
 % in a range of configurations.
 
-%%
-
-clc
-datafile = 'data/planar_compare_data.mat';
-
 %% Array setup
 
 array_height = 0.01;
@@ -100,34 +95,31 @@ quasi2.magdir_fn = @(ii,jj,kk)  [  sind(90*ii)*cosd(90*jj) ;
 
 %% Load or calculate data
 
+datafile = 'data/planar_compare_data.mat';
 if exist(datafile,'file')
   % Delete (or rename) the data file to re-run the calculations
   load(datafile)
 else
-  forces.linear  = multipoleforces(linear1,  linear2, displ, 'debug');
-  forces.single  = magnetforces(single1,  single2, displ, 'debug');
-  forces.halbach = multipoleforces(halbach1, halbach2, displ, 'debug');
-  forces.patchwork = multipoleforces(patchwork1, patchwork2, displ,'debug');
-  forces.quasi = multipoleforces(quasi1,quasi2,displ,'debug');
+  forces.single    = magnetforces(single1, single2, displ);
+  forces.linear    = multipoleforces(linear1,    linear2,    displ);
+  forces.halbach   = multipoleforces(halbach1,   halbach2,   displ);
+  forces.patchwork = multipoleforces(patchwork1, patchwork2, displ);
+  forces.quasi     = multipoleforces(quasi1,     quasi2,     displ);
   save(datafile,'forces','zrange');
 end
 
 %% Plot
 
-if ~exist('willfig','file')
-  close all
-  willfig = @(str) figure;
-  simple_graph = true;
-else
-  simple_graph = false;
+try
+  willfig('planar-compare'); clf; hold on
+catch
+  figure; hold on
 end
 
-willfig('planar-compare'); clf; hold on;
-
-plot(zrange,forces.linear(3,:),   '.-','Tag','Linear Halbach');
-plot(zrange,forces.halbach(3,:),  '--','Tag','Planar Halbach');
-plot(zrange,forces.quasi(3,:),         'Tag','Quasi Halbach' );
-plot(zrange,forces.single(3,:),   '.' ,'Tag','Single magnet' );
+plot(zrange,forces.linear(3,:),   '.-', 'Tag','Linear Halbach');
+plot(zrange,forces.halbach(3,:),  '--', 'Tag','Planar Halbach');
+plot(zrange,forces.quasi(3,:),          'Tag','Quasi Halbach' );
+plot(zrange,forces.single(3,:),   '.' , 'Tag','Single magnet' );
 plot(zrange,forces.patchwork(3,:),'.--','Tag','Patchwork'     );
 
 set(gca,'box','on','ticklength',[0.02 0.05])
@@ -136,9 +128,8 @@ set(gca,'xlim',[0.0095 0.02]);
 xlabel('Vertical displacement, m')
 ylabel('Vertical force, N')
 
-if ~simple_graph
-  h1 = draworigin([0.01 0],'v');
-  set(h1,'linestyle','--');
+try
+  draworigin([0.01 0],'v','--');
   colourplot(1,5:-1:1);
   labelplot('northeast','vertical')
   legendshrink
