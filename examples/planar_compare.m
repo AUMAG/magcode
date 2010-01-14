@@ -8,14 +8,6 @@
 clc
 datafile = 'data/planar_compare_data.mat';
 
-if ~exist('willfig','file')
-  close all
-  willfig = @(str) figure;
-  simple_graph = true;
-else
-  simple_graph = false;
-end
-
 %% Array setup
 
 array_height = 0.01;
@@ -26,7 +18,7 @@ zrange = array_height*(1+linspace(0.001,1,displ_steps));
 gap = repmat( [0; 0; 0], [1 displ_steps] );
 displ = gap + [0; 0; 1]*zrange;
 
-%% Linear
+%%% Linear
 
 linear1 = ...
   struct(...
@@ -43,7 +35,7 @@ linear1 = ...
 linear2 = linear1;
 linear2.face = 'down';
 
-%% Single magnet
+%%% Single magnet
 
 single1 = ...
   struct(...
@@ -55,7 +47,7 @@ single1 = ...
 single2 = single1;
 single2.magdir = [0;0;-1];
 
-%% Halbach
+%%% Halbach
 
 halbach1 = ...
   struct(...
@@ -72,7 +64,7 @@ halbach1 = ...
 halbach2 = halbach1;
 halbach2.face = 'down';
 
-%% Patchwork
+%%% Patchwork
 
 patchwork1 = ...
   struct(...
@@ -87,7 +79,7 @@ patchwork2 = patchwork1;
 patchwork2.magdir_fn = @(ii,jj,kk) [0; 0; (-1)^(ii+jj)];
 
 
-%% Quasi-Halbach
+%%% Quasi-Halbach
 
 quasi1 = ...
   struct(...
@@ -106,7 +98,7 @@ quasi2.magdir_fn = @(ii,jj,kk)  [  sind(90*ii)*cosd(90*jj) ;
                                   -sind(90*ii)*sind(90*jj) ] ;
 
 
-%%
+%% Load or calculate data
 
 if exist(datafile,'file')
   % Delete (or rename) the data file to re-run the calculations
@@ -122,26 +114,32 @@ end
 
 %% Plot
 
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  simple_graph = true;
+else
+  simple_graph = false;
+end
+
 willfig('planar-compare'); clf; hold on;
 
-plot(zrange,forces.single(3,:),   '.' ,'Tag','Single magnet' );
-plot(zrange,forces.patchwork(3,:),'.--','Tag','Patchwork'     );
 plot(zrange,forces.linear(3,:),   '.-','Tag','Linear Halbach');
 plot(zrange,forces.halbach(3,:),  '--','Tag','Planar Halbach');
 plot(zrange,forces.quasi(3,:),         'Tag','Quasi Halbach' );
+plot(zrange,forces.single(3,:),   '.' ,'Tag','Single magnet' );
+plot(zrange,forces.patchwork(3,:),'.--','Tag','Patchwork'     );
 
 set(gca,'box','on','ticklength',[0.02 0.05])
 set(gca,'xlim',[0.0095 0.02]);
 
 xlabel('Vertical displacement, m')
 ylabel('Vertical force, N')
-text( -0.02, 200,'$F_z$');
-text( -0.03,-100,'$F_y$');
 
 if ~simple_graph
   h1 = draworigin([0.01 0],'v');
   set(h1,'linestyle','--');
-  colourplot
+  colourplot(1,5:-1:1);
   labelplot('northeast','vertical')
   legendshrink
   matlabfrag('fig/planar-compare','dpi',3200);
