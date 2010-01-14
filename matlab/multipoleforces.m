@@ -60,11 +60,11 @@ fixed_array  =  complete_array_from_input(fixed_array);
 float_array  =  complete_array_from_input(float_array); 
  
 if calc_force_bool 
-  array_forces  =  repmat(NaN,[fixed_array.total float_array.total 3 Ndispl]); 
+  array_forces  =  repmat(NaN,[3 Ndispl fixed_array.total float_array.total]); 
 end 
  
 if calc_stiffness_bool 
-  array_stiffnesses  =  repmat(NaN,[fixed_array.total float_array.total 3 Ndispl]); 
+  array_stiffnesses  =  repmat(NaN,[3 Ndispl fixed_array.total float_array.total]); 
 end 
  
 displ_from_array_corners  =  displ  ... 
@@ -89,32 +89,30 @@ for ii  =  1:fixed_array.total
       'magdir', float_array.magdir(jj,:)  ... 
     ); 
  
-    for dd  =  1:Ndispl 
+    mag_displ  =  displ_from_array_corners  ... 
+                  - repmat(fixed_array.magloc(ii,:)',[1 Ndispl])  ... 
+                  + repmat(float_array.magloc(jj,:)',[1 Ndispl]) ; 
  
-      mag_displ  =  displ_from_array_corners(:,dd)  ... 
-                  - fixed_array.magloc(ii,:)' + float_array.magloc(jj,:)' ; 
- 
-      if calc_force_bool 
-        array_forces(ii,jj,:,dd)  =   ... 
-            magnetforces(fixed_magnet, float_magnet, mag_displ,'force'); 
-      end 
- 
-      if calc_stiffness_bool 
-        array_stiffnesses(ii,jj,:,dd)  =   ... 
-            magnetforces(fixed_magnet, float_magnet, mag_displ,'stiffness'); 
-      end 
- 
+    if calc_force_bool && ~calc_stiffness_bool 
+      array_forces(:,:,ii,jj)  =   ... 
+          magnetforces(fixed_magnet, float_magnet, mag_displ,'force'); 
+    elseif calc_stiffness_bool && ~calc_force_bool 
+      array_stiffnesses(:,:,ii,jj)  =   ... 
+          magnetforces(fixed_magnet, float_magnet, mag_displ,'stiffness'); 
+    else 
+      [array_forces(:,:,ii,jj) array_stiffnesses(:,:,ii,jj)]  =   ... 
+          magnetforces(fixed_magnet, float_magnet, mag_displ,'force','stiffness'); 
     end 
  
   end 
 end 
  
 if calc_force_bool 
-  forces_out  =  squeeze(sum(sum(array_forces,1),2)); 
+  forces_out  =  sum(sum(array_forces,4),3); 
 end 
  
 if calc_stiffness_bool 
-  stiffnesses_out  =  squeeze(sum(sum(array_stiffnesses,1),2)); 
+  stiffnesses_out  =  sum(sum(array_stiffnesses,4),3); 
 end 
  
  
