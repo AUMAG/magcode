@@ -19,7 +19,7 @@ $(DOC): $(DIR)/$(DOC)
 $(DIR)/$(DOC): $(DIR)/$(SRC) $(DIR)/$(DRV).tex $(MWEB)
 	cd $(DIR)/; mweave $(SRC)
 	cd $(DIR)/; pdflatex -draftmode $(DRV)
-	cd $(DIR)/; bibtex $(DRV)
+	cd $(DIR)/; pwd; /usr/texbin/bibtex $(DRV)
 	cd $(DIR)/; pdflatex $(DRV)
 
 $(DIR)/$(SRC): $(SRC)

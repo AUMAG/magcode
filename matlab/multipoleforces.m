@@ -146,16 +146,38 @@ planar_index  =  [0 0];
  
 switch array.type 
   case 'generic' 
-  case 'linear',    linear_index  =  1; 
-  case 'linear-x',  linear_index  =  1; 
-  case 'linear-y',  linear_index  =  2; 
-  case 'linear-z',  linear_index  =  3; 
-  case 'planar',    planar_index  =  [1 2]; 
-  case 'planar-xy', planar_index  =  [1 2]; 
-  case 'planar-yz', planar_index  =  [2 3]; 
-  case 'planar-xz', planar_index  =  [1 3]; 
+  case 'linear',            linear_index  =  1; 
+  case 'planar',            planar_index  =  [1 2]; 
+  case 'quasi-halbach',     planar_index  =  [1 2]; 
+  case 'patchwork',         planar_index  =  [1 2]; 
   otherwise 
     error(['Unknown array type ''',array.type,'''.']) 
+end 
+ 
+if ~isequal(array.type,'generic') 
+  if linear_index == 1 
+    if ~isfield(array,'align') 
+      array.align  =  'x'; 
+    end 
+    switch array.align 
+      case 'x', linear_index  =  1; 
+      case 'y', linear_index  =  2; 
+      case 'z', linear_index  =  3; 
+    otherwise 
+      errror('Alignment for linear array must be ''x'', ''y'', or ''z''.') 
+    end 
+  else 
+    if ~isfield(array,'align') 
+      array.align  =  'xy'; 
+    end 
+    switch array.align 
+      case 'xy', planar_index  =  [1 2]; 
+      case 'yz', planar_index  =  [2 3]; 
+      case 'xz', planar_index  =  [1 3]; 
+    otherwise 
+      errror('Alignment for planar array must be ''xy'', ''yz'', or ''xz''.') 
+    end 
+  end 
 end 
  
 switch array.face 
@@ -170,6 +192,14 @@ if linear_index ~= 0
   if linear_index == facing_index 
     error('Arrays cannot face into their alignment direction.') 
   end 
+elseif ~isequal( planar_index, [0 0] ) 
+  if any( planar_index == facing_index ) 
+    error('Planar-type arrays can only face into their orthogonal direction') 
+  end 
+end 
+ 
+switch array.type 
+  case 'linear' 
   
 array  =  extrapolate_variables(array); 
  
@@ -177,10 +207,7 @@ array.mcount  =  ones(1,3);
 array.mcount(linear_index)  =  array.Nmag; 
  
  
-elseif ~isequal( planar_index, [0 0] ) 
-  if any( planar_index == facing_index ) 
-    error('Planar arrays can only face into their orthogonal direction') 
-  end 
+  case 'planar' 
   
 if isfield(array,'length') 
   if length(array.length) == 1 
@@ -234,6 +261,45 @@ array.mlength  =  array.mlength(1);
 array.mcount  =  ones(1,3); 
 array.mcount(planar_index)  =  array.Nmag; 
  
+ 
+  case 'quasi-halbach' 
+  
+if isfield(array,'mcount') 
+  if numel(array.mcount) ~=3 
+    error('''mcount'' must always have three elements.') 
+  end 
+elseif isfield(array,'Nwaves') 
+  if numel(array.Nwaves) > 2 
+    error('''Nwaves'' must have one or two elements only.') 
+  end 
+  array.mcount(facing_index)  =  1; 
+  array.mcount([planar_index])  =  4 * array.Nwaves+1; 
+elseif isfield(array,'Nmag') 
+  if numel(array.Nmag) > 2 
+    error('''Nmag'' must have one or two elements only.') 
+  end 
+  array.mcount(facing_index)  =  1; 
+  array.mcount([planar_index])  =  array.Nmag; 
+else 
+  error('Must specify the number of magnets (''mcount'' or ''Nmag'') or wavelengths (''Nwaves'')') 
+end 
+ 
+ 
+  case 'patchwork' 
+  
+if isfield(array,'mcount') 
+  if numel(array.mcount) ~=3 
+    error('''mcount'' must always have three elements.') 
+  end 
+elseif isfield(array,'Nmag') 
+  if numel(array.Nmag) > 2 
+    error('''Nmag'' must have one or two elements only.') 
+  end 
+  array.mcount(facing_index)  =  1; 
+  array.mcount([planar_index])  =  array.Nmag; 
+else 
+  error('Must specify the number of magnets (''mcount'' or ''Nmag'')') 
+end 
  
  
 end 
@@ -303,7 +369,8 @@ if ~isfield(array,'magdir_fn')
   magdir_fn_comp{2}  =  @(ii,jj,kk) 0; 
   magdir_fn_comp{3}  =  @(ii,jj,kk) 0; 
  
-  if linear_index ~= 0 
+  switch array.type 
+  case 'linear' 
     magdir_theta  =  @(nn)  ... 
       array.magdir_first+magdir_rotate_sign * array.magdir_rotate * (nn-1); 
  
@@ -313,7 +380,7 @@ if ~isfield(array,'magdir_fn')
     magdir_fn_comp{facing_index}  =  @(ii,jj,kk)  ... 
       sind(magdir_theta(part([ii,jj,kk],linear_index))); 
  
-  elseif ~isequal( planar_index, [0 0] ) 
+  case 'planar' 
  
     magdir_theta  =  @(nn)  ... 
       array.magdir_first(1)+magdir_rotate_sign * array.magdir_rotate(1) * (nn-1); 
@@ -331,7 +398,35 @@ if ~isfield(array,'magdir_fn')
       sind(magdir_theta(part([ii,jj,kk],planar_index(1))))  ... 
       + sind(magdir_phi(part([ii,jj,kk],planar_index(2)))); 
  
-  else 
+  case 'patchwork' 
+ 
+    magdir_fn_comp{planar_index(1)}  =  @(ii,jj,kk) 0; 
+ 
+    magdir_fn_comp{planar_index(2)}  =  @(ii,jj,kk) 0; 
+ 
+    magdir_fn_comp{facing_index}  =  @(ii,jj,kk)  ... 
+      magdir_rotate_sign * (-1)^(  ... 
+     part([ii,jj,kk],planar_index(1))  ... 
+     + part([ii,jj,kk],planar_index(2))  ... 
+     + 1  ... 
+   ); 
+ 
+  case 'quasi-halbach' 
+ 
+    magdir_fn_comp{planar_index(1)}  =  @(ii,jj,kk)  ... 
+      sind(90 * part([ii,jj,kk],planar_index(1)))  ... 
+       *  cosd(90 * part([ii,jj,kk],planar_index(2))); 
+ 
+    magdir_fn_comp{planar_index(2)}  =  @(ii,jj,kk)  ... 
+      cosd(90 * part([ii,jj,kk],planar_index(1)))  ... 
+       *  sind(90 * part([ii,jj,kk],planar_index(2))); 
+ 
+    magdir_fn_comp{facing_index}  =  @(ii,jj,kk)  ... 
+      magdir_rotate_sign  ... 
+       *  sind(90 * part([ii,jj,kk],planar_index(1)))  ... 
+       *  sind(90 * part([ii,jj,kk],planar_index(2))); 
+ 
+  otherwise 
     error('Array property ''magdir_fn'' not defined and I have no way to infer it.') 
   end 
  

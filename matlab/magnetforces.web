@@ -1232,6 +1232,8 @@ there's a quick summary in Tables \ref{multipole-input} and~\ref{array-types}.
 \midrule
  Arrays:
  & |type| & See Table~\ref{array-types} \\
+ & |align| & See Table~\ref{align-types} \\
+ & |face| & See Table~\ref{face-types} \\
  & |mcount| & |[i j k]| magnets in each direction \\
  & |msize|  & size of each magnet \\
  & |mgap|   & gap between successive magnets \\
@@ -1241,18 +1243,39 @@ there's a quick summary in Tables \ref{multipole-input} and~\ref{array-types}.
 \end{tabular}
 \end{table}
 
-\begin{table}[p]
+\begin{table}
 \caption{Possibilities for the \texttt{type} of a multipole array.}
 \label{array-types}
 \begin{tabular}{@@{}>{\ttfamily}ll@@{}}
 \toprule
 generic  & Magnetisation directions \&c.\ are defined manually \\
-linear-x & Linear array aligned with $x$ \\
-linear-y & Linear array aligned with $y$ \\
-linear-z & Linear array aligned with $z$ \\
-planar-xy & Planar array aligned with $x{-}y$ \\
-planar-yz & Planar array aligned with $y{-}z$ \\
-planar-xz & Planar array aligned with $x{-}z$ \\
+linear & Linear Halbach array \\
+planar & Planar Halbach array \\
+quasi-Halbach & Quasi-Halbach planar array \\
+patchwork & `Patchwork' planar array \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Axes or plane with which to align the array, set with \texttt{align}.}
+\label{align-types}
+\begin{tabular}{@@{}ll@@{}}
+\toprule
+\texttt{x}, \texttt{y}, \texttt{z} & For linear arrays \\
+\texttt{xy}, \texttt{yz}, \texttt{xz} & For planar arrays \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\caption{Facing direction for the strong side of the array, set with \texttt{face}.}
+\label{face-types}
+\begin{tabular}{@@{}ll@@{}}
+\toprule
+\texttt{+x}, \texttt{-x} & Horizontal \\
+\texttt{+y}, \texttt{-y} & Horizontal \\
+\texttt{+z}, \texttt{-z}, \texttt{up}, \texttt{down} & Vertical \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1415,16 +1438,38 @@ planar_index = [0 0];
 
 switch array.type
   case 'generic'
-  case 'linear',    linear_index = 1;
-  case 'linear-x',  linear_index = 1;
-  case 'linear-y',  linear_index = 2;
-  case 'linear-z',  linear_index = 3;
-  case 'planar',    planar_index = [1 2];
-  case 'planar-xy', planar_index = [1 2];
-  case 'planar-yz', planar_index = [2 3];
-  case 'planar-xz', planar_index = [1 3];
+  case 'linear',            linear_index = 1;
+  case 'planar',            planar_index = [1 2];
+  case 'quasi-halbach',     planar_index = [1 2];
+  case 'patchwork',         planar_index = [1 2];
   otherwise
     error(['Unknown array type ''',array.type,'''.'])
+end
+
+if ~isequal(array.type,'generic')
+  if linear_index == 1
+    if ~isfield(array,'align')
+      array.align = 'x';
+    end
+    switch array.align
+      case 'x', linear_index = 1;
+      case 'y', linear_index = 2;
+      case 'z', linear_index = 3;
+    otherwise
+      errror('Alignment for linear array must be ''x'', ''y'', or ''z''.')
+    end
+  else
+    if ~isfield(array,'align')
+      array.align = 'xy';
+    end
+    switch array.align
+      case 'xy', planar_index = [1 2];
+      case 'yz', planar_index = [2 3];
+      case 'xz', planar_index = [1 3];
+    otherwise
+      errror('Alignment for planar array must be ''xy'', ''yz'', or ''xz''.')
+    end
+  end
 end
 
 switch array.face
@@ -1439,12 +1484,21 @@ if linear_index ~= 0
   if linear_index == facing_index
     error('Arrays cannot face into their alignment direction.')
   end
-@< Infer linear array variables @>
 elseif ~isequal( planar_index, [0 0] )
   if any( planar_index == facing_index )
-    error('Planar arrays can only face into their orthogonal direction')
+    error('Planar-type arrays can only face into their orthogonal direction')
   end 
+end
+
+switch array.type
+  case 'linear'
+@< Infer linear array variables @>
+  case 'planar'
 @< Infer planar array variables @>
+  case 'quasi-halbach'
+@< Infer quasi-Halbach array variables @>
+  case 'patchwork'
+@< Infer patchwork array variables @>
 end
 
 @< Array sizes @>
@@ -1587,6 +1641,48 @@ array.mlength = array.mlength(1);
 array.mcount = ones(1,3);
 array.mcount(planar_index) = array.Nmag;
 
+@ The other two planar arrays are less complicated than the planar Halbach
+  array above. Still lots of annoying variable-wrangling, though.
+
+@< Infer quasi-Halbach array variables @>=
+
+if isfield(array,'mcount')
+  if numel(array.mcount) ~=3
+    error('''mcount'' must always have three elements.')
+  end
+elseif isfield(array,'Nwaves')
+  if numel(array.Nwaves) > 2
+    error('''Nwaves'' must have one or two elements only.')
+  end
+  array.mcount(facing_index) = 1;
+  array.mcount([planar_index]) = 4*array.Nwaves+1;
+elseif isfield(array,'Nmag')
+  if numel(array.Nmag) > 2
+    error('''Nmag'' must have one or two elements only.')
+  end
+  array.mcount(facing_index) = 1;
+  array.mcount([planar_index]) = array.Nmag;
+else
+  error('Must specify the number of magnets (''mcount'' or ''Nmag'') or wavelengths (''Nwaves'')')
+end
+
+@ Basically the same for the patchwork array.
+
+@< Infer patchwork array variables @>=
+
+if isfield(array,'mcount')
+  if numel(array.mcount) ~=3
+    error('''mcount'' must always have three elements.')
+  end
+elseif isfield(array,'Nmag')
+  if numel(array.Nmag) > 2
+    error('''Nmag'' must have one or two elements only.')
+  end
+  array.mcount(facing_index) = 1;
+  array.mcount([planar_index]) = array.Nmag;
+else
+  error('Must specify the number of magnets (''mcount'' or ''Nmag'')')
+end
 
 @ Sizes.
 
@@ -1660,7 +1756,8 @@ if ~isfield(array,'magdir_fn')
   magdir_fn_comp{2} = @@(ii,jj,kk) 0;
   magdir_fn_comp{3} = @@(ii,jj,kk) 0;
   
-  if linear_index ~= 0
+  switch array.type
+  case 'linear'
     magdir_theta = @@(nn) ...
       array.magdir_first+magdir_rotate_sign*array.magdir_rotate*(nn-1);
     
@@ -1670,7 +1767,7 @@ if ~isfield(array,'magdir_fn')
     magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],linear_index)));
 
-  elseif ~isequal( planar_index, [0 0] )
+  case 'planar'
 
     magdir_theta = @@(nn) ...
       array.magdir_first(1)+magdir_rotate_sign*array.magdir_rotate(1)*(nn-1);
@@ -1687,8 +1784,36 @@ if ~isfield(array,'magdir_fn')
     magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],planar_index(1)))) ...
       + sind(magdir_phi(part([ii,jj,kk],planar_index(2))));
-    
-  else
+
+  case 'patchwork'
+
+    magdir_fn_comp{planar_index(1)} = @@(ii,jj,kk) 0;
+
+    magdir_fn_comp{planar_index(2)} = @@(ii,jj,kk) 0;
+
+    magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
+      magdir_rotate_sign*(-1)^( ...
+	    part([ii,jj,kk],planar_index(1)) ...
+	    + part([ii,jj,kk],planar_index(2)) ...
+	    + 1 ...
+	  );
+
+  case 'quasi-halbach'  
+
+    magdir_fn_comp{planar_index(1)} = @@(ii,jj,kk) ...
+      sind(90*part([ii,jj,kk],planar_index(1))) ...
+      * cosd(90*part([ii,jj,kk],planar_index(2)));
+
+    magdir_fn_comp{planar_index(2)} = @@(ii,jj,kk) ...
+      cosd(90*part([ii,jj,kk],planar_index(1))) ...
+      * sind(90*part([ii,jj,kk],planar_index(2)));
+
+    magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
+      magdir_rotate_sign ...
+      * sind(90*part([ii,jj,kk],planar_index(1))) ...
+      * sind(90*part([ii,jj,kk],planar_index(2)));
+
+  otherwise
     error('Array property ''magdir_fn'' not defined and I have no way to infer it.')
   end
 
@@ -1788,7 +1913,8 @@ fprintf('TEST 002a: ')
 
 fixed_array = ...
   struct(...
-	'type','linear-x', ...
+	'type','linear', ...
+	'align','x', ...
 	'face','up', ...
 	'length', 0.01, ...
 	'width',  0.01, ...
@@ -1822,7 +1948,8 @@ fprintf('TEST 002b: ')
 
 fixed_array = ...
   struct(...
-	'type','linear-x', ...
+	'type','linear', ...
+	'align','x', ...
 	'face','up', ...
 	'length', 0.01, ...
 	'width',  0.01, ...
@@ -1877,44 +2004,56 @@ f = repmat(NaN,[3 0]);
 
 % The varying calculations
 
-fixed_array.type = 'linear-x';
+fixed_array.type = 'linear';
 float_array.type = fixed_array.type;
+fixed_array.align = 'x';
+float_array.align = fixed_array.align;
 fixed_array.face = 'up';
 float_array.face = 'down';
 displ = [0 0 0.02];
 f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
-fixed_array.type = 'linear-x';
+fixed_array.type = 'linear';
 float_array.type = fixed_array.type;
+fixed_array.align = 'x';
+float_array.align = fixed_array.align;
 fixed_array.face = '+y';
 float_array.face = '-y';
 displ = [0 0.02 0];
 f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
-fixed_array.type = 'linear-y';
+fixed_array.type = 'linear';
 float_array.type = fixed_array.type;
+fixed_array.align = 'y';
+float_array.align = fixed_array.align;
 fixed_array.face = 'up';
 float_array.face = 'down';
 displ = [0 0 0.02];
 f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
-fixed_array.type = 'linear-y';
+fixed_array.type = 'linear';
 float_array.type = fixed_array.type;
+fixed_array.align = 'y';
+float_array.align = fixed_array.align;
 fixed_array.face = '+x';
 float_array.face = '-x';
 displ = [0.02 0 0];
 f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
 
-fixed_array.type = 'linear-z';
+fixed_array.type = 'linear';
 float_array.type = fixed_array.type;
+fixed_array.align = 'z';
+float_array.align = fixed_array.align;
 fixed_array.face = '+x';
 float_array.face = '-x';
 displ = [0.02 0 0];
 f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
-fixed_array.type = 'linear-z';
+fixed_array.type = 'linear';
 float_array.type = fixed_array.type;
+fixed_array.align = 'z';
+float_array.align = fixed_array.align;
 fixed_array.face = '+y';
 float_array.face = '-y';
 displ = [0 0.02 0];
@@ -1953,22 +2092,28 @@ f = repmat(NaN,[3 0]);
 
 % The varying calculations
 
-fixed_array.type = 'planar-xy';
+fixed_array.type = 'planar';
 float_array.type = fixed_array.type;
+fixed_array.align = 'xy';
+float_array.align = fixed_array.align;
 fixed_array.face = 'up';
 float_array.face = 'down';
 displ = [0 0 0.02];
 f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
-fixed_array.type = 'planar-yz';
+fixed_array.type = 'planar';
 float_array.type = fixed_array.type;
+fixed_array.align = 'yz';
+float_array.align = fixed_array.align;
 fixed_array.face = '+x';
 float_array.face = '-x';
 displ = [0.02 0 0];
 f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
-fixed_array.type = 'planar-xz';
+fixed_array.type = 'planar';
 float_array.type = fixed_array.type;
+fixed_array.align = 'xz';
+float_array.align = fixed_array.align;
 fixed_array.face = '+y';
 float_array.face = '-y';
 displ = [0 0.02 0];

@@ -99,10 +99,11 @@ stiffnesses = multipoleforces( ... , 'stiffness');
 Because multipole arrays can be defined in various ways, there are several
 overlapping methods for specifying the structures defining an array. Please escuse a certain amount of dryness in the information to follow; more inspiration for better documentation will come with feedback from those reading this document!
 
-\paragraph{Linear arrays}
+\paragraph{Linear Halbach arrays}
 A minimal set of variables to define a linear multipole array are:
 \begin{description}[noitemsep,font=\ttfamily]
-\item[array.type] Either `|linear-x|', `|linear-y|', or `|linear-z|' to align the array with an axis.
+\item[array.type] Use `|linear|' to specify an array of this type.
+\item[array.align] One of `|x|', `|y|', or `|z|' to specify an alignment axis along which successive magnets are placed.
 \item[array.face] One of `|+x|', `|+y|', `|+z|', `|-x|', `|-y|', or `|-z|' to specify which direction the `strong' side of the array faces.
 \item[array.msize] A $(3\times1)$ vector defining the size of each magnet in the array.
 \item[array.Nmag] The number of magnets composing the array.
@@ -136,16 +137,30 @@ Notes:
 when |gap| is used, |length| refers to the total length of magnetic material placed end-to-end, not the total length of the array including the gaps.
 \end{itemize}
 
-\paragraph{Planar arrays}
+\paragraph{Planar Halbach arrays}
 Most of the information above follows for planar arrays, which can be thought
 of as a superposition of two orthogonal linear arrays.
 \begin{description}[noitemsep,font=\ttfamily]
-\item[array.type] Either `|planar-xy|', `|planar-yz|', or `|planar-xz|' to align the array with a plane.
-\item[array.width] This is now the `length' in the second spanning direction of the planar array. E.g., for the array `|planar-xy|', `length' refers to the $x$-direction and `width' refers to the $y$-direction. (And `height' is $z$.)
+\item[array.type] Use `|planar|' to specify an array of this type.
+\item[array.align] One of `|xy|' (default), `|yz|', or `|xz|' for a plane with which to align the array.
+\item[array.] This is now the `length' in the second spanning direction of the planar array. E.g., for the array `|planar-xy|', `length' refers to the $x$-direction and `width' refers to the $y$-direction. (And `height' is $z$.)
 \item[array.mwidth] Ditto, etc.
 \end{description}
-All other variables for linear arrays hold analogously for planar arrays; if
-desired, two-element input can be given to specify different properties in different directions.
+All other variables for linear Halbach arrays hold analogously for planar Halbach arrays; if desired, two-element input can be given to specify different properties in different directions.
+
+\paragraph{Planar quasi-Halbach arrays}
+This magnetisation pattern is simpler than the planar Halbach array described above.
+\begin{description}[noitemsep,font=\ttfamily]
+\item[array.type] Use `|quasi-halbach|' to specify an array of this type.
+\item[array.Nwaves] There are always four magnets per wavelength for the quasi-Halbach array. Two elements to specify the number of wavelengths in each direction, or just one if the same in both.
+\item[array.Nmag] Instead of |Nwaves|, in case you want a non-integer number of wavelengths (but that would be weird).
+\end{description}
+
+\paragraph{Patchwork planar array}
+\begin{description}[noitemsep,font=\ttfamily]
+\item[array.type] Use `|patchwork|' to specify an array of this type.
+\item[array.Nmag] There isn't really a `wavelength of magnetisation' for this one; or rather, there is but it's trivial. So just define the number of magnets per side, instead. (Two-element for different sizes of one-element for an equal number of magnets in both directions.)
+\end{description}
 
 \paragraph{Arbitrary arrays}
 Until now we have assumed that magnet arrays are composed of magnets with identical sizes and regularly-varying magnetisation directions.
