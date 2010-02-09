@@ -4,7 +4,7 @@ function [varargout]  =  multipoleforces(fixed_array, float_array, displ, vararg
   
 %% MULTIPOLEFORCES  Calculate forces between two multipole arrays of magnets 
 % 
-% Finish this off later. 
+% Finish this off later. Please read the PDF documentation instead for now. 
 % 
  
  
@@ -137,6 +137,8 @@ function array  =  complete_array_from_input(array)
 if ~isfield(array,'type') 
   array.type  =  'generic'; 
 end 
+ 
+  
 if ~isfield(array,'face') 
   array.face  =  'undefined'; 
 end 
@@ -147,6 +149,7 @@ planar_index  =  [0 0];
 switch array.type 
   case 'generic' 
   case 'linear',            linear_index  =  1; 
+  case 'linear-quasi',        linear_index  =  1; 
   case 'planar',            planar_index  =  [1 2]; 
   case 'quasi-halbach',     planar_index  =  [1 2]; 
   case 'patchwork',         planar_index  =  [1 2]; 
@@ -164,7 +167,7 @@ if ~isequal(array.type,'generic')
       case 'y', linear_index  =  2; 
       case 'z', linear_index  =  3; 
     otherwise 
-      errror('Alignment for linear array must be ''x'', ''y'', or ''z''.') 
+      error('Alignment for linear array must be ''x'', ''y'', or ''z''.') 
     end 
   else 
     if ~isfield(array,'align') 
@@ -175,7 +178,7 @@ if ~isequal(array.type,'generic')
       case 'yz', planar_index  =  [2 3]; 
       case 'xz', planar_index  =  [1 3]; 
     otherwise 
-      errror('Alignment for planar array must be ''xy'', ''yz'', or ''xz''.') 
+      error('Alignment for planar array must be ''xy'', ''yz'', or ''xz''.') 
     end 
   end 
 end 
@@ -198,6 +201,8 @@ elseif ~isequal( planar_index, [0 0] )
   end 
 end 
  
+ 
+ 
 switch array.type 
   case 'linear' 
   
@@ -205,6 +210,65 @@ array  =  extrapolate_variables(array);
  
 array.mcount  =  ones(1,3); 
 array.mcount(linear_index)  =  array.Nmag; 
+ 
+ 
+  case 'linear-quasi' 
+  
+ 
+if isfield(array,'ratio') && isfield(array,'mlength') 
+  error('Cannot specify both ''ratio'' and ''mlength''.') 
+elseif ~isfield(array,'ratio') && ~isfield(array,'mlength') 
+  error('Must specify either ''ratio'' or ''mlength''.') 
+end 
+ 
+ 
+array.Nmag_per_wave  =  4; 
+array.magdir_rotate  =  90; 
+ 
+if isfield(array,'Nwaves') 
+  array.Nmag  =  array.Nmag_per_wave * array.Nwaves+1; 
+else 
+  error('''Nwaves'' must be specified.') 
+end 
+ 
+if isfield(array,'mlength') 
+  if numel(array.mlength) ~=2 
+    error('''mlength'' must have length two for linear-quasi arrays.') 
+  end 
+  array.ratio  =  array.mlength(2)/array.mlength(1); 
+else 
+  if isfield(array,'length') 
+    array.mlength(1)  =  2 * array.length/(array.Nmag * (1+array.ratio)+1-array.ratio); 
+    array.mlength(2)  =  array.mlength(1) * array.ratio; 
+  else 
+    error('''length'' must be specified.') 
+  end 
+end 
+ 
+array.mcount  =  ones(1,3); 
+array.mcount(linear_index)  =  array.Nmag; 
+ 
+array.msize  =  repmat(NaN,[array.mcount 3]); 
+ 
+[sindex_x sindex_y sindex_z]  =   ... 
+  meshgrid(1:array.mcount(1), 1:array.mcount(2), 1:array.mcount(3)); 
+ 
+%% Because the array is linear, the |sindex| terms will be linear also. 
+ 
+all_indices  =  [1 1 1]; 
+all_indices(linear_index)  =  0; 
+all_indices(facing_index)  =  0; 
+width_index  =  find(all_indices); 
+ 
+for ii  =  1:array.Nmag 
+  array.msize(sindex_x(ii),sindex_y(ii),sindex_z(ii),linear_index)  =   ... 
+    array.mlength(mod(ii-1,2)+1); 
+  array.msize(sindex_x(ii),sindex_y(ii),sindex_z(ii),facing_index)  =   ... 
+    array.height; 
+  array.msize(sindex_x(ii),sindex_y(ii),sindex_z(ii),width_index)  =   ... 
+    array.width; 
+end 
+ 
  
  
   case 'planar' 
@@ -273,13 +337,13 @@ elseif isfield(array,'Nwaves')
     error('''Nwaves'' must have one or two elements only.') 
   end 
   array.mcount(facing_index)  =  1; 
-  array.mcount([planar_index])  =  4 * array.Nwaves+1; 
+  array.mcount(planar_index)  =  4 * array.Nwaves+1; 
 elseif isfield(array,'Nmag') 
   if numel(array.Nmag) > 2 
     error('''Nmag'' must have one or two elements only.') 
   end 
   array.mcount(facing_index)  =  1; 
-  array.mcount([planar_index])  =  array.Nmag; 
+  array.mcount(planar_index)  =  array.Nmag; 
 else 
   error('Must specify the number of magnets (''mcount'' or ''Nmag'') or wavelengths (''Nwaves'')') 
 end 
@@ -296,7 +360,7 @@ elseif isfield(array,'Nmag')
     error('''Nmag'' must have one or two elements only.') 
   end 
   array.mcount(facing_index)  =  1; 
-  array.mcount([planar_index])  =  array.Nmag; 
+  array.mcount(planar_index)  =  array.Nmag; 
 else 
   error('Must specify the number of magnets (''mcount'' or ''Nmag'')') 
 end 
@@ -327,7 +391,11 @@ if numel(array.msize) == 3
   array.msize_array  =   ... 
       repmat(reshape(array.msize,[1 1 1 3]), array.mcount); 
 else 
-  error('Magnet size ''msize'' must have three elements (or one element for a cube magnet).') 
+  if isequal([array.mcount 3],size(array.msize)) 
+    array.msize_array  =  array.msize; 
+  else 
+    error('Magnet size ''msize'' must have three elements (or one element for a cube magnet).') 
+  end 
 end 
 array.dim  =  reshape(array.msize_array, [array.total 3]); 
  
@@ -340,12 +408,15 @@ end
  
  
   
+if ~isfield(array,'magn') 
+  array.magn  =  1; 
+end 
+ 
 if length(array.magn) == 1 
   array.magn  =  repmat(array.magn,[array.total 1]); 
 else 
   error('Magnetisation magnitude ''magn'' must be a single value.') 
 end 
- 
  
  
  
@@ -373,6 +444,17 @@ if ~isfield(array,'magdir_fn')
   case 'linear' 
     magdir_theta  =  @(nn)  ... 
       array.magdir_first+magdir_rotate_sign * array.magdir_rotate * (nn-1); 
+ 
+    magdir_fn_comp{linear_index}  =  @(ii,jj,kk)  ... 
+      cosd(magdir_theta(part([ii,jj,kk],linear_index))); 
+ 
+    magdir_fn_comp{facing_index}  =  @(ii,jj,kk)  ... 
+      sind(magdir_theta(part([ii,jj,kk],linear_index))); 
+ 
+  case 'linear-quasi' 
+ 
+    magdir_theta  =  @(nn)  ... 
+      array.magdir_first+magdir_rotate_sign * 90 * (nn-1); 
  
     magdir_fn_comp{linear_index}  =  @(ii,jj,kk)  ... 
       cosd(magdir_theta(part([ii,jj,kk],linear_index))); 
@@ -436,6 +518,7 @@ if ~isfield(array,'magdir_fn')
       magdir_fn_comp{3}(ii,jj,kk) ]; 
  
 end 
+ 
  
  
  

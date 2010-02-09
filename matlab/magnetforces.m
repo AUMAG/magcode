@@ -5,7 +5,7 @@ function [varargout]  =  magnetforces(magnet_fixed, magnet_float, displ, varargi
   
 %% MAGNETFORCES  Calculate forces between two cuboid magnets 
 % 
-% Finish this off later. 
+% Finish this off later. Please read the PDF documentation instead for now. 
 % 
  
  
