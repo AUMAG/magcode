@@ -727,7 +727,7 @@ debug_disp(J2')
 
 @%% MAGNETFORCES  Calculate forces between two cuboid magnets
 @%
-@% Finish this off later.   
+@% Finish this off later. Please read the PDF documentation instead for now.  
 @%
 
 
@@ -1297,6 +1297,10 @@ patchwork & `Patchwork' planar array \\
 \item[\texttt{size}] ($M \times 3$) total actual dimensions of the array
 \end{itemize}
 
+Then it's just a matter of actually calculating each force and summing them
+together, as shown below. We'll discuss how to actually populate these data
+structures later.
+
 @< Calculate array forces @>=
 
 for ii = 1:fixed_array.total
@@ -1341,7 +1345,10 @@ if calc_stiffness_bool
   stiffnesses_out = sum(sum(array_stiffnesses,4),3);
 end
 
-@ Don't forget about the necessary initialisation for the above.
+@ This is where it begins. This is basically just initialisation, but note the
+  important |complete_array_from_input| function. This is what takes the
+  high-level Halbach array (or whatever array) descriptions and translates
+  them into a more direct (if tedious) form.
 
 @< Initialise multipole variables @>=
 
@@ -1366,6 +1373,10 @@ displ_from_array_corners = displ ...
   We separate the force calculation from transforming the inputs into an
   intermediate form used for that purpose. This will hopefully allow us a
   little more flexibility.
+
+  This is the magic abstraction behind |complete_array_from_input| that
+  allows us to write readable input code describing multipole arrays in
+  as little detail as possible.
 
 As input variables for a linear multipole array,
 we want to use some combination of the following:
@@ -1405,11 +1416,11 @@ inputs.
 However, we generally do not want an integer number of wavelengths of
 magnetisation in the magnet arrays; if $T=MN$ then we get small lateral
 forces that are undesirable for stability. We prefer instead to have $T=MN+1$,
-but this cannot be represented by our linear (logarithmic) algebra above.
+but this cannot be represented by our linear (after taking logarithms) algebra above.
 Therefore, if the user requests a total number of wavelengths of magnetisation,
 we automatically add one end magnet to restore the symmetry of the forces.
 
-More variables than can be set are:
+More variables that can be set are:
 \begin{itemize}[noitemsep]
 \item [$\phi_0$] magnetisation direction of the first magnet
 \item [$g$] additional gap between adjacent magnet faces (optional)
@@ -1504,12 +1515,19 @@ end
 @< Array sizes @>
 @< Array magnetisation strengths @>
 @< Array magnetisation directions @>
+
 @< Fill in array structures @>
 
 end
 
 
-@ This is the important step.
+@ This is the part where those big data structures are filled up based
+  on the user input data. I guess you could consider the process to consist
+  of three stages. User input is the most abstract, from which the code above
+  infers the other variables that have only been implied. Then the following
+  code uses all that to construct a most basic description of the arrays,
+  literally a listing of each magnet, its dimensions and position, and its
+  magnetisation vector.
 
 @< Fill in array structures @>=
 
@@ -1892,7 +1910,7 @@ end
 
 @%% MULTIPOLEFORCES  Calculate forces between two multipole arrays of magnets
 @%
-@% Finish this off later.   
+@% Finish this off later. Please read the PDF documentation instead for now.
 @%
 
 @*1 Test files for multipole arrays.  Not much here yet.
