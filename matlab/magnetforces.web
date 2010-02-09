@@ -1747,18 +1747,19 @@ elseif isfield(array,'Nwaves')
     error('''Nwaves'' must have one or two elements only.')
   end
   array.mcount(facing_index) = 1;
-  array.mcount([planar_index]) = 4*array.Nwaves+1;
+  array.mcount(planar_index) = 4*array.Nwaves+1;
 elseif isfield(array,'Nmag')
   if numel(array.Nmag) > 2
     error('''Nmag'' must have one or two elements only.')
   end
   array.mcount(facing_index) = 1;
-  array.mcount([planar_index]) = array.Nmag;
+  array.mcount(planar_index) = array.Nmag;
 else
   error('Must specify the number of magnets (''mcount'' or ''Nmag'') or wavelengths (''Nwaves'')')
 end
 
-@ Basically the same for the patchwork array.
+@ Basically the same for the patchwork array but without worrying about
+  wavelengths.
 
 @< Infer patchwork array variables @>=
 
@@ -1771,7 +1772,7 @@ elseif isfield(array,'Nmag')
     error('''Nmag'' must have one or two elements only.')
   end
   array.mcount(facing_index) = 1;
-  array.mcount([planar_index]) = array.Nmag;
+  array.mcount(planar_index) = array.Nmag;
 else
   error('Must specify the number of magnets (''mcount'' or ''Nmag'')')
 end
@@ -1821,12 +1822,15 @@ end
 
 @< Array magnetisation strengths @>=
 
+if ~isfield(array,'magn')
+  array.magn = 1;
+end
+
 if length(array.magn) == 1
   array.magn = repmat(array.magn,[array.total 1]);
 else
   error('Magnetisation magnitude ''magn'' must be a single value.')
 end
-
 
 
 @ Magnetisation direction of each magnet.
