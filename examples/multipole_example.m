@@ -1,7 +1,6 @@
 %% Multipole array forces example
 %
-% Reproducing the linear Halbach array results of
-% Allag, Yonnet & Latreche (2009).
+% Reproducing the linear Halbach array results of Allag, Yonnet & Latreche (2009).
 
 %% Calculate
 
