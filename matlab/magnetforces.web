@@ -1446,6 +1446,8 @@ end
 switch array.type
   case 'linear'
 @< Infer linear array variables @>
+  case 'linear-quasi'
+@< Infer linear-quasi array variables @>
   case 'planar'
 @< Infer planar array variables @>
   case 'quasi-halbach'
@@ -1613,9 +1615,69 @@ array = extrapolate_variables(array);
 array.mcount = ones(1,3);
 array.mcount(linear_index) = array.Nmag;
 
+@ The |linear-quasi| array is like the linear Halbach array but always has
+  (except in the degenerate case) four magnets per wavelength. The magnet
+  sizes are not equal.
+
+@< Infer linear-quasi array variables @>=
+
+
+if isfield(array,'ratio') && isfield(array,'mlength')
+  error('Cannot specify both ''ratio'' and ''mlength''.')
+elseif ~isfield(array,'ratio') && ~isfield(array,'mlength')
+  error('Must specify either ''ratio'' or ''mlength''.')
+end  
+
+
+array.Nmag_per_wave = 4;
+array.magdir_rotate = 90;
+
+if isfield(array,'Nwaves')
+  array.Nmag = array.Nmag_per_wave*array.Nwaves+1;
+else
+  error('''Nwaves'' must be specified.')
+end
+
+if isfield(array,'mlength')
+  if numel(array.mlength) ~=2
+    error('''mlength'' must have length two for linear-quasi arrays.')
+  end
+  array.ratio = array.mlength(2)/array.mlength(1);
+else
+  if isfield(array,'length')
+    array.mlength(1) = 2*array.length/(array.Nmag*(1+array.ratio)+1-array.ratio);
+    array.mlength(2) = array.mlength(1)*array.ratio;
+  else
+    error('''length'' must be specified.')
+  end
+end
+
+array.mcount = ones(1,3);
+array.mcount(linear_index) = array.Nmag;
+
+array.msize = repmat(NaN,[array.mcount 3]);
+
+[sindex_x sindex_y sindex_z] = ...
+  meshgrid(1:array.mcount(1), 1:array.mcount(2), 1:array.mcount(3));
+
+%% Because the array is linear, the |sindex| terms will be linear also.
+
+all_indices = [1 1 1];
+all_indices(linear_index) = 0;
+all_indices(facing_index) = 0;
+width_index = find(all_indices);
+
+for ii = 1:array.Nmag
+  array.msize(sindex_x(ii),sindex_y(ii),sindex_z(ii),linear_index) = ...
+    array.mlength(mod(ii-1,2)+1);
+  array.msize(sindex_x(ii),sindex_y(ii),sindex_z(ii),facing_index) = ...
+    array.height;
+  array.msize(sindex_x(ii),sindex_y(ii),sindex_z(ii),width_index) = ...
+    array.width;
+end
+
+
 @ For now it's a bit more messy to do the planar array variables.
-  `length` and `mlength` may either be of length two or one; in the latter
-  case, `width` and `mwidth` must also be specified.
 
 @< Infer planar array variables @>=
 
@@ -1740,7 +1802,11 @@ if numel(array.msize) == 3
   array.msize_array = ...
       repmat(reshape(array.msize,[1 1 1 3]), array.mcount);
 else
-  error('Magnet size ''msize'' must have three elements (or one element for a cube magnet).')
+  if isequal([array.mcount 3],size(array.msize))
+    array.msize_array = array.msize;
+  else
+    error('Magnet size ''msize'' must have three elements (or one element for a cube magnet).')
+  end
 end
 array.dim = reshape(array.msize_array, [array.total 3]);
 
@@ -1790,6 +1856,17 @@ if ~isfield(array,'magdir_fn')
   case 'linear'
     magdir_theta = @@(nn) ...
       array.magdir_first+magdir_rotate_sign*array.magdir_rotate*(nn-1);
+    
+    magdir_fn_comp{linear_index} = @@(ii,jj,kk) ...
+      cosd(magdir_theta(part([ii,jj,kk],linear_index)));
+    
+    magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
+      sind(magdir_theta(part([ii,jj,kk],linear_index)));
+
+  case 'linear-quasi'
+
+    magdir_theta = @@(nn) ...
+      array.magdir_first+magdir_rotate_sign*90*(nn-1);
     
     magdir_fn_comp{linear_index} = @@(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],linear_index)));
@@ -1933,6 +2010,8 @@ multiforce_test002a
 multiforce_test002b
 multiforce_test002c
 multiforce_test002d
+
+multiforce_test003a
 
 @ First test just to check the numbers aren't changing.
 
@@ -2160,6 +2239,96 @@ assert( all(f(~ind)<1e-10) ,  ...
 fprintf('passed\n')
 disp('=================')
 
+@ Check that the |linear-quasi| array gives same output as |linear| array
+  for equivalent parameters.
+
+@( multiforce_test003a.m @>=
+
+disp('=================')
+fprintf('TEST 003a: ')
+
+displ = [0.02 0.02 0.02];
+
+%% Test against Halbach array with four magnets per wavelength
+
+fixed_array = ...
+  struct(...
+	'type','linear', ...
+	'align','x', ...
+	'face','up', ...
+	'length', 0.05, ...
+	'width',  0.01, ...
+	'height', 0.01, ...
+	'Nmag_per_wave', 4, ...
+	'Nwaves', 1 ...
+  );
+
+float_array = fixed_array;
+float_array.face = 'down';
+
+f1 = multipoleforces(fixed_array, float_array, displ);
+
+fixed_array = ...
+  struct(...
+	'type','linear-quasi', ...
+	'align','x', ...
+	'face','up', ...
+	'length', 0.05, ...
+	'width',  0.01, ...
+	'height', 0.01, ...
+	'Nwaves', 1, ...
+	'ratio', 1 ...
+  );
+
+float_array = fixed_array;
+float_array.face = 'down';
+
+f2 = multipoleforces(fixed_array, float_array, displ);
+
+assert( all(chop(f1,6)==chop(f2,6)) , ...
+  'linear (4mag) and linear-quasi should be equivalent'); 
+
+%% Test against Halbach array with two magnets per wavelength
+
+fixed_array = ...
+  struct(...
+	'type','linear', ...
+	'align','x', ...
+	'face','up', ...
+	'length', 0.03, ...
+	'width',  0.01, ...
+	'height', 0.01, ...
+	'Nmag_per_wave', 2, ...
+	'Nwaves', 1 ...
+  );
+
+float_array = fixed_array;
+float_array.face = 'down';
+
+f3 = multipoleforces(fixed_array, float_array, displ);
+
+fixed_array = ...
+  struct(...
+	'type','linear-quasi', ...
+	'align','x', ...
+	'face','up', ...
+	'length', 0.03, ...
+	'width',  0.01, ...
+	'height', 0.01, ...
+	'Nwaves', 1, ...
+	'ratio', 0 ...
+  );
+
+float_array = fixed_array;
+float_array.face = 'down';
+
+f4 = multipoleforces(fixed_array, float_array, displ);
+
+assert( all(chop(f3,6)==chop(f4,6)) , ...
+  'linear (2mag) and linear-quasi should be equivalent'); 
+
+fprintf('passed\n')
+disp('=================')
 
 
 @  These are \textsc{matlabweb} declarations to improve the formatting
