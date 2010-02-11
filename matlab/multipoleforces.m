@@ -95,13 +95,13 @@ for ii  =  1:fixed_array.total
  
     if calc_force_bool && ~calc_stiffness_bool 
       array_forces(:,:,ii,jj)  =   ... 
-          magnetforces(fixed_magnet, float_magnet, mag_displ,'force'); 
+          magnetforces(fixed_magnet, float_magnet, mag_displ,varargin{:}); 
     elseif calc_stiffness_bool && ~calc_force_bool 
       array_stiffnesses(:,:,ii,jj)  =   ... 
-          magnetforces(fixed_magnet, float_magnet, mag_displ,'stiffness'); 
+          magnetforces(fixed_magnet, float_magnet, mag_displ,varargin{:}); 
     else 
       [array_forces(:,:,ii,jj) array_stiffnesses(:,:,ii,jj)]  =   ... 
-          magnetforces(fixed_magnet, float_magnet, mag_displ,'force','stiffness'); 
+          magnetforces(fixed_magnet, float_magnet, mag_displ,varargin{:}); 
     end 
  
   end 
@@ -646,7 +646,6 @@ end
 array_out  =  array; 
  
 end 
- 
  
  
  
