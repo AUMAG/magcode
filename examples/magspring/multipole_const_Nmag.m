@@ -80,7 +80,7 @@ zdata = zrange/array_height;
 th = [0.5 1 1.5];
 
 figname = 'halbach-max-Nmag';
-willfig(figname); clf; hold on;
+willfig(figname,'small'); clf; hold on;
 
 for ww = length(Nmag_per_wave_array):-1:1
   

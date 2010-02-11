@@ -3,11 +3,15 @@
 %
 % In which the vertically oriented magnets have different sizes to the
 % horizontally oriented magnets.
+%
+% Many calculations are made to optimise the exact ratio of widths
+% to be used; hence slow.
 
 
 %% Calculate
 
 ratios_array = 0:0.025:1.5;
+waves_array  = [2 4 8];
 
 datafile = 'data/linear_quasi_ratios.mat';
 if exist(datafile,'file')
@@ -24,7 +28,7 @@ end
 
 if recalculate
   
-  displ_steps = 50;
+  displ_steps = 5;
   zrange = linspace(0.0101,0.02,displ_steps);
   displ = [0; 0; 1]*zrange;
   
@@ -32,73 +36,49 @@ if recalculate
   array_length = 0.1;
   
   forces = repmat(NaN,...
-    [3 displ_steps length(ratios_array)]);
+    [3 displ_steps length(ratios_array) length(waves_array)]);
   
   
-  for nn = 1:length(ratios_array)
-    
-    ratio = ratios_array(nn);
-    
-    fixed_array = ...
-      struct(...
-      'type','linear-quasi',    ...
-      'align','x',        ...
-      'face','up',        ...
-      'length', array_length,   ...
-      'width',  array_height,   ...
-      'height', array_height,   ...
-      'Nwaves', 2 ,  ...
-      'ratio', ratio ...
-      );
-    
-    float_array = fixed_array;
-    float_array.face = 'down';
-    
-    forces(:,:,nn) = multipoleforces(fixed_array, float_array, displ);
-    
+  for ww = 1:length(waves_array)
+    for nn = 1:length(ratios_array)
+      
+      ratio = ratios_array(nn);
+      
+      fixed_array = ...
+        struct(...
+        'type','linear-quasi',    ...
+        'align','x',        ...
+        'face','up',        ...
+        'length', array_length,   ...
+        'width',  array_height,   ...
+        'height', array_height,   ...
+        'Nwaves', waves_array(ww) ,  ...
+        'ratio', ratio ...
+        );
+      
+      float_array = fixed_array;
+      float_array.face = 'down';
+      
+      forces(:,:,nn,ww) = multipoleforces(fixed_array, float_array, displ);
+      
+    end
   end
   
-  save(datafile,'zrange','ratios_array','array_height','array_length','forces');
+  save(datafile,'zrange','ratios_array','waves_array','array_height','array_length','forces');
 
 end
 
-%% Plot all
-
-N = length(ratios_array);
-
-zdata = zrange/array_height;
-
-figname = 'ratios_compare_all';
-willfig(figname,'small'); clf; hold on;
-  
-for nn = 1:N
-        
-  plot(zdata,squeeze(forces(3,:,nn)),...
-      'Tag',num2str( ratios_array(nn) ));
-
-end
-
-set(gca,'box','on','ticklength',[0.02 0.05])
-colourplot
-
-xlabel('Normalised vertical displacement')
-ylabel('Vertical force, N')
-
-H = labelplot('north','vertical','$\mupqratio$');
-pos = get(H,'position');
-set(H,'position',[0.6 0.5 pos(3:4)]);
-legendshrink
-
-matlabfrag(['fig/',figname],'dpi',3200);
-
-%% Plot integral of force with displacement
+%% Plot integrals of force vs. displacement
 
 figname = 'ratios_forcesum';
 willfig(figname); clf; hold on
 
-fs = squeeze(sum(forces(3,:,:),2));
- 
-plot(ratios_array,fs/fs(ratios_array==1));
+fs = repmat(NaN,[length(ratios_array) length(waves_array)]);
+
+for ww = 1:length(waves_array)
+  fs(:,ww) = squeeze(sum(forces(3,:,:,ww),2));
+  plot(ratios_array,fs(:,ww));
+end
 
 set(gca,'box','on','ticklength',[0.02 0.05])
 colourplot
@@ -107,75 +87,8 @@ axis tight
 axistight
 draworigin([1 1],'--')
 
-xlabel('Magnet size ratio $\mupqratio$')
+xlabel('Magnet size ratio $\mupqratio$','interpreter','none')
 ylabel('Normalised force sum')
 
 matlabfrag(['fig/',figname],'dpi',3200);
 
-%% Plot a few
-
-some = [0 0.5 1];
-style = {'.-','-','--'};
-
-zdata = zrange/array_height;
-
-figname = 'ratios-compare';
-willfig(figname); clf; hold on;
-  
-for ii = 1:length(some)
-      
-  nn = find(ratios_array==some(ii));
-  plot(zdata,squeeze(forces(3,:,nn)),...
-      style{ii},...
-      'linewidth',1,...
-      'Tag',num2str( ratios_array(nn) ));
-
-end
-
-set(gca,'box','on','ticklength',[0.02 0.05])
-colourplot
-
-xlabel('Normalised vertical displacement')
-ylabel('Vertical force, N')
-
-H = labelplot('north','vertical','$\mupqratio$');
-pos = get(H,'position');
-set(H,'position',[0.6 0.5 pos(3:4)]);
-legendshrink(0.5)
-
-matlabfrag(['fig/',figname],'dpi',3200);
-
-%% Plot a few normalised
-
-some = [0 0.5 1];
-style = {'.-','-','--'};
-
-zdata = zrange/array_height;
-
-figname = 'ratios-compare-norm';
-willfig(figname); clf; hold on;
-
-mm = find(ratios_array==some(3));
-
-for ii = 1:length(some)
-      
-  nn = find(ratios_array==some(ii));
-  plot(zdata,squeeze(forces(3,:,nn))./squeeze(forces(3,:,mm)),...
-      style{ii},...
-      'linewidth',1,...
-      'Tag',num2str( ratios_array(nn) ));
-
-end
-
-set(gca,'box','on','ticklength',[0.02 0.05])
-colourplot
-
-xlabel('Normalised vertical displacement')
-ylabel('Vertical force, N')
-
-H = labelplot('north','vertical','$\mupqratio$');
-pos = get(H,'position');
-set(H,'position',[0.6 0.5 pos(3:4)]);
-legendshrink(0.5)
-
-matlabfrag(['fig/',figname],'dpi',3200);

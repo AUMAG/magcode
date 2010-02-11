@@ -165,22 +165,14 @@ for ww = 1:length(Nmag_per_wave_array)
   colourplot(1,[3 2 1])
   
   xlabel('Normalised vertical displacement')
+  ylabel('Vertical force, N')
   title(['$\mupmagperwave=',num2str(Nmag_per_wave),'$'])
   
-  if ww == 3
-    H = labelplot('north','vertical','$\mupNwaves$');
-    pos = get(H,'position');
-    set(H,'position',[0.6 0.5 pos(3:4)]);
-    legendshrink
-  end
+  H = labelplot('north','vertical','$\mupNwaves$');
+  pos = get(H,'position');
+  set(H,'position',[0.6 0.5 pos(3:4)]);
+  legendshrink
   
-  if ww == 1
-    ylabel('Vertical force, N')
-    pos2 = get(gca,'position');
-  else
-    set(gca,'yticklabel',[]);
-    set(gca,'position',pos2);
-  end
   
   matlabfrag(['fig/',figname],'dpi',3200);
   

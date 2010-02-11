@@ -25,6 +25,7 @@ displ_steps = 51;
 
 volume = 0.01^3;
 ratios = [0.25 0.5 1 2];
+th = linspace(1.5,0.5,length(ratios));
 
 height = @(a)    (volume*a^2)^(1/3);
 face_size = @(a) (volume/a)^(1/3);
@@ -32,10 +33,13 @@ magsize = @(a) ...
   [ face_size(a) face_size(a) height(a) ];
 
 
-willfig('mag_ratios'); clf; hold on
+willfig('mag_ratios','small'); clf; hold on
 
+ii = 0;
 for this_ratio = ratios
 
+  ii = ii + 1;
+  
   magnet_fixed.dim = magsize(this_ratio);
   magnet_float.dim = magsize(this_ratio);
   
@@ -45,7 +49,9 @@ for this_ratio = ratios
   these_forces = magnetforces(magnet_fixed,magnet_float,displ_range);
   
   face_gap = displ - displ(1);
-  plot(face_gap,these_forces(3,:),'Tag',num2str(this_ratio));
+  plot(face_gap,these_forces(3,:),...
+    'Tag',num2str(this_ratio),...
+    'LineWidth',th(ii));
 
 end
 
@@ -54,11 +60,9 @@ ylabel('Vertical force, N')
 set(gca,'box','on','ticklength',[0.02 0.05])
 axis tight
 
-%%
-
 if ~simple_graph
-  colourplot
-  labelplot('east','vertical','Ratio $\hwratio$')
-  legendshrink
+  colourplot(1,[4 3 2 1])
+  labelplot('east','vertical','$\hwratio$')
+  legendshrink(0.5)
   matlabfrag('fig/mag_ratio','dpi',3200);
 end
