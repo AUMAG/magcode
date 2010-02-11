@@ -68,7 +68,7 @@ N = length(ratios_array);
 
 zdata = zrange/array_height;
 
-figname = 'ratios_compare';
+figname = 'ratios_compare_all';
 willfig(figname,'small'); clf; hold on;
   
 for nn = 1:N
@@ -107,26 +107,27 @@ axis tight
 axistight
 draworigin([1 1],'--')
 
-xlabel('Magnet size ratio')
+xlabel('Magnet size ratio $\mupqratio$')
 ylabel('Normalised force sum')
 
 matlabfrag(['fig/',figname],'dpi',3200);
 
 %% Plot a few
 
-some = [0 0.25 0.5 1];
-th = linspace(0.5,1.5,length(some));
+some = [0 0.5 1];
+style = {'.-','-','--'};
 
 zdata = zrange/array_height;
 
-figname = 'ratios_compare';
-willfig(figname,'small'); clf; hold on;
+figname = 'ratios-compare';
+willfig(figname); clf; hold on;
   
 for ii = 1:length(some)
       
   nn = find(ratios_array==some(ii));
   plot(zdata,squeeze(forces(3,:,nn)),...
-      'LineWidth',th(ii),...
+      style{ii},...
+      'linewidth',1,...
       'Tag',num2str( ratios_array(nn) ));
 
 end
@@ -140,6 +141,41 @@ ylabel('Vertical force, N')
 H = labelplot('north','vertical','$\mupqratio$');
 pos = get(H,'position');
 set(H,'position',[0.6 0.5 pos(3:4)]);
-legendshrink
+legendshrink(0.5)
+
+matlabfrag(['fig/',figname],'dpi',3200);
+
+%% Plot a few normalised
+
+some = [0 0.5 1];
+style = {'.-','-','--'};
+
+zdata = zrange/array_height;
+
+figname = 'ratios-compare-norm';
+willfig(figname); clf; hold on;
+
+mm = find(ratios_array==some(3));
+
+for ii = 1:length(some)
+      
+  nn = find(ratios_array==some(ii));
+  plot(zdata,squeeze(forces(3,:,nn))./squeeze(forces(3,:,mm)),...
+      style{ii},...
+      'linewidth',1,...
+      'Tag',num2str( ratios_array(nn) ));
+
+end
+
+set(gca,'box','on','ticklength',[0.02 0.05])
+colourplot
+
+xlabel('Normalised vertical displacement')
+ylabel('Vertical force, N')
+
+H = labelplot('north','vertical','$\mupqratio$');
+pos = get(H,'position');
+set(H,'position',[0.6 0.5 pos(3:4)]);
+legendshrink(0.5)
 
 matlabfrag(['fig/',figname],'dpi',3200);
