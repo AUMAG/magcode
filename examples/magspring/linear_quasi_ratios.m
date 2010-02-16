@@ -15,7 +15,6 @@ waves_array  = [2 4 8];
 
 datafile = 'data/linear_quasi_ratios.mat';
 if exist(datafile,'file')
-  
   current_array = ratios_array;
   load(datafile);
   if isequal(current_array,ratios_array)
@@ -24,11 +23,13 @@ if exist(datafile,'file')
     ratios_array = current_array;
     recalculate = true;
   end
+else
+    recalculate = true;
 end
 
 if recalculate
   
-  displ_steps = 5;
+  displ_steps = 51;
   zrange = linspace(0.0101,0.02,displ_steps);
   displ = [0; 0; 1]*zrange;
   
@@ -38,12 +39,9 @@ if recalculate
   forces = repmat(NaN,...
     [3 displ_steps length(ratios_array) length(waves_array)]);
   
-  
   for ww = 1:length(waves_array)
     for nn = 1:length(ratios_array)
-      
-      ratio = ratios_array(nn);
-      
+      ratio = ratios_array(nn); 
       fixed_array = ...
         struct(...
         'type','linear-quasi',    ...
@@ -55,40 +53,44 @@ if recalculate
         'Nwaves', waves_array(ww) ,  ...
         'ratio', ratio ...
         );
-      
       float_array = fixed_array;
       float_array.face = 'down';
-      
       forces(:,:,nn,ww) = multipoleforces(fixed_array, float_array, displ);
-      
     end
   end
-  
   save(datafile,'zrange','ratios_array','waves_array','array_height','array_length','forces');
-
+else
+  load(datafile);
 end
 
 %% Plot integrals of force vs. displacement
 
-figname = 'ratios_forcesum';
-willfig(figname); clf; hold on
+figname = 'ratios-forcesum';
+willfig(figname,'small'); clf; hold on
+
+style = [0.5 1 1.5];
 
 fs = repmat(NaN,[length(ratios_array) length(waves_array)]);
+norm_ind = find(ratios_array==1);
 
 for ww = 1:length(waves_array)
-  fs(:,ww) = squeeze(sum(forces(3,:,:,ww),2));
-  plot(ratios_array,fs(:,ww));
+  fs(:,ww) = squeeze(sum(forces(3,:,:,ww),2))/squeeze(sum(forces(3,:,norm_ind,ww)));
+  plot(ratios_array,fs(:,ww),...
+    'Tag',num2str(waves_array(ww)),...
+    'LineWidth',style(ww));
 end
 
 set(gca,'box','on','ticklength',[0.02 0.05])
-colourplot
+colourplot(1)
+H = labelplot('south','vertical','$\mupNwaves$');
+legendshrink
 
 axis tight
 axistight
-draworigin([1 1],'--')
+draworigin([1 1],':')
 
 xlabel('Magnet size ratio $\mupqratio$','interpreter','none')
-ylabel('Normalised force sum')
+ylabel('Normalised force integral')
 
 matlabfrag(['fig/',figname],'dpi',3200);
 
