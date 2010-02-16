@@ -9,13 +9,14 @@
 
 %% Calculate
 
-datafile = 'data/multipole_compare_thin_data.mat';
+datafile = 'data/multipole_const_Nmag_data.mat';
 if exist(datafile,'file')
   load(datafile);
 else
   
-  displ_steps = 50;
-  zrange = linspace(0.0101,0.015,displ_steps);
+  displ_steps = 80;
+  zrange = [ linspace(0.0101,0.0115,displ_steps/2)...
+             linspace(0.0116,0.015,displ_steps/2) ];
   displ = [0; 0; 1]*zrange;
   
   Nmag_per_wave_array = [2 4 8];
@@ -40,7 +41,7 @@ else
         'width',  array_height,   ...
         'height', array_height,   ...
         'Nmag_per_wave', Nmag_per_wave, ...
-        'Nmag', 100,   ...
+        'Nmag', 50,   ...
         'magn', 1           ...
         );
       
