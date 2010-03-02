@@ -75,6 +75,20 @@ else
   
 end
 
+
+%% Plot setup
+%
+% In case you don't have the various bits'n'pieces that I use to create
+% my Matlab graphics (probably likely).
+
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  simple_graph = true;
+else
+  simple_graph = false;
+end
+
 %% Plot
 
 zdata = zrange/array_height;
@@ -95,23 +109,26 @@ end
 
 plot(zdata,one_mag_force(3,:),'--k','UserData','colourplot:ignore');
 
-set(gca,'xlim',[0.95*zdata(1) 1.5],...
-  'xtick', 1:0.25:2 );
-
-set(gca,'box','on','ticklength',[0.02 0.05])
-
-draworigin([1 0],'v',':')
-colourplot(1,[3 2 1])
-
 xlabel('Normalised vertical displacement')
-
-H = labelplot('north','vertical','$\mupmagperwave$');
-pos = get(H,'position');
-set(H,'position',[0.6 0.5 pos(3:4)]);
-legendshrink
-
 ylabel('Vertical force, N')
 
-matlabfrag(['fig/',figname],'dpi',3200);
+if ~simple_graph
+  
+  set(gca,'xlim',[0.95*zdata(1) 1.5],...
+    'xtick', 1:0.25:2 );
+  
+  set(gca,'box','on','ticklength',[0.02 0.05])
+  
+  draworigin([1 0],'v',':')
+  colourplot(1,[3 2 1])
+  
+  H = labelplot('north','vertical','$\mupmagperwave$');
+  pos = get(H,'position');
+  set(H,'position',[0.6 0.5 pos(3:4)]);
+  legendshrink
+  
+  matlabfrag(['fig/',figname],'dpi',3200);
+
+end
 
 

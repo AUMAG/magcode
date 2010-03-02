@@ -11,7 +11,7 @@
 %% Calculate
 
 ratios_array = 0:0.025:1.5;
-waves_array  = [2 4 8];
+waves_array  = [1 2 4];
 
 datafile = 'data/linear_quasi_ratios.mat';
 if exist(datafile,'file')
@@ -26,6 +26,8 @@ if exist(datafile,'file')
 else
     recalculate = true;
 end
+
+%%
 
 if recalculate
   
@@ -63,6 +65,19 @@ else
   load(datafile);
 end
 
+%% Setup plot parameters
+%
+% When I create these plots I use some non-standard functions
+% to make them pretty.
+
+if ~exist('willfig','file')
+  close all
+  willfig = @(varargin) figure;
+  simple_graph = true;
+else
+  simple_graph = false;
+end
+
 %% Plot integrals of force vs. displacement
 
 figname = 'ratios-forcesum';
@@ -80,17 +95,21 @@ for ww = 1:length(waves_array)
     'LineWidth',style(ww));
 end
 
-set(gca,'box','on','ticklength',[0.02 0.05])
-colourplot(1)
-H = labelplot('south','vertical','$\mupNwaves$');
-legendshrink
-
-axis tight
-axistight
-draworigin([1 1],':')
-
 xlabel('Magnet size ratio $\mupqratio$','interpreter','none')
 ylabel('Normalised force integral')
 
-matlabfrag(['fig/',figname],'dpi',3200);
+if ~simple_graph
+  
+  set(gca,'box','on','ticklength',[0.02 0.05])
+  colourplot(1)
+  H = labelplot('south','vertical','$\mupNwaves$');
+  legendshrink
+  
+  axis tight
+  axistight
+  draworigin([1 1],':')
+  
+  matlabfrag(['fig/',figname],'dpi',3200);
+  
+end
 

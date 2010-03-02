@@ -1,3 +1,4 @@
+
 %% Setup
 %
 % In case you don't have the various bits'n'pieces that I use to create
@@ -45,9 +46,9 @@ for this_ratio = ratios
   
   displ = 2*height(this_ratio)+ linspace(0, 0.015, displ_steps);
   displ_range = [0; 0; 1]*displ;
-  
-  these_forces = magnetforces(magnet_fixed,magnet_float,displ_range);
-  
+
+  these_forces = magnetforces(magnet_fixed,magnet_float,displ_range,'z');
+
   face_gap = displ - displ(1);
   plot(face_gap,these_forces(3,:),...
     'Tag',num2str(this_ratio),...

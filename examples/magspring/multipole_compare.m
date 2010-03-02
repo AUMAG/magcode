@@ -81,6 +81,20 @@ else
 
 end
 
+%% Setup
+%
+% In case you don't have the various bits'n'pieces that I use to create
+% my Matlab graphics (probably likely).
+
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  simple_graph = true;
+else
+  simple_graph = false;
+end
+
+
 %% Plot
 
 zdata = zrange/array_height;
@@ -104,35 +118,39 @@ for nn = 1:length(Nwaves_array)
   end
   
   plot(zdata,one_mag_force(3,:),'--k','UserData','colourplot:ignore');
-
-  set(gca,'xlim',[0.9*zdata(1) zdata(end)],...
-    'xtick', [1:0.25:2] );
-  set(gca,'ylim',[0 550])
-  
-  set(gca,'box','on','ticklength',[0.02 0.05])
-  
-  draworigin([1 0],'v',':')
-  colourplot(1,[3 2 1])
   
   xlabel('Normalised vertical displacement')
   title(['$\mupNwaves=',num2str(Nwaves),'$'])
-  
-  if nn == 3
-    H = labelplot('north','vertical','$\mupmagperwave$');
-    pos = get(H,'position');
-    set(H,'position',[0.6 0.5 pos(3:4)]);
-    legendshrink
+    
+  if ~simple_graph
+    
+    set(gca,'xlim',[0.9*zdata(1) zdata(end)],...
+      'xtick', [1:0.25:2] );
+    set(gca,'ylim',[0 550])
+    
+    set(gca,'box','on','ticklength',[0.02 0.05])
+    
+    draworigin([1 0],'v',':')
+    colourplot(1,[3 2 1])
+    
+    if nn == 3
+      H = labelplot('north','vertical','$\mupmagperwave$');
+      pos = get(H,'position');
+      set(H,'position',[0.6 0.5 pos(3:4)]);
+      legendshrink
+    end
+    
+    if nn == 1
+      ylabel('Vertical force, N')
+      pos2 = get(gca,'position');
+    else
+      set(gca,'yticklabel',[]);
+      set(gca,'position',pos2);
+    end
+    
+    matlabfrag(['fig/',figname],'dpi',3200);
+    
   end
-  
-  if nn == 1
-    ylabel('Vertical force, N')
-    pos2 = get(gca,'position');
-  else
-    set(gca,'yticklabel',[]);
-    set(gca,'position',pos2);
-  end
-  
-  matlabfrag(['fig/',figname],'dpi',3200);
   
 end
 
@@ -189,20 +207,24 @@ for nn = 1:length(Nwaves_array)
   
 end
 
-axis tight
-set(gca,'xlim',[0.9*zdata(1) zdata(end)]);
-draworigin([1 1],':')
-set(gca,'box','on','ticklength',[0.02 0.05])
+xlabel('Normalised vertical displacement')
+ylabel('Forces ratio')
 
 s = '\providecommand\Nwaves{N_w}';
 text(1.2, 1.19,[s '$\Nwaves=4$'],'interpreter','LaTeX')
 text(1.5, 1.12,[s '$\Nwaves=2$'],'interpreter','LaTeX')
 text(1.7, 1.05,[s '$\Nwaves=1$'],'interpreter','LaTeX')
 
-colourplot
+if ~simple_graph
+  
+  axis tight
+  set(gca,'xlim',[0.9*zdata(1) zdata(end)]);
+  draworigin([1 1],':')
+  set(gca,'box','on','ticklength',[0.02 0.05])
+  
+  colourplot
 
-xlabel('Normalised vertical displacement')
-ylabel('Forces ratio')
+end
 
 
 figname = 'halbach-discrete-4v2-Nmag';
@@ -214,18 +236,21 @@ for nn = 1:length(Nwaves_array)
   
 end
 
-axis tight
-set(gca,'xlim',[0.9*zdata(1) zdata(end)]);
-draworigin([1 1],':')
-set(gca,'box','on','ticklength',[0.02 0.05])
+xlabel('Normalised vertical displacement')
+ylabel('Forces ratio')
 
 s = '\providecommand\Nwaves{N_w}';
 text(1.2, 1.53,[s '$\Nwaves=4$'],'interpreter','LaTeX')
 text(1.5, 1.33,[s '$\Nwaves=2$'],'interpreter','LaTeX')
 text(1.7, 1.07,[s '$\Nwaves=1$'],'interpreter','LaTeX')
 
-colourplot
-
-xlabel('Normalised vertical displacement')
-ylabel('Forces ratio')
+if ~simple_graph
+  
+  axis tight
+  set(gca,'xlim',[0.9*zdata(1) zdata(end)]);
+  draworigin([1 1],':')
+  set(gca,'box','on','ticklength',[0.02 0.05])
+  colourplot
+  
+end
 

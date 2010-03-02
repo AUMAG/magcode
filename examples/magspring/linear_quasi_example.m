@@ -63,7 +63,20 @@ if recalculate
 end
 
 
-%% Plot
+%% Setup plot parameters
+%
+% When I create these plots I use some non-standard functions
+% to make them pretty.
+
+if ~exist('willfig','file')
+  close all
+  willfig = @(varargin) figure;
+  simple_graph = true;
+else
+  simple_graph = false;
+end
+
+%% Plot results
 
 style = {'.-','-','--'};
 
@@ -81,21 +94,27 @@ for ii = 1:length(some)
 
 end
 
-set(gca,'box','on','ticklength',[0.02 0.05])
-colourplot
-
 xlabel('Normalised vertical displacement')
 ylabel('Vertical force, N')
 
-H = labelplot('north','vertical','$\mupqratio$');
-pos = get(H,'position');
-set(H,'position',[0.6 0.5 pos(3:4)]);
-legendshrink(0.5)
-axistight(gca,0.1,'-x')
-set(gca,'ylim',[0 400]);
-draworigin([1 0],'v',':')
+if ~simple_graph
+  
+  set(gca,'box','on','ticklength',[0.02 0.05])
+  colourplot
+  
+  H = labelplot('north','vertical','$\mupqratio$');
+  pos = get(H,'position');
+  set(H,'position',[0.6 0.5 pos(3:4)]);
+  legendshrink(0.5)
+  
+  axistight(gca,0.1,'-x')
+  set(gca,'ylim',[0 400]);
+  
+  draworigin([1 0],'v',':')
+  
+  matlabfrag(['fig/',figname],'dpi',3200);
 
-matlabfrag(['fig/',figname],'dpi',3200);
+end
 
 %% Plot a few normalised
 
@@ -115,15 +134,19 @@ for ii = 1:length(some)
 
 end
 
-set(gca,'box','on','ticklength',[0.02 0.05])
-colourplot
-
 xlabel('Normalised vertical displacement')
 ylabel('Vertical force, N')
 
-H = labelplot('north','vertical','$\mupqratio$');
-pos = get(H,'position');
-set(H,'position',[0.6 0.5 pos(3:4)]);
-legendshrink(0.5)
+if ~simple_graph
+  
+  set(gca,'box','on','ticklength',[0.02 0.05])
+  colourplot
+  
+  H = labelplot('north','vertical','$\mupqratio$');
+  pos = get(H,'position');
+  set(H,'position',[0.6 0.5 pos(3:4)]);
+  legendshrink(0.5)
+  
+  matlabfrag(['fig/',figname],'dpi',3200)
 
-matlabfrag(['fig/',figname],'dpi',3200);
+end
