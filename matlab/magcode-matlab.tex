@@ -37,7 +37,6 @@ between magnets. The syntax is as follows:
      forces = magnetforces(magnet_fixed, magnet_float, displ);
 stiffnesses = magnetforces( ... , 'stiffness');
       [f s] = magnetforces( ... , 'force', 'stiffness');
-      [s f] = magnetforces( ... , 'stiffness', 'force');
       ... = magnetforces( ... , 'x');
       ... = magnetforces( ... , 'y');
       ... = magnetforces( ... , 'z');
@@ -98,7 +97,6 @@ The syntax for calculating forces between multipole arrays follows the same styl
      forces = multipoleforces(array_fixed, array_float, displ);
 stiffnesses = multipoleforces( ... , 'stiffness');
       [f s] = multipoleforces( ... , 'force', 'stiffness');
-      [s f] = multipoleforces( ... , 'stiffness', 'force');
       ... = multipoleforces( ... , 'x');
       ... = multipoleforces( ... , 'y');
       ... = multipoleforces( ... , 'z');
