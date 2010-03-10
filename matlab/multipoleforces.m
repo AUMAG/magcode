@@ -127,14 +127,15 @@ end
  
  
   
-varargout{1}  =  forces_out; 
-for ii  =  1:length(varargin) 
-  switch varargin{ii} 
-    case 'force' 
-      varargout{ii}  =  forces_out; 
-    case 'stiffness' 
-      varargout{ii}  =  stiffnesses_out; 
-  end 
+ii  =  0; 
+if calc_force_bool 
+  ii  =  ii + 1; 
+  varargout{ii}  =  forces_out; 
+end 
+ 
+if calc_stiffness_bool 
+  ii  =  ii + 1; 
+  varargout{ii}  =  stiffnesses_out; 
 end 
  
  
