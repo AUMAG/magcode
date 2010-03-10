@@ -24,7 +24,7 @@ yrange = linspace(-0.08,0.08,201);
 zgap = repmat([0; 0; 0.015],[1 length(yrange)]);
 displ = zgap + [0; 1; 0]*yrange;
 
-forces = multipoleforces(fixed_array, float_array, displ);
+forces = multipoleforces(fixed_array, float_array, displ,'y','z');
 
 %% Plot
 

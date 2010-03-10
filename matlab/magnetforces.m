@@ -17,18 +17,28 @@ debug_disp  =  @(str) disp([]);
 calc_force_bool  =  false; 
 calc_stiffness_bool  =  false; 
  
+% Undefined calculation flags for the three directions: 
+calc_xyz  =  [-1 -1 -1]; 
+ 
 for ii  =  1:length(varargin) 
   switch varargin{ii} 
-    case 'debug' 
-      debug_disp  =  @(str) disp(str); 
-    case 'force' 
-      calc_force_bool  =  true; 
-    case 'stiffness' 
-      calc_stiffness_bool  =  true; 
+    case 'debug',      debug_disp  =  @(str) disp(str); 
+    case 'force',      calc_force_bool      =  true; 
+    case 'stiffness',  calc_stiffness_bool  =  true; 
+    case 'x',  calc_xyz(1)  =  1; 
+    case 'y',  calc_xyz(2)  =  1; 
+    case 'z',  calc_xyz(3)  =  1; 
     otherwise 
       error(['Unknown calculation option ''',varargin{ii},'''']) 
   end 
 end 
+ 
+% If none of |'x'|, |'y'|, |'z'| are specified, calculate all. 
+if all( calc_xyz == -1 ) 
+  calc_xyz  =  [1 1 1]; 
+end 
+ 
+calc_xyz( calc_xyz == -1 )  =  0; 
  
 if ~calc_force_bool && ~calc_stiffness_bool 
   calc_force_bool  =  true; 
@@ -169,6 +179,8 @@ debug_disp(J2')
  
  
   
+calc_xyz  =  swap_x_z(calc_xyz); 
+ 
 debug_disp('Forces x-x:') 
 force_components(1,:)  =   ... 
   rotate_z_to_x( forces_calc_z_z(size1_x,size2_x,d_x,J1_x,J2_x) ); 
@@ -181,8 +193,12 @@ debug_disp('Forces x-z:')
 force_components(3,:)  =   ... 
   rotate_z_to_x( forces_calc_z_x(size1_x,size2_x,d_x,J1_x,J2_x) ); 
  
+calc_xyz  =  swap_x_z(calc_xyz); 
+ 
  
   
+calc_xyz  =  swap_y_z(calc_xyz); 
+ 
 debug_disp('Forces y-x:') 
 force_components(4,:)  =   ... 
   rotate_z_to_y( forces_calc_z_x(size1_y,size2_y,d_y,J1_y,J2_y) ); 
@@ -194,6 +210,8 @@ force_components(5,:)  =   ...
 debug_disp('Forces y-z:') 
 force_components(6,:)  =   ... 
   rotate_z_to_y( forces_calc_z_y(size1_y,size2_y,d_y,J1_y,J2_y) ); 
+ 
+calc_xyz  =  swap_y_z(calc_xyz); 
  
  
   
@@ -234,6 +252,20 @@ debug_disp(J2')
  
  
   
+debug_disp('z-x stiffness:') 
+stiffness_components(7,:)  =   ... 
+  stiffnesses_calc_z_x( size1,size2,displ,J1,J2 ); 
+ 
+debug_disp('z-y stiffness:') 
+stiffness_components(8,:)  =   ... 
+  stiffnesses_calc_z_y( size1,size2,displ,J1,J2 ); 
+ 
+debug_disp('z-z stiffness:') 
+stiffness_components(9,:)  =   ... 
+  stiffnesses_calc_z_z( size1,size2,displ,J1,J2 ); 
+ 
+calc_xyz  =  swap_x_z(calc_xyz); 
+ 
 debug_disp('x-x stiffness:') 
 stiffness_components(1,:)  =   ... 
   swap_x_z( stiffnesses_calc_z_z( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
@@ -245,6 +277,10 @@ stiffness_components(2,:)  =   ...
 debug_disp('x-z stiffness:') 
 stiffness_components(3,:)  =   ... 
   swap_x_z( stiffnesses_calc_z_x( size1_x,size2_x,d_x,J1_x,J2_x ) ); 
+ 
+calc_xyz  =  swap_x_z(calc_xyz); 
+ 
+calc_xyz  =  swap_y_z(calc_xyz); 
  
 debug_disp('y-x stiffness:') 
 stiffness_components(4,:)  =   ... 
@@ -258,18 +294,7 @@ debug_disp('y-z stiffness:')
 stiffness_components(6,:)  =   ... 
   swap_y_z( stiffnesses_calc_z_y( size1_y,size2_y,d_y,J1_y,J2_y ) ); 
  
-debug_disp('z-x stiffness:') 
-stiffness_components(7,:)  =   ... 
-  stiffnesses_calc_z_x( size1,size2,displ,J1,J2 ); 
- 
-debug_disp('z-y stiffness:') 
-stiffness_components(8,:)  =   ... 
-  stiffnesses_calc_z_y( size1,size2,displ,J1,J2 ); 
- 
-debug_disp('z-z stiffness:') 
-stiffness_components(9,:)  =   ... 
-  stiffnesses_calc_z_z( size1,size2,displ,J1,J2 ); 
- 
+calc_xyz  =  swap_y_z(calc_xyz); 
  
  
  
@@ -298,28 +323,48 @@ r  =  sqrt(u.^2+v.^2+w.^2);
  
  
  
-component_x  =   ... 
-  + multiply_x_log_y( 0.5 * (v.^2-w.^2), r-u )  ... 
-  + multiply_x_log_y( u.*v, r-v )  ... 
-  + v.*w.*atan1(u.*v,r.*w)  ... 
-  + 0.5 * r.*u; 
+if calc_xyz(1) 
+  component_x  =   ... 
+    + multiply_x_log_y( 0.5 * (v.^2-w.^2), r-u )  ... 
+    + multiply_x_log_y( u.*v, r-v )  ... 
+    + v.*w.*atan1(u.*v,r.*w)  ... 
+    + 0.5 * r.*u; 
+end 
  
-component_y  =   ... 
-  + multiply_x_log_y( 0.5 * (u.^2-w.^2), r-v )  ... 
-  + multiply_x_log_y( u.*v, r-u )  ... 
-  + u.*w.*atan1(u.*v,r.*w) ... 
-  + 0.5 * r.*v; 
+if calc_xyz(2) 
+  component_y  =   ... 
+    + multiply_x_log_y( 0.5 * (u.^2-w.^2), r-v )  ... 
+    + multiply_x_log_y( u.*v, r-u )  ... 
+    + u.*w.*atan1(u.*v,r.*w)  ... 
+    + 0.5 * r.*v; 
+end 
  
-component_z  =   ... 
-  - multiply_x_log_y( u.*w, r-u )  ... 
-  - multiply_x_log_y( v.*w, r-v )  ... 
-  + u.*v.*atan1(u.*v,r.*w)  ... 
-  - r.*w; 
+if calc_xyz(3) 
+  component_z  =   ... 
+    - multiply_x_log_y( u.*w, r-u )  ... 
+    - multiply_x_log_y( v.*w, r-v )  ... 
+    + u.*v.*atan1(u.*v,r.*w)  ... 
+    - r.*w; 
+end 
  
   
-component_x  =  index_sum.*component_x; 
-component_y  =  index_sum.*component_y; 
-component_z  =  index_sum.*component_z; 
+if calc_xyz(1) 
+  component_x  =  index_sum.*component_x; 
+else 
+  component_x  =  0; 
+end 
+ 
+if calc_xyz(2) 
+  component_y  =  index_sum.*component_y; 
+else 
+  component_y  =  0; 
+end 
+ 
+if calc_xyz(3) 
+  component_z  =  index_sum.*component_z; 
+else 
+  component_z  =  0; 
+end 
  
 calc_out  =  J1 * J2 * magconst .*  ... 
   [ sum(component_x(:)) ; 
@@ -357,35 +402,55 @@ r  =  sqrt(u.^2+v.^2+w.^2);
  
  
  
-component_x  =   ... 
-  - multiply_x_log_y ( v .* w , r-u )  ... 
-  + multiply_x_log_y ( v .* u , r+w )  ... 
-  + multiply_x_log_y ( u .* w , r+v )  ... 
-  - 0.5  *  u.^2 .* atan1( v .* w , u .* r )  ... 
-  - 0.5  *  v.^2 .* atan1( u .* w , v .* r )  ... 
-  - 0.5  *  w.^2 .* atan1( u .* v , w .* r ); 
- 
-component_y  =   ... 
-  0.5  *  multiply_x_log_y( u.^2 - v.^2 , r+w )  ... 
-  - multiply_x_log_y( u .* w , r-u )  ... 
-  - u .* v .* atan1( u .* w , v .* r )  ... 
-  - 0.5  *  w .* r; 
- 
-component_z  =   ... 
-  0.5  *  multiply_x_log_y( u.^2 - w.^2 , r+v )  ... 
-  - multiply_x_log_y( u .* v , r-u )  ... 
-  - u .* w .* atan1( u .* v , w .* r )  ... 
-  - 0.5  *  v .* r; 
- 
 allag_correction  =  -1; 
-component_x  =  allag_correction * component_x; 
-component_y  =  allag_correction * component_y; 
-component_z  =  allag_correction * component_z; 
+ 
+if calc_xyz(1) 
+  component_x  =   ... 
+    - multiply_x_log_y ( v .* w , r-u )  ... 
+    + multiply_x_log_y ( v .* u , r+w )  ... 
+    + multiply_x_log_y ( u .* w , r+v )  ... 
+    - 0.5  *  u.^2 .* atan1( v .* w , u .* r )  ... 
+    - 0.5  *  v.^2 .* atan1( u .* w , v .* r )  ... 
+    - 0.5  *  w.^2 .* atan1( u .* v , w .* r ); 
+  component_x  =  allag_correction * component_x; 
+end 
+ 
+if calc_xyz(2) 
+  component_y  =   ... 
+    0.5  *  multiply_x_log_y( u.^2 - v.^2 , r+w )  ... 
+    - multiply_x_log_y( u .* w , r-u )  ... 
+    - u .* v .* atan1( u .* w , v .* r )  ... 
+    - 0.5  *  w .* r; 
+  component_y  =  allag_correction * component_y; 
+end 
+ 
+if calc_xyz(3) 
+  component_z  =   ... 
+    0.5  *  multiply_x_log_y( u.^2 - w.^2 , r+v )  ... 
+    - multiply_x_log_y( u .* v , r-u )  ... 
+    - u .* w .* atan1( u .* v , w .* r )  ... 
+    - 0.5  *  v .* r; 
+  component_z  =  allag_correction * component_z; 
+end 
  
   
-component_x  =  index_sum.*component_x; 
-component_y  =  index_sum.*component_y; 
-component_z  =  index_sum.*component_z; 
+if calc_xyz(1) 
+  component_x  =  index_sum.*component_x; 
+else 
+  component_x  =  0; 
+end 
+ 
+if calc_xyz(2) 
+  component_y  =  index_sum.*component_y; 
+else 
+  component_y  =  0; 
+end 
+ 
+if calc_xyz(3) 
+  component_z  =  index_sum.*component_z; 
+else 
+  component_z  =  0; 
+end 
  
 calc_out  =  J1 * J2 * magconst .*  ... 
   [ sum(component_x(:)) ; 
@@ -402,10 +467,13 @@ end
   
 function calc_out  =  forces_calc_z_x(size1,size2,offset,J1,J2) 
  
+calc_xyz  =  swap_x_y(calc_xyz); 
+ 
 forces_xyz  =  forces_calc_z_y( ... 
   swap_x_y(size1), swap_x_y(size2), rotate_x_to_y(offset), ... 
   J1, rotate_x_to_y(J2) ); 
  
+calc_xyz  =  swap_x_y(calc_xyz); 
 calc_out  =  rotate_y_to_x( forces_xyz ); 
  
 end 
@@ -432,22 +500,36 @@ r  =  sqrt(u.^2+v.^2+w.^2);
  
  
  
-component_x  =   ... 
-  - r  ... 
-  - (u.^2 .*v)./(u.^2+w.^2)  ... 
-  - v.*log(r-v) ; 
+if calc_xyz(1) || calc_xyz(3) 
+  component_x  =  - r - (u.^2 .*v)./(u.^2+w.^2) - v.*log(r-v) ; 
+end 
  
-component_y  =   ... 
-  - r  ... 
-  - (v.^2 .*u)./(v.^2+w.^2)  ... 
-  - u.*log(r-u) ; 
+if calc_xyz(2) || calc_xyz(3) 
+  component_y  =  - r - (v.^2 .*u)./(v.^2+w.^2) - u.*log(r-u) ; 
+end 
  
-component_z  =  - component_x - component_y; 
+if calc_xyz(3) 
+  component_z  =  - component_x - component_y; 
+end 
  
   
-component_x  =  index_sum.*component_x; 
-component_y  =  index_sum.*component_y; 
-component_z  =  index_sum.*component_z; 
+if calc_xyz(1) 
+  component_x  =  index_sum.*component_x; 
+else 
+  component_x  =  0; 
+end 
+ 
+if calc_xyz(2) 
+  component_y  =  index_sum.*component_y; 
+else 
+  component_y  =  0; 
+end 
+ 
+if calc_xyz(3) 
+  component_z  =  index_sum.*component_z; 
+else 
+  component_z  =  0; 
+end 
  
 calc_out  =  J1 * J2 * magconst .*  ... 
   [ sum(component_x(:)) ; 
@@ -483,19 +565,39 @@ r  =  sqrt(u.^2+v.^2+w.^2);
  
  
  
-component_x  =   ((u.^2 .*v)./(u.^2 + v.^2)) + (u.^2 .*w)./(u.^2 + w.^2)  ... 
-     - u.*atan1(v.*w,r.*u) + multiply_x_log_y( w , r + v ) +  ... 
-     + multiply_x_log_y( v , r + w ); 
+if calc_xyz(1) || calc_xyz(3) 
+  component_x  =   ((u.^2 .*v)./(u.^2 + v.^2)) + (u.^2 .*w)./(u.^2 + w.^2)  ... 
+       - u.*atan1(v.*w,r.*u) + multiply_x_log_y( w , r + v ) +  ... 
+       + multiply_x_log_y( v , r + w ); 
+end 
  
-component_y  =  - v/2 + (u.^2 .*v)./(u.^2 + v.^2) - (u.*v.*w)./(v.^2 + w.^2)  ... 
-     -  u.*atan1(u.*w,r.*v) - multiply_x_log_y( v , r + w ); 
+if calc_xyz(2) || calc_xyz(3) 
+  component_y  =  - v/2 + (u.^2 .*v)./(u.^2 + v.^2) - (u.*v.*w)./(v.^2 + w.^2)  ... 
+       -  u.*atan1(u.*w,r.*v) - multiply_x_log_y( v , r + w ); 
+end 
  
-component_z  =  - component_x - component_y; 
+if calc_xyz(3) 
+  component_z  =  - component_x - component_y; 
+end 
  
   
-component_x  =  index_sum.*component_x; 
-component_y  =  index_sum.*component_y; 
-component_z  =  index_sum.*component_z; 
+if calc_xyz(1) 
+  component_x  =  index_sum.*component_x; 
+else 
+  component_x  =  0; 
+end 
+ 
+if calc_xyz(2) 
+  component_y  =  index_sum.*component_y; 
+else 
+  component_y  =  0; 
+end 
+ 
+if calc_xyz(3) 
+  component_z  =  index_sum.*component_z; 
+else 
+  component_z  =  0; 
+end 
  
 calc_out  =  J1 * J2 * magconst .*  ... 
   [ sum(component_x(:)) ; 
@@ -513,10 +615,13 @@ end
   
 function calc_out  =  stiffnesses_calc_z_x(size1,size2,offset,J1,J2) 
  
+calc_xyz  =  swap_x_y(calc_xyz); 
+ 
 stiffnesses_xyz  =  stiffnesses_calc_z_y( ... 
   swap_x_y(size1), swap_x_y(size2), rotate_x_to_y(offset), ... 
   J1, rotate_x_to_y(J2) ); 
  
+calc_xyz  =  swap_x_y(calc_xyz); 
 calc_out  =  swap_x_y(stiffnesses_xyz); 
  
 end 

@@ -14,18 +14,28 @@ debug_disp  =  @(str) disp([]);
 calc_force_bool  =  false; 
 calc_stiffness_bool  =  false; 
  
+% Undefined calculation flags for the three directions: 
+calc_xyz  =  [-1 -1 -1]; 
+ 
 for ii  =  1:length(varargin) 
   switch varargin{ii} 
-    case 'debug' 
-      debug_disp  =  @(str) disp(str); 
-    case 'force' 
-      calc_force_bool  =  true; 
-    case 'stiffness' 
-      calc_stiffness_bool  =  true; 
+    case 'debug',      debug_disp  =  @(str) disp(str); 
+    case 'force',      calc_force_bool      =  true; 
+    case 'stiffness',  calc_stiffness_bool  =  true; 
+    case 'x',  calc_xyz(1)  =  1; 
+    case 'y',  calc_xyz(2)  =  1; 
+    case 'z',  calc_xyz(3)  =  1; 
     otherwise 
       error(['Unknown calculation option ''',varargin{ii},'''']) 
   end 
 end 
+ 
+% If none of |'x'|, |'y'|, |'z'| are specified, calculate all. 
+if all( calc_xyz == -1 ) 
+  calc_xyz  =  [1 1 1]; 
+end 
+ 
+calc_xyz( calc_xyz == -1 )  =  0; 
  
 if ~calc_force_bool && ~calc_stiffness_bool 
   calc_force_bool  =  true; 
