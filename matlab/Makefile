@@ -1,7 +1,7 @@
 
-Name = magnetforces
-Source  = $(Name).web
-DocName = magcode-matlab
+Name = magcode-matlab
+Source  = $(Name).nw
+DocName = $(Name)
 Doc  = $(DocName).pdf
 
 Dir = /tmp/$(Name)
