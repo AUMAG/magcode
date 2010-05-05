@@ -1,37 +1,39 @@
 
-NAME = magnetforces
-SRC = $(NAME).web
-SCPT = $(NAME).m
-DRV = magcode-matlab
-DOC = $(DRV).pdf
-DIR = /tmp/mweb
-MWEB = $(DIR)/mweb.tex $(DIR)/swebbind.sty $(DIR)/webfiles.sty $(DIR)/matlabweb.sty
+Name = magnetforces
+Source  = $(Name).web
+DocName = magcode-matlab
+Doc  = $(DocName).pdf
 
-all: $(SCPT) $(DOC)
-code: $(SCPT)
+Dir = /tmp/$(Name)
+TestDir = testsuite/
 
-$(SCPT):  $(SRC)
-	mtangle $(SRC)
+Outputs = magnetforces.m multipoleforces.m
 
-$(DOC): $(DIR)/$(DOC)
-	cp -f $< $@
+TestNames = testall.m \
+        test001a.m test001b.m test001c.m test001d.m test001e.m \
+        test002a.m test002b.m test002c.m test002d.m \
+        test003a.m
+Tests = $(addprefix $(TestDir),$(TestNames))
 
-$(DIR)/$(DOC): $(DIR)/$(SRC) $(DIR)/$(DRV).tex $(MWEB)
-	cd $(DIR)/; mweave $(SRC)
-	cd $(DIR)/; pdflatex -draftmode $(DRV)
-	cd $(DIR)/; pwd; /usr/texbin/bibtex $(DRV)
-	cd $(DIR)/; pdflatex $(DRV)
+all: $(Outputs) $(Tests) $(Doc)
 
-$(DIR)/$(SRC): $(SRC)
-	mkdir -p /tmp/mweb/
-	cp -f $< $@
+.PHONY: all
 
-$(DIR)/$(DRV).tex: $(DRV).tex
-	cp -f $< $@
+$(Outputs):	$(Source)
+	notangle -R' $@ ' $< > $@
 
-$(DIR)/mweb.tex: mweb/mweb.tex
-	cp -f $< $@
+$(Tests):	$(Source)
+	@mkdir -p testsuite
+	notangle -R' $(shell basename $@) ' $< > $@
 
-$(DIR)/%.sty: mweb/%.sty
-	cp -f $< $@
+$(Doc):	$(Dir)/$(Source)
+	cd $(Dir); \
+	noweave -delay -index $(Source) > $(DocName).tex \
+		&& pdflatex $(DocName) \
+		&& bibtex $(DocName) \
+		&& pdflatex $(DocName)
+	cp $(Dir)/$(Doc) $@
 
+$(Dir)/$(Source): $(Source)
+	@mkdir -p $(Dir)
+	cp $< $@

@@ -1,4 +1,217 @@
 
+\documentclass{article}
+\usepackage{amsmath,array,booktabs,enumitem,upquote,shortvrb,underscore}
+\usepackage{noweb}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{hyperref}
+\hypersetup{colorlinks}
+\usepackage[hyperref,backref]{biblatex}
+\bibliography{journals,phd}
+\MakeShortVerb\|
+\begin{document}
+\title{Forces between magnets\\ and multipole arrays of magnets:\\ A Matlab implementation}
+\author{Will Robertson}
+\maketitle
+\begin{abstract}
+This is the user guide and documented implementation of a set of
+Matlab functions for calculating the forces (and stiffnesses) between
+cuboid permanent magnets and between multipole arrays of the same.
+
+This document is still evolving. The documentation for the source code,
+especially, is rather unclear/non-existent at present. The user guide,
+however, should contain the bulk of the information needed to use this code.
+\end{abstract}
+\tableofcontents
+
+\newpage
+
+\section{User guide}
+
+(See Section~\ref{meta} for installation instructions.)
+
+\subsection{Forces between magnets}
+
+The function |magnetforces| is used to calculate both forces and stiffnesses
+between magnets. The syntax is as follows:
+
+\begin{verbatim}
+     forces = magnetforces(magnet_fixed, magnet_float, displ);
+stiffnesses = magnetforces( ... , 'stiffness');
+      [f s] = magnetforces( ... , 'force', 'stiffness');
+      ... = magnetforces( ... , 'x');
+      ... = magnetforces( ... , 'y');
+      ... = magnetforces( ... , 'z');
+\end{verbatim}
+
+|magnetforces| takes three mandatory inputs to specify the position and magnetisation of the first and second magnets and the displacement between them.
+Optional arguments appended indicate whether to calculate force or stiffness or both and whether to calculate components in $x$- and/or $y$- and/or $z$- components respectively.
+The force\footnote{From now I will omit most mention of calculating stiffnesses; assume whenever I say `force' I mean `force \emph{and} stiffness'} is calculated as that imposed on the second magnet; for this reason, I often call the first magnet the `fixed' magnet and the second `floating'. If you wish to calculate the force on the first magnet instead, simply reverse the sign of the output.
+
+\paragraph{Inputs and outputs}
+The first two inputs are structures containing the following fields:
+\begin{description}[noitemsep,font=\ttfamily]
+\item[magnet.dim] A $(3\times1)$ vector of the side-lengths of the magnet.
+\item[magnet.magn] The magnetisation magnitude of the magnet.
+\item[magnet.magdir] A vector representing the direction of the magnetisation.
+              This may be either a $(3\times1)$ vector in cartesian
+              coordinates or a $(2\times1)$ vector in spherical coordidates.
+\end{description}
+In cartesian coordinates, the vector is interpreted as a unit vector; it is only used to calculate the direction of the magnetisation.
+In other words, writing |[1;0;0]| is the same as |[2;0;0]|, and so on.
+In spherical coordinates $(\theta,\phi)$, $\theta$ is the vertical projection of the angle around the $x$--$y$ plane ($\theta=0$ coincident with the $x$-axis), and $\phi$ is the angle from the $x$--$y$ plane towards the $z$-axis.
+In other words, the following unit vectors are equivalent:
+\begin{align*}
+(1,0,0)_{\text{cartesian}} &\equiv (0,0)_{\text{spherical}}\\
+(0,1,0)_{\text{cartesian}} &\equiv (90,0)_{\text{spherical}}\\
+(0,0,1)_{\text{cartesian}} &\equiv (0,90)_{\text{spherical}}
+\end{align*}
+N.B.\ $\theta$ and $\phi$ must be input in degrees, not radians.
+This seemingly odd decision was made in order to calculate quantities such as $\cos(\pi/2)=0$ exactly rather than to machine precision.
+
+The third mandatory input is |displ|, which is a matrix of displacement vectors between the two magnets. |displ| should be a $(3\times D)$ matrix,
+where $D$ is the number of displacements over which to calculate the forces.
+The size of |displ| dictates the size of the output force matrix; |forces| (etc.) will be also of size $(3\times D)$.
+
+\paragraph{Example} Using |magnetforces| is rather simple. A magnet is set up
+as a simple structure like
+\begin{verbatim}
+magnet_fixed = struct(...
+  'dim'   , [0.02 0.012 0.006], ...
+  'magn'  , 0.38, ...
+  'magdir', [0 0 1] ...
+);
+\end{verbatim}
+with something similar for |magnet_float|. The displacement matrix is then
+built up as a list of $(3\times1)$ displacement vectors, such as
+\begin{verbatim}
+displ = [0; 0; 1]*linspace(0.01,0.03);
+\end{verbatim}
+And that's about it.
+For a complete example, see `\path{examples/magnetforces_example.m}'.
+
+\subsection{Forces between multipole arrays of magnets}
+
+Because multipole arrays of magnets are more complex structures than single magnets, calculating the forces between them requires more setup as well.
+The syntax for calculating forces between multipole arrays follows the same style as for single magnets:
+
+\begin{verbatim}
+     forces = multipoleforces(array_fixed, array_float, displ);
+stiffnesses = multipoleforces( ... , 'stiffness');
+      [f s] = multipoleforces( ... , 'force', 'stiffness');
+      ... = multipoleforces( ... , 'x');
+      ... = multipoleforces( ... , 'y');
+      ... = multipoleforces( ... , 'z');
+\end{verbatim}
+
+Because multipole arrays can be defined in various ways, there are several
+overlapping methods for specifying the structures defining an array. Please escuse a certain amount of dryness in the information to follow; more inspiration for better documentation will come with feedback from those reading this document!
+
+\paragraph{Linear Halbach arrays}
+A minimal set of variables to define a linear multipole array are:
+\begin{description}[noitemsep,font=\ttfamily]
+\item[array.type] Use `|linear|' to specify an array of this type.
+\item[array.align] One of `|x|', `|y|', or `|z|' to specify an alignment axis along which successive magnets are placed.
+\item[array.face] One of `|+x|', `|+y|', `|+z|', `|-x|', `|-y|', or `|-z|' to specify which direction the `strong' side of the array faces.
+\item[array.msize] A $(3\times1)$ vector defining the size of each magnet in the array.
+\item[array.Nmag] The number of magnets composing the array.
+\item[array.magn] The magnetisation magnitude of each magnet.
+\item[array.magdir_rotate] The amount of rotation, in degrees, between successive magnets.
+\end{description}
+Notes:
+\begin{itemize}
+\item The array must |face| in a direction orthogonal to its alignment.
+\item `|up|' and `|down|' are defined as synonyms for facing `|+z|' and `|-z|', respectively, and `|linear|' for array type `|linear-x|'.
+\item Singleton input to |msize| assumes a cube-shaped magnet.
+\end{itemize}
+
+The variables above are the minimum set required to specify a multipole array.
+In addition, the following array variables may be used instead of or as well as to specify the information in a different way:
+\begin{description}[noitemsep,font=\ttfamily]
+\item[array.magdir_first] This is the angle of magnetisation in degrees around the direction of magnetisation rotation for the first magnet. It defaults to $\pm$90\textdegree\ depending on the facing direction of the array.
+\item[array.length] The total length of the magnet array in the alignment direction of the array. If this variable is used then |width| and |height| (see below) must be as well.
+\item[array.width] The dimension of the array orthogonal to the alignment and facing directions.
+\item[array.height] The height of the array in the facing direction.
+\item[array.wavelength] The wavelength of magnetisation. Must be an integer number of magnet lengths.
+\item[array.Nwaves] The number of wavelengths of magnetisation in the array, which is probably always going to be an integer.
+\item[array.Nmag_per_wave] The number of magnets per wavelength of magnetisation (e.g., |Nmag_per_wave| of four is equivalent to |magdir_rotate| of 90\textdegree).
+\item[array.gap] Air-gap between successive magnet faces in the array. Defaults to zero.
+\end{description}
+Notes:
+\begin{itemize}
+\item |array.mlength|+|array.width|+|array.height| may be used as a synonymic replacement for |array.msize|.
+\item When using |Nwaves|, an additional magnet is placed on the end for symmetry.
+\item Setting |gap| does not affect |length| \emph{or} |mlength|! That is,
+when |gap| is used, |length| refers to the total length of magnetic material placed end-to-end, not the total length of the array including the gaps.
+\end{itemize}
+
+\paragraph{Planar Halbach arrays}
+Most of the information above follows for planar arrays, which can be thought
+of as a superposition of two orthogonal linear arrays.
+\begin{description}[noitemsep,font=\ttfamily]
+\item[array.type] Use `|planar|' to specify an array of this type.
+\item[array.align] One of `|xy|' (default), `|yz|', or `|xz|' for a plane with which to align the array.
+\item[array.width] This is now the `length' in the second spanning direction of the planar array. E.g., for the array `|planar-xy|', `length' refers to the $x$-direction and `width' refers to the $y$-direction. (And `height' is $z$.)
+\item[array.mwidth] Ditto for the width of each magnet in the array.
+\end{description}
+All other variables for linear Halbach arrays hold analogously for planar Halbach arrays; if desired, two-element input can be given to specify different properties in different directions.
+
+\paragraph{Planar quasi-Halbach arrays}
+This magnetisation pattern is simpler than the planar Halbach array described above.
+\begin{description}[noitemsep,font=\ttfamily]
+\item[array.type] Use `|quasi-halbach|' to specify an array of this type.
+\item[array.Nwaves] There are always four magnets per wavelength for the quasi-Halbach array. Two elements to specify the number of wavelengths in each direction, or just one if the same in both.
+\item[array.Nmag] Instead of |Nwaves|, in case you want a non-integer number of wavelengths (but that would be weird).
+\end{description}
+
+\paragraph{Patchwork planar array}
+\begin{description}[noitemsep,font=\ttfamily]
+\item[array.type] Use `|patchwork|' to specify an array of this type.
+\item[array.Nmag] There isn't really a `wavelength of magnetisation' for this one; or rather, there is but it's trivial. So just define the number of magnets per side, instead. (Two-element for different sizes of one-element for an equal number of magnets in both directions.)
+\end{description}
+
+\paragraph{Arbitrary arrays}
+Until now we have assumed that magnet arrays are composed of magnets with identical sizes and regularly-varying magnetisation directions.
+Some facilities are provided to generate more general/arbitrary--shaped arrays.
+\begin{description}[noitemsep,font=\ttfamily]
+\item[array.type] Should be `|generic|' but may be omitted.
+\item[array.mcount] The number of magnets in each direction, say $(X,Y,Z)$.
+\item[array.msize_array] An $(X,Y,Z,3)$-length matrix defining the magnet sizes for each magnet of the array.
+\item[array.magdir_fn] An anonymous function that takes three input variables $(i,j,k)$ to calculate the magnetisation for the $(i,j,k)$-th magnet in the $(x,y,z)$-directions respectively.
+\item[array.magn] At present this still must be singleton-valued. This will be amended at some stage to allow |magn_array| input to be analogous with |msize| and |msize_array|.
+\end{description}
+This approach for generating magnet arrays has been little-tested. Please inform me of associated problems if found.
+
+\section{Meta-information}\label{meta}
+
+\paragraph{Obtaining}
+The latest version of this package may be obtained from the GitHub repository
+\url{http://github.com/wspr/magcode} with the following command:
+\begin{verbatim}
+git clone git://github.com/wspr/magcode.git
+\end{verbatim}
+
+\paragraph{Installing}
+It may be installed in Matlab simply by adding the `\texttt{matlab/}' subdirectory to the Matlab path; e.g., adding the following to your \texttt{startup.m} file: (if that's where you cloned the repository)
+\begin{verbatim}
+addpath ~/magcode/matlab
+\end{verbatim}
+
+\paragraph{Licensing}
+This work may be freely modified and distributed under the terms and conditions of the Apache License v2.0.\footnote{\url{http://www.apache.org/licenses/LICENSE-2.0}}
+This work is Copyright 2009--2010 by Will Robertson.
+
+\paragraph{Contributing and feedback}
+Please report problems and suggestions at the GitHub issue tracker.%
+\footnote{\url{http://github.com/wspr/magnetocode/issues}}
+
+The Matlab source code is written using Matlabweb.%
+\footnote{\url{http://www.ctan.org/tex-archive/web/matlabweb/}}
+After it is installed, use \verb|mtangle magnetforces| to extract the Matlab files \texttt{magnetforces.m} and \texttt{multipoleforces.m}, as well as extracting the test suite (such as it is, for now).
+Running the Makefile with no targets (i.e., \verb|make|) will perform this step as well as compiling the documentation you are currently reading.
+
+
+
 @ About this file. This is a `literate programming` approach to writing Matlab
 code using \textsc{matlabweb}%
 \footnote{\url{http://tug.ctan.org/pkg/matlabweb}}. To be honest I don't know
@@ -24,7 +237,7 @@ programming in this way.
 
   Copyright \textcopyright\ 2009 Will Robertson.
 
-@* Calculating forces between magnets. This is the source of some code to
+@ Calculating forces between magnets. This is the source of some code to
 calculate the forces and/or stiffnesses between two
 cuboid-shaped magnets with arbitary displacements and magnetisation direction.
 (A cuboid is like a three dimensional rectangle; its faces are all orthogonal
@@ -39,7 +252,7 @@ but may have different side lengths.)
   If no calculation is specified, \verb='force'= is the default.
 
 \begin{center}
-\begin{tabular}{@@{}lll@@{}}
+\begin{tabular}{@{}lll@{}}
 \hline
  Inputs:
  & |magnet_fixed| & structure describing first magnet \\
@@ -59,28 +272,28 @@ but may have different side lengths.)
 \end{tabular}
 \end{center}
 
-@( magnetforces.m @>=
+<< magnetforces.m >>=
 
 function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
-@< Matlab help text (forces) @>
+<< Matlab help text (forces) >>
 
-@< Parse calculation args @>
-@< Organise input displacements @>
-@< Initialise main variables @>
-@< Precompute rotations @>
+<< Parse calculation args >>
+<< Organise input displacements >>
+<< Initialise main variables >>
+<< Precompute rotations >>
 
-@< Calculate for each displacement @>
-@< Return all results @>
+<< Calculate for each displacement >>
+<< Return all results >>
 
-@< Function for resolving magnetisations @>
-@< Function for single force calculation @>
-@< Function for single stiffness calculation @>
-@< Functions for calculating forces and stiffnesses @>
+<< Function for resolving magnetisations >>
+<< Function for single force calculation >>
+<< Function for single stiffness calculation >>
+<< Functions for calculating forces and stiffnesses >>
 
 end
 
-@*1 Variables and data structures.
+@ Variables and data structures.
 First of all, address the data structures required for the input and output.
 Because displacement of a single magnet has three components, plus sizes of
 the faces another three, plus magnetisation strength and direction (two) makes
@@ -106,7 +319,7 @@ magnitude.
 Either way (between spherical or cartesian input), |J1| and |J2| are made into
 the magnetisation vectors in cartesian coordindates.
 
-@< Initialise main variables @>=
+<< Initialise main variables >>=
 
 size1 = reshape(magnet_fixed.dim/2,[3 1]);
 size2 = reshape(magnet_float.dim/2,[3 1]);
@@ -118,7 +331,7 @@ J2 = resolve_magnetisations(magnet_float.magn,magnet_float.magdir);
   After sorting that out, we can initialise the output variables now we
   know how big they need to me.
 
-@< Organise input displacements @>=
+<< Organise input displacements >>=
 
 if size(displ,1) == 3
   % all good
@@ -139,23 +352,23 @@ if calc_stiffness_bool
   stiffnesses_out = repmat(NaN,[3 Ndispl]);
 end
 
-@*1 Wrangling user input and output.
+@ Wrangling user input and output.
   We now have a choice of calculations to take based on the user input.
   This chunk and the next are used in both \texttt{magnetforces.m} and
   \texttt{multipoleforces.m}.
 
-@< Parse ... @>=
+<< Parse calculation args >>=
 
-debug_disp = @@(str) disp([]);
+debug_disp = @(str) disp([]);
 calc_force_bool = false;
 calc_stiffness_bool = false;
 
-@% Undefined calculation flags for the three directions:
+% Undefined calculation flags for the three directions:
 calc_xyz = [-1 -1 -1];
 
 for ii = 1:length(varargin) 
   switch varargin{ii}
-    case 'debug',      debug_disp = @@(str) disp(str);
+    case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
     case 'stiffness',  calc_stiffness_bool = true;
     case 'x',  calc_xyz(1) = 1;
@@ -166,7 +379,7 @@ for ii = 1:length(varargin)
   end
 end
 
-@% If none of |'x'|, |'y'|, |'z'| are specified, calculate all.
+% If none of |'x'|, |'y'|, |'z'| are specified, calculate all.
 if all( calc_xyz == -1 )
   calc_xyz = [1 1 1];
 end
@@ -180,7 +393,7 @@ end
 @ After all of the calculations have occured, they're placed back into
   |varargout|. (This happens at the very end, obviously.)
 
-@< Return all results @>=
+<< Return all results >>=
 
 ii = 0;
 if calc_force_bool
@@ -194,11 +407,11 @@ if calc_stiffness_bool
 end
 
 
-@*1 The actual mechanics.
+@ The actual mechanics.
 The idea is that a multitude of displacements can be passed to the
 function and we iterate to generate a matrix of vector outputs.
 
-@< Calculate for each displacement @>=
+<< Calculate for each displacement >>=
 
 if calc_force_bool
   for ii = 1:Ndispl
@@ -214,32 +427,32 @@ end
 
 @ And this is what does the calculations.
 
-@< Function for single force calculation @>=
+<< Function for single force calculation >>=
 
 function force_out = single_magnet_force(displ)
 
 force_components = repmat(NaN,[9 3]);
 
-@< Precompute displacement rotations @>
-@< Print diagnostics @>
-@< Calculate |x| force @>
-@< Calculate |y| force @>
-@< Calculate |z| force @>
+<< Precompute displacement rotations >>
+<< Print diagnostics >>
+<< Calculate |x| force >>
+<< Calculate |y| force >>
+<< Calculate |z| force >>
 
 force_out = sum(force_components);
 end
 
 @ And this is what does the calculations for stiffness.
 
-@< Function for single stiffness calculation @>=
+<< Function for single stiffness calculation >>=
 
 function stiffness_out = single_magnet_stiffness(displ) 
 
 stiffness_components = repmat(NaN,[9 3]);
 
-@< Precompute displacement rotations @>
-@< Print diagnostics @>
-@< Calculate stiffnesses @>
+<< Precompute displacement rotations >>
+<< Print diagnostics >>
+<< Calculate stiffnesses >>
 
 stiffness_out = sum(stiffness_components);
 end
@@ -247,7 +460,7 @@ end
 @ The easy one first, where our magnetisation components align with the
   direction expected by the force functions.
 
-@< Calculate |z| force @>=
+<< Calculate |z| force >>=
 
 debug_disp('z-z force:')
 force_components(9,:) = forces_calc_z_z( size1,size2,displ,J1,J2 );
@@ -265,7 +478,7 @@ force_components(7,:) = forces_calc_z_x( size1,size2,displ,J1,J2 );
   After the forces are calculated, rotate them back to the original
   coordinate system.
 
-@< Calculate |x| force @>=
+<< Calculate |x| force >>=
 
 calc_xyz = swap_x_z(calc_xyz);
 
@@ -285,7 +498,7 @@ calc_xyz = swap_x_z(calc_xyz);
 
 @ Same again, this time making |y| the `up' direction.
 
-@< Calculate |y| force @>=
+<< Calculate |y| force >>=
 
 calc_xyz = swap_y_z(calc_xyz);
 
@@ -308,7 +521,7 @@ calc_xyz = swap_y_z(calc_xyz);
   directions around between different coordinate systems rather than rotate
   them.
 
-@< Calculate stiffnesses @>=
+<< Calculate stiffnesses >>=
 
 debug_disp('z-x stiffness:')
 stiffness_components(7,:) = ...
@@ -354,20 +567,20 @@ stiffness_components(6,:) = ...
 
 calc_xyz = swap_y_z(calc_xyz);
 
-@*1 Functions for calculating forces and stiffnesses. The calculations for
+@ Functions for calculating forces and stiffnesses. The calculations for
 forces between differently-oriented cuboid magnets are all directly from the
 literature. The stiffnesses have been derived by differentiating the force
 expressions, but that's the easy part.
 
-@< Functions ... @>=
+<< Functions for calculating forces and stiffnesses >>=
 
-@< Parallel magnets force calculation @>
-@< Orthogonal magnets force calculation @>
+<< Parallel magnets force calculation >>
+<< Orthogonal magnets force calculation >>
 
-@< Parallel magnets stiffness calculation @>
-@< Orthogonal magnets stiffness calculation @>
+<< Parallel magnets stiffness calculation >>
+<< Orthogonal magnets stiffness calculation >>
 
-@< Helper functions @>
+<< Helper functions >>
 
 @ The expressions here follow directly from \textcite{akoun1984}.
 
@@ -383,14 +596,14 @@ expressions, but that's the easy part.
 \end{tabular}
 \end{center}
 
-@< Parallel magnets force calculation @>=
+<< Parallel magnets force calculation >>=
 
 function calc_out = forces_calc_z_z(size1,size2,offset,J1,J2)
 
 J1 = J1(3);
 J2 = J2(3);
 
-@< Initialise subfunction variables @>
+<< Initialise subfunction variables >>
 
 if calc_xyz(1)
   component_x = ...
@@ -416,7 +629,7 @@ if calc_xyz(3)
     - r.*w;
 end
 
-@< Finish up @>
+<< Finish up >>
 
 
 
@@ -426,14 +639,14 @@ end
   magnet due to the second, so we negate all the values to get the force on
   the latter instead.
 
-@< Orthogonal magnets force calculation @>=
+<< Orthogonal magnets force calculation >>=
 
 function calc_out = forces_calc_z_y(size1,size2,offset,J1,J2)
 
 J1 = J1(3);
 J2 = J2(2);
 
-@< Initialise subfunction variables @>
+<< Initialise subfunction variables >>
 
 allag_correction = -1;
 
@@ -466,13 +679,13 @@ if calc_xyz(3)
   component_z = allag_correction*component_z;
 end
 
-@< Finish up @>
+<< Finish up >>
 
 @ This is the same calculation with Janssen's equations instead.
   By default this code never runs, but if you like it can be enabled
   to prove that the equations are consistent.
 
-@< Test against Janssen results @>=
+<< Test against Janssen results >>=
 
 S=u;
 T=v;
@@ -524,7 +737,7 @@ component_z = component_z_ii;
   to just transforming the $z$--$y$ case isn't worth the tedium of actually
   doing it.
 
-@< Orthogonal magnets force calculation @>+=
+<< Orthogonal magnets force calculation >>=
 
 function calc_out = forces_calc_z_x(size1,size2,offset,J1,J2)
 
@@ -541,14 +754,14 @@ end
 
 @ Stiffness calculations are simply differentiated (in Mathematica) from the forces.
 
-@< Parallel magnets stiffness calculation @>=
+<< Parallel magnets stiffness calculation >>=
 
 function calc_out = stiffnesses_calc_z_z(size1,size2,offset,J1,J2)
 
 J1 = J1(3);
 J2 = J2(3);
 
-@< Initialise subfunction variables @>
+<< Initialise subfunction variables >>
 
 if calc_xyz(1) || calc_xyz(3)
   component_x = - r - (u.^2 .*v)./(u.^2+w.^2) - v.*log(r-v) ;
@@ -562,20 +775,20 @@ if calc_xyz(3)
   component_z = - component_x - component_y;
 end
 
-@< Finish up @>
+<< Finish up >>
 
 
 @ Orthogonal magnets stiffnesses derived from \textcite{yonnet2009-ldia}.
   First the $z$--$y$ magnetisation.
 
-@< Orthogonal magnets stiffness calculation @>=
+<< Orthogonal magnets stiffness calculation >>=
 
 function calc_out = stiffnesses_calc_z_y(size1,size2,offset,J1,J2)
 
 J1 = J1(3);
 J2 = J2(2);
 
-@< Initialise subfunction variables @>
+<< Initialise subfunction variables >>
 
 if calc_xyz(1) || calc_xyz(3)
   component_x =  ((u.^2 .*v)./(u.^2 + v.^2)) + (u.^2 .*w)./(u.^2 + w.^2) ...
@@ -592,12 +805,12 @@ if calc_xyz(3)
   component_z = - component_x - component_y;
 end
 
-@< Finish up @>
+<< Finish up >>
 
 
 @  Now the $z$--$x$ magnetisation, which is $z$--$y$ rotated.
 
-@< Orthogonal magnets stiffness calculation @>+=
+<< Orthogonal magnets stiffness calculation >>=
 
 function calc_out = stiffnesses_calc_z_x(size1,size2,offset,J1,J2)
 
@@ -617,7 +830,7 @@ end
   has already been rounded down to zero if necessary; i.e., that we don't need
   to check for |J1| or |J2| are less than |1e-12| or whatever.
 
-@< Initialise subfunction variables @>=
+<< Initialise subfunction variables >>=
 
 if (J1==0 || J2==0) 
   debug_disp('Zero magnetisation.')
@@ -634,7 +847,7 @@ r = sqrt(u.^2+v.^2+w.^2);
   The idea here is to vectorise instead of using |for| loops because it allows
   more convenient manipulation of the data later on.
 
-@< Initialise main variables @>+=
+<< Initialise main variables >>=
 
 magconst = 1/(4*pi*(4*pi*1e-7));
 
@@ -644,7 +857,7 @@ index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
 
 @ And some shared finishing code.
 
-@< Finish up @>=
+<< Finish up >>=
 
 if calc_xyz(1)
   component_x = index_sum.*component_x;
@@ -674,7 +887,7 @@ debug_disp(calc_out')
 end
 
 
-@*1 Setup code.
+@ Setup code.
 
 @ Magnetisation directions are specified in either cartesian or spherical
 coordinates. Since this is shared code, it's sent to the end to belong in a
@@ -684,7 +897,7 @@ We don't use Matlab's |sph2cart| here, because it doesn't calculate zero
 accurately (because it uses radians and |cos(pi/2)| can only be evaluated
 to machine precision of pi rather than symbolically).
 
-@< Function for resolving magnetisations @>=
+<< Function for resolving magnetisations >>=
 
 function J = resolve_magnetisations(magn,magdir)
 
@@ -713,20 +926,20 @@ end
   The rotation matrices are precalculated to avoid performing the matrix
   multiplications each time.
 
-@< Precompute rotations @>=
+<< Precompute rotations >>=
 
-swap_x_y = @@(vec) vec([2 1 3]);
-swap_x_z = @@(vec) vec([3 2 1]);
-swap_y_z = @@(vec) vec([1 3 2]);
+swap_x_y = @(vec) vec([2 1 3]);
+swap_x_z = @(vec) vec([3 2 1]);
+swap_y_z = @(vec) vec([1 3 2]);
 
-rotate_z_to_x = @@(vec) [  vec(3);  vec(2); -vec(1) ] ; % Ry( 90)
-rotate_x_to_z = @@(vec) [ -vec(3);  vec(2);  vec(1) ] ; % Ry(-90)
+rotate_z_to_x = @(vec) [  vec(3);  vec(2); -vec(1) ] ; % Ry( 90)
+rotate_x_to_z = @(vec) [ -vec(3);  vec(2);  vec(1) ] ; % Ry(-90)
 
-rotate_y_to_z = @@(vec) [  vec(1); -vec(3);  vec(2) ] ; % Rx( 90)
-rotate_z_to_y = @@(vec) [  vec(1);  vec(3); -vec(2) ] ; % Rx(-90)
+rotate_y_to_z = @(vec) [  vec(1); -vec(3);  vec(2) ] ; % Rx( 90)
+rotate_z_to_y = @(vec) [  vec(1);  vec(3); -vec(2) ] ; % Rx(-90)
 
-rotate_x_to_y = @@(vec) [ -vec(2);  vec(1);  vec(3) ] ; % Rz( 90)
-rotate_y_to_x = @@(vec) [  vec(2); -vec(1);  vec(3) ] ; % Rz(-90)
+rotate_x_to_y = @(vec) [ -vec(2);  vec(1);  vec(3) ] ; % Rz( 90)
+rotate_y_to_x = @(vec) [  vec(2); -vec(1);  vec(3) ] ; % Rz(-90)
 
 size1_x = swap_x_z(size1);
 size2_x = swap_x_z(size2);
@@ -740,7 +953,7 @@ J2_y    = rotate_y_to_z(J2);
 
 @ And the rotated displacement vectors are calculated once per loop:
 
-@< Precompute displacement rotations @>=
+<< Precompute displacement rotations >>=
 
 d_x  = rotate_x_to_z(displ);
 d_y  = rotate_y_to_z(displ);
@@ -752,7 +965,7 @@ d_y  = rotate_y_to_z(displ);
   This function computes $x \log(y)$, special-casing the singularity to output
   zero, instead. (This is indeed the value of the limit.)
 
-@< Helper functions @>=
+<< Helper functions >>=
 
 function out = multiply_x_log_y(x,y)
   out = x.*log(y);
@@ -765,7 +978,7 @@ end
 	
 	This function computes |atan| but takes two arguments.
 
-@< Helper functions @>+=
+<< Helper functions >>=
 
 function out = atan1(x,y)
   out = zeros(size(x));
@@ -777,7 +990,7 @@ end
   This is especially important (for me) when looking at the rotated
   coordinate systems.
 
-@< Print diagnostics @>=
+<< Print diagnostics >>=
 
 debug_disp('  ')
 debug_disp('CALCULATING THINGS')
@@ -790,16 +1003,16 @@ debug_disp(J2')
 
 @ When users type \texttt{help magnetforces} this is what they see.
 
-@< Matlab help text (forces) @>=
+<< Matlab help text (forces) >>=
 
-@%% MAGNETFORCES  Calculate forces between two cuboid magnets
-@%
-@% Finish this off later. Please read the PDF documentation instead for now.  
-@%
+%% MAGNETFORCES  Calculate forces between two cuboid magnets
+%
+% Finish this off later. Please read the PDF documentation instead for now.  
+%
 
 
 
-@*1 Test files.
+@ Test files.
    The chunks that follow are designed to be saved into
    individual files and executed automatically to check for (a) correctness
    and (b) regression problems as the code evolves.
@@ -818,24 +1031,24 @@ debug_disp(J2')
 @  Because I'm lazy, just run the tests manually for now.
    This script must be run twice if it updates itself.
 
-@( testall.m @>=
+<< testall.m >>=
 
 clc;
 
-magforce_test001a
-magforce_test001b
-magforce_test001c
-magforce_test001d
+test001a
+test001b
+test001c
+test001d
 
 
-@*2 Force testing.
+@ Force testing.
    This test checks that square magnets produce the same forces in the
    each direction when displaced in positive and negative
    |x|, |y|, and |z| directions, respectively.
    In other words, this tests the function |forces_calc_z_y| directly.
    Both positive and negative magnetisations are used.
 
-@( magforce_test001a.m @>=
+<< test001a.m >>=
 
 disp('=================')
 fprintf('TEST 001a: ')
@@ -847,14 +1060,14 @@ magnet_fixed.magn = 1.3;
 magnet_float.magn = 1.3;
 offset = 0.1;
 
-@< Test $z$--$z$ magnetisations @>
-@< Assert magnetisations tests @>
+<< Test $z$--$z$ magnetisations >>
+<< Assert magnetisations tests >>
 
-@< Test $x$--$x$ magnetisations @>
-@< Assert magnetisations tests @>
+<< Test $x$--$x$ magnetisations >>
+<< Assert magnetisations tests >>
 
-@< Test $y$--$y$ magnetisations @>
-@< Assert magnetisations tests @>
+<< Test $y$--$y$ magnetisations >>
+<< Assert magnetisations tests >>
 
 fprintf('passed\n')
 disp('=================')
@@ -862,7 +1075,7 @@ disp('=================')
 
 @ Testing vertical forces.
 
-@< Test $z$--$z$ magnetisations @>=
+<< Test $z$--$z$ magnetisations >>=
 f = [];
 
 for ii = [1, -1]
@@ -871,7 +1084,7 @@ for ii = [1, -1]
     magnet_float.magdir = [0 jj*90];
     for kk = [1, -1]
       displ = kk*[0 0 offset];
-      f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
     end
   end
 end
@@ -881,7 +1094,7 @@ otherforces = f([1 2],:);
 
 @ Testing horizontal $x$ forces.
 
-@< Test $x$--$x$ magnetisations @>=
+<< Test $x$--$x$ magnetisations >>=
 
 f = [];
 
@@ -891,7 +1104,7 @@ for ii = [1, -1]
     magnet_float.magdir = [90+jj*90 0];
     for kk = [1, -1]
       displ = kk*[offset 0 0];
-      f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
     end
   end
 end
@@ -901,7 +1114,7 @@ otherforces = f([2 3],:);
 
 @ Testing horizontal $y$ forces.
 
-@< Test $y$--$y$ magnetisations @>=
+<< Test $y$--$y$ magnetisations >>=
 
 f = [];
 
@@ -911,7 +1124,7 @@ for ii = [1, -1]
     magnet_float.magdir = [jj*90 0];
     for kk = [1, -1]
       displ = kk*[0 offset 0];
-      f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
     end
   end
 end
@@ -922,7 +1135,7 @@ otherforces = f([1 3],:);
 
 @ This test does the same thing but for orthogonally magnetised magnets.
 
-@( magforce_test001b.m @>=
+<< test001b.m >>=
 
 disp('=================')
 fprintf('TEST 001b: ')
@@ -933,24 +1146,24 @@ magnet_float.dim =  magnet_fixed.dim;
 magnet_fixed.magn = 1.3;
 magnet_float.magn = 1.3;
 
-@< Test ZYZ @>
-@< Assert magnetisations tests @>
+<< Test ZYZ >>
+<< Assert magnetisations tests >>
 
-@< Test ZXZ @>
-@< Assert magnetisations tests @>
+<< Test ZXZ >>
+<< Assert magnetisations tests >>
 
-@< Test ZXX @>
-@< Assert magnetisations tests @>
+<< Test ZXX >>
+<< Assert magnetisations tests >>
 
-@< Test ZYY @>
-@< Assert magnetisations tests @>
+<< Test ZYY >>
+<< Assert magnetisations tests >>
 
 fprintf('passed\n')
 disp('=================')
 
 @  $z$--$y$ magnetisations, $z$ displacement.
 
-@< Test ZYZ @>=
+<< Test ZYZ >>=
 
 fzyz = [];
 
@@ -961,7 +1174,7 @@ for ii = [1, -1]
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = jj*[90 0];  % $\pm y$
       displ = kk*[0 0 0.1];  % $\pm z$
-      fzyz(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      fzyz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
   
     end
   end
@@ -972,7 +1185,7 @@ otherforces = fzyz([1 3],:);
 
 @  $z$--$x$ magnetisations, $z$ displacement.
 
-@< Test ZXZ @>=
+<< Test ZXZ >>=
 
 fzxz = [];
 
@@ -983,7 +1196,7 @@ for ii = [1, -1]
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = [90+jj*90 0];  % $\pm x$
       displ = kk*[0.1 0 0];  % $\pm x$
-      fzxz(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      fzxz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
   
     end
   end
@@ -994,7 +1207,7 @@ otherforces = fzxz([1 2],:);
 
 @  $z$--$y$ magnetisations, $y$ displacement.
 
-@< Test ZYY @>=
+<< Test ZYY >>=
 
 fzyy = [];
 
@@ -1005,7 +1218,7 @@ for ii = [1, -1]
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = jj*[90 0];  % $\pm y$
       displ = kk*[0 0.1 0];  % $\pm y$
-      fzyy(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      fzyy(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
   
     end
   end
@@ -1016,7 +1229,7 @@ otherforces = fzyy([1 2],:);
 
 @  $z$--$x$ magnetisations, $x$ displacement.
 
-@< Test ZXX @>=
+<< Test ZXX >>=
 
 fzxx = [];
 
@@ -1027,7 +1240,7 @@ for ii = [1, -1]
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = [90+jj*90 0];  % $\pm x$
       displ = kk*[0 0 0.1];  % $\pm z$
-      fzxx(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+      fzxx(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
   
     end
   end
@@ -1040,7 +1253,7 @@ otherforces = fzxx([2 3],:);
 
 @ The assertions, common between directions.
 
-@< Assert magnetisations tests @>=
+<< Assert magnetisations tests >>=
 
 assert ( ...
 	     all( abs( otherforces(:) ) < 1e-11 ) , ...
@@ -1062,7 +1275,7 @@ assert ( ...
 
 @ Now try combinations of displacements.
 
-@( magforce_test001c.m @>=
+<< test001c.m >>=
 
 disp('=================')
 fprintf('TEST 001c: ')
@@ -1073,17 +1286,17 @@ magnet_float.dim =  magnet_fixed.dim;
 magnet_fixed.magn = 1.3;
 magnet_float.magn = 1.3;
 
-@< Test combinations ZZ @>
-@< Assert combinations tests @>
-@< Test combinations ZY @>
-@< Assert combinations tests @>
+<< Test combinations ZZ >>
+<< Assert combinations tests >>
+<< Test combinations ZY >>
+<< Assert combinations tests >>
 
 fprintf('passed\n')
 disp('=================')
 
 @ Tests.
 
-@< Test combinations ZZ @>=
+<< Test combinations ZZ >>=
 f = [];
 
 for ii = [-1 1]
@@ -1095,7 +1308,7 @@ for ii = [-1 1]
               magnet_fixed.magdir = [0  ii*90];  % $z$
               magnet_float.magdir = [0  jj*90];  % $z$
               displ = [xx yy zz];
-              f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+              f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
         
         end
       end
@@ -1110,7 +1323,7 @@ otherdir  = f([1 2],:);
 
 @ Tests.
 
-@< Test combinations ZY @>=
+<< Test combinations ZY >>=
 f = [];
 
 for ii = [-1 1]
@@ -1122,7 +1335,7 @@ for ii = [-1 1]
               magnet_fixed.magdir = [0  ii*90];  % $\pm z$
               magnet_float.magdir = [jj*90  0];  % $\pm y$
               displ = [xx yy zz];
-              f(:,END+1) = magnetforces(magnet_fixed,magnet_float,displ);
+              f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
         
         end
       end
@@ -1137,7 +1350,7 @@ otherdir  = f([2 3],:);
 
 @ Shared tests, again.
 
-@< Assert combinations tests @>=
+<< Assert combinations tests >>=
 
 test1 = abs(diff(abs(f(1,:))))<1e-10 ;
 test2 = abs(diff(abs(f(2,:))))<1e-10 ;
@@ -1156,7 +1369,7 @@ assert ( all( test1(:) ) && all( test2(:)) , ...
 
 @ Now we want to try non-orthogonal magnetisation.
 
-@( magforce_test001d.m @>=
+<< test001d.m >>=
 
 disp('=================')
 fprintf('TEST 001d: ')
@@ -1170,19 +1383,19 @@ magnet_float.magn = 1.3;
 magnet_fixed.magdir = [0  90];  % $z$
 displ = 0.12*[1 1 1];
 
-@< Test XY superposition @>
-@< Assert superposition @>
-@< Test XZ superposition @>
-@< Assert superposition @>
-@< Test planar superposition @>
-@< Assert superposition @>
+<< Test XY superposition >>
+<< Assert superposition >>
+<< Test XZ superposition >>
+<< Assert superposition >>
+<< Test planar superposition >>
+<< Assert superposition >>
 
 fprintf('passed\n')
 disp('=================')
 
 @ Test with a magnetisation unit vector of $(1,1,0)$.
 
-@< Test XY superposition @>=
+<< Test XY superposition >>=
 
 magnet_float.magdir = [45  0];  % $\vec e_x+\vec e_y$
 f1 = magnetforces(magnet_fixed,magnet_float,displ);
@@ -1198,7 +1411,7 @@ f2 = (fc1+fc2)/sqrt(2);
 
 @ Test with a magnetisation unit vector of $(1,0,1)$.
 
-@< Test XZ superposition @>=
+<< Test XZ superposition >>=
 
 magnet_float.magdir = [0  45];  % $\vec e_y+\vec e_z$
 f1 = magnetforces(magnet_fixed,magnet_float,displ);
@@ -1216,7 +1429,7 @@ f2 = (fc1+fc2)/sqrt(2);
   This is about as much as I can be bothered testing for now.
   Things seem to be working.
 
-@< Test planar superposition @>=
+<< Test planar superposition >>=
 
 [t p r] = cart2sph(1/sqrt(3),1/sqrt(3),1/sqrt(3));
 magnet_float.magdir = [t p]*180/pi;  % $\vec e_y+\vec e_z+\vec e_z$
@@ -1236,7 +1449,7 @@ f2 = (fc1+fc2+fc3)/sqrt(3);
 
 @ The assertion is the same each time.
 
-@< Assert superposition @>=
+<< Assert superposition >>=
 assert ( ...
 	     isequal ( chop( f1 , 4 ) , chop ( f2 , 4 ) ) , ...
 	     'Components should sum due to superposition' ...
@@ -1244,7 +1457,7 @@ assert ( ...
 
 @ Now check that components are calculated correctly.
 
-@( magforce_test001e.m @>=
+<< test001e.m >>=
 
 disp('=================')
 fprintf('TEST 001e: ')
@@ -1271,7 +1484,7 @@ assert( all(f_all==[f_x(1); f_y(2); f_z(3)]) , ...
 k_all = magnetforces(magnet_fixed,magnet_float,displ,'stiffness');
 k_x = magnetforces(magnet_fixed,magnet_float,displ,'stiffness','x');
 k_y = magnetforces(magnet_fixed,magnet_float,displ,'stiffness','y');
-k_z = magnetforces(magnet_fixed,magnet_float,displ,'stiffness','z');
+k_z = magnetforces(magnet_fixed,magnet_float,displ,'stiffness','z');
 
 assert( all(k_all==[k_x(1); k_y(2); k_z(3)]) , ...
   'Stiffness components calculated separately shouldn''t change.')
@@ -1281,7 +1494,7 @@ disp('=================')
 
 
 
-@* Forces between (multipole) magnet arrays.
+@ Forces between (multipole) magnet arrays.
   This function uses \texttt{magnetforces.m} to compute the forces between
   two multipole magnet arrays. As before, we can calculate either force and/or
   stiffness in all three directions.
@@ -1291,28 +1504,28 @@ disp('=================')
   the literate programming approach) for parsing the inputs for which
   calculations to perform and return.
 
-@( multipoleforces.m @>=
+<< multipoleforces.m >>=
 
 function [varargout] = multipoleforces(fixed_array, float_array, displ, varargin)
 
-@< Matlab help text (multipole) @>
+<< Matlab help text (multipole) >>
 
-@< Parse calculation args @>
-@< Organise input displacements @>
-@< Initialise multipole variables @>
-@< Calculate array forces @>
-@< Return all results @>
+<< Parse calculation args >>
+<< Organise input displacements >>
+<< Initialise multipole variables >>
+<< Calculate array forces >>
+<< Return all results >>
 
-@< Multipole sub-functions @>
+<< Multipole sub-functions >>
 
 end
 
 @ And nested sub-functions.
 
-@< Multipole sub-functions @>=
+<< Multipole sub-functions >>=
 
-@< Create arrays from input variables @>
-@< Extrapolate variables from input @>
+<< Create arrays from input variables >>
+<< Extrapolate variables from input >>
 
 @ Although the input to these functions is described in the user guide,
 there's a quick summary in Tables \ref{multipole-input} and~\ref{array-types}.
@@ -1320,7 +1533,7 @@ there's a quick summary in Tables \ref{multipole-input} and~\ref{array-types}.
 \begin{table}[p]
 \caption{Description of \texttt{multipoleforces} data structures.}
 \label{multipole-input}
-\begin{tabular}{@@{}lll@@{}}
+\begin{tabular}{@{}lll@{}}
 \toprule
  Inputs:
  & |fixed_array| & structure describing first magnet array \\
@@ -1348,7 +1561,7 @@ there's a quick summary in Tables \ref{multipole-input} and~\ref{array-types}.
 \begin{table}
 \caption{Possibilities for the \texttt{type} of a multipole array.}
 \label{array-types}
-\begin{tabular}{@@{}>{\ttfamily}ll@@{}}
+\begin{tabular}{@{}>{\ttfamily}ll@{}}
 \toprule
 generic  & Magnetisation directions \&c.\ are defined manually \\
 linear & Linear Halbach array \\
@@ -1362,7 +1575,7 @@ patchwork & `Patchwork' planar array \\
 \begin{table}
 \caption{Axes or plane with which to align the array, set with \texttt{align}.}
 \label{align-types}
-\begin{tabular}{@@{}ll@@{}}
+\begin{tabular}{@{}ll@{}}
 \toprule
 \texttt{x}, \texttt{y}, \texttt{z} & For linear arrays \\
 \texttt{xy}, \texttt{yz}, \texttt{xz} & For planar arrays \\
@@ -1373,7 +1586,7 @@ patchwork & `Patchwork' planar array \\
 \begin{table}[p]
 \caption{Facing direction for the strong side of the array, set with \texttt{face}.}
 \label{face-types}
-\begin{tabular}{@@{}ll@@{}}
+\begin{tabular}{@{}ll@{}}
 \toprule
 \texttt{+x}, \texttt{-x} & Horizontal \\
 \texttt{+y}, \texttt{-y} & Horizontal \\
@@ -1382,7 +1595,7 @@ patchwork & `Patchwork' planar array \\
 \end{tabular}
 \end{table}
 
-@*1  Actual calculation of the forces.
+@  Actual calculation of the forces.
   To calculate these forces, let's assume that we have
   two large arrays enumerating the positions and magnetisations of each
   individual magnet in each magnet array.
@@ -1403,7 +1616,7 @@ Then it's just a matter of actually calculating each force and summing them
 together, as shown below. We'll discuss how to actually populate these data
 structures later.
 
-@< Calculate array forces @>=
+<< Calculate array forces >>=
 
 for ii = 1:fixed_array.total
 
@@ -1452,9 +1665,9 @@ end
   high-level Halbach array (or whatever array) descriptions and translates
   them into a more direct (if tedious) form.
 
-@< Initialise multipole variables @>=
+<< Initialise multipole variables >>=
 
-part = @@(x,y) x(y);
+part = @(x,y) x(y);
 
 fixed_array = complete_array_from_input(fixed_array);
 float_array = complete_array_from_input(float_array);
@@ -1471,7 +1684,7 @@ displ_from_array_corners = displ ...
   + repmat(fixed_array.size/2,[1 Ndispl]) ...
   - repmat(float_array.size/2,[1 Ndispl]);
 
-@*1 From user input to array generation.
+@ From user input to array generation.
   We separate the force calculation from transforming the inputs into an
   intermediate form used for that purpose. This will hopefully allow us a
   little more flexibility.
@@ -1535,7 +1748,7 @@ $l$ does not take into account any specified magnet gap $g$. In other words,
 $l$ is actually the length of the possibly discontiguous magnetic material;
 the length of the array will be $l+(N-1)g$.
 
-@< Create arrays from input variables @>=
+<< Create arrays from input variables >>=
 
 function array = complete_array_from_input(array)
 
@@ -1543,26 +1756,26 @@ if ~isfield(array,'type')
   array.type = 'generic';
 end
 
-@< Set alignment/facing directions @>
+<< Set alignment/facing directions >>
 
 switch array.type
   case 'linear'
-@< Infer linear array variables @>
+<< Infer linear array variables >>
   case 'linear-quasi'
-@< Infer linear-quasi array variables @>
+<< Infer linear-quasi array variables >>
   case 'planar'
-@< Infer planar array variables @>
+<< Infer planar array variables >>
   case 'quasi-halbach'
-@< Infer quasi-Halbach array variables @>
+<< Infer quasi-Halbach array variables >>
   case 'patchwork'
-@< Infer patchwork array variables @>
+<< Infer patchwork array variables >>
 end
 
-@< Array sizes @>
-@< Array magnetisation strengths @>
-@< Array magnetisation directions @>
+<< Array sizes >>
+<< Array magnetisation strengths >>
+<< Array magnetisation directions >>
 
-@< Fill in array structures @>
+<< Fill in array structures >>
 
 end
 
@@ -1575,7 +1788,7 @@ end
   literally a listing of each magnet, its dimensions and position, and its
   magnetisation vector.
 
-@< Fill in array structures @>=
+<< Fill in array structures >>=
 
 array.magloc = repmat(NaN,[array.total 3]);
 array.magdir = array.magloc;
@@ -1642,7 +1855,7 @@ debug_disp(array.magloc)
   direction can be specified. By default, arrays face upwards and are aligned
   along $x$ for linear arrays and on the $x$--$y$ plane for planar.
 
-@< Set alignment/facing directions @>=
+<< Set alignment/facing directions >>=
 
 if ~isfield(array,'face')
   array.face = 'undefined';
@@ -1710,7 +1923,7 @@ end
   are implicit. This will be different for each type of multipole array,
   as you would have picked up on by now.
 
-@< Infer linear array variables @>=
+<< Infer linear array variables >>=
 
 array = extrapolate_variables(array);
 
@@ -1721,7 +1934,7 @@ array.mcount(linear_index) = array.Nmag;
   (except in the degenerate case) four magnets per wavelength. The magnet
   sizes are not equal.
 
-@< Infer linear-quasi array variables @>=
+<< Infer linear-quasi array variables >>=
 
 
 if isfield(array,'ratio') && isfield(array,'mlength')
@@ -1781,7 +1994,7 @@ end
 
 @ For now it's a bit more messy to do the planar array variables.
 
-@< Infer planar array variables @>=
+<< Infer planar array variables >>=
 
 if isfield(array,'length')
   if length(array.length) == 1
@@ -1838,7 +2051,7 @@ array.mcount(planar_index) = array.Nmag;
 @ The other two planar arrays are less complicated than the planar Halbach
   array above. Still lots of annoying variable-wrangling, though.
 
-@< Infer quasi-Halbach array variables @>=
+<< Infer quasi-Halbach array variables >>=
 
 if isfield(array,'mcount')
   if numel(array.mcount) ~=3
@@ -1863,7 +2076,7 @@ end
 @ Basically the same for the patchwork array but without worrying about
   wavelengths.
 
-@< Infer patchwork array variables @>=
+<< Infer patchwork array variables >>=
 
 if isfield(array,'mcount')
   if numel(array.mcount) ~=3
@@ -1881,7 +2094,7 @@ end
 
 @ Sizes.
 
-@< Array sizes @>=
+<< Array sizes >>=
 
 array.total = prod(array.mcount);
 
@@ -1922,7 +2135,7 @@ end
 
 @ Magnetisation strength of each magnet.
 
-@< Array magnetisation strengths @>=
+<< Array magnetisation strengths >>=
 
 if ~isfield(array,'magn')
   array.magn = 1;
@@ -1937,7 +2150,7 @@ end
 
 @ Magnetisation direction of each magnet.
 
-@< Array magnetisation directions @>=
+<< Array magnetisation directions >>=
 
 if ~isfield(array,'magdir_fn')
 
@@ -1954,57 +2167,57 @@ if ~isfield(array,'magdir_fn')
     array.magdir_first = magdir_rotate_sign*90;
   end
   
-  magdir_fn_comp{1} = @@(ii,jj,kk) 0;
-  magdir_fn_comp{2} = @@(ii,jj,kk) 0;
-  magdir_fn_comp{3} = @@(ii,jj,kk) 0;
+  magdir_fn_comp{1} = @(ii,jj,kk) 0;
+  magdir_fn_comp{2} = @(ii,jj,kk) 0;
+  magdir_fn_comp{3} = @(ii,jj,kk) 0;
   
   switch array.type
   case 'linear'
-    magdir_theta = @@(nn) ...
+    magdir_theta = @(nn) ...
       array.magdir_first+magdir_rotate_sign*array.magdir_rotate*(nn-1);
     
-    magdir_fn_comp{linear_index} = @@(ii,jj,kk) ...
+    magdir_fn_comp{linear_index} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],linear_index)));
     
-    magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
+    magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],linear_index)));
 
   case 'linear-quasi'
 
-    magdir_theta = @@(nn) ...
+    magdir_theta = @(nn) ...
       array.magdir_first+magdir_rotate_sign*90*(nn-1);
     
-    magdir_fn_comp{linear_index} = @@(ii,jj,kk) ...
+    magdir_fn_comp{linear_index} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],linear_index)));
     
-    magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
+    magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],linear_index)));
 
   case 'planar'
 
-    magdir_theta = @@(nn) ...
+    magdir_theta = @(nn) ...
       array.magdir_first(1)+magdir_rotate_sign*array.magdir_rotate(1)*(nn-1);
 
-    magdir_phi = @@(nn) ...
+    magdir_phi = @(nn) ...
       array.magdir_first(end)+magdir_rotate_sign*array.magdir_rotate(end)*(nn-1);
     
-    magdir_fn_comp{planar_index(1)} = @@(ii,jj,kk) ...
+    magdir_fn_comp{planar_index(1)} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],planar_index(2))));
 
-    magdir_fn_comp{planar_index(2)} = @@(ii,jj,kk) ...
+    magdir_fn_comp{planar_index(2)} = @(ii,jj,kk) ...
       cosd(magdir_phi(part([ii,jj,kk],planar_index(1))));
 
-    magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
+    magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],planar_index(1)))) ...
       + sind(magdir_phi(part([ii,jj,kk],planar_index(2))));
 
   case 'patchwork'
 
-    magdir_fn_comp{planar_index(1)} = @@(ii,jj,kk) 0;
+    magdir_fn_comp{planar_index(1)} = @(ii,jj,kk) 0;
 
-    magdir_fn_comp{planar_index(2)} = @@(ii,jj,kk) 0;
+    magdir_fn_comp{planar_index(2)} = @(ii,jj,kk) 0;
 
-    magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
+    magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       magdir_rotate_sign*(-1)^( ...
 	    part([ii,jj,kk],planar_index(1)) ...
 	    + part([ii,jj,kk],planar_index(2)) ...
@@ -2013,15 +2226,15 @@ if ~isfield(array,'magdir_fn')
 
   case 'quasi-halbach'  
 
-    magdir_fn_comp{planar_index(1)} = @@(ii,jj,kk) ...
+    magdir_fn_comp{planar_index(1)} = @(ii,jj,kk) ...
       sind(90*part([ii,jj,kk],planar_index(1))) ...
       * cosd(90*part([ii,jj,kk],planar_index(2)));
 
-    magdir_fn_comp{planar_index(2)} = @@(ii,jj,kk) ...
+    magdir_fn_comp{planar_index(2)} = @(ii,jj,kk) ...
       cosd(90*part([ii,jj,kk],planar_index(1))) ...
       * sind(90*part([ii,jj,kk],planar_index(2)));
 
-    magdir_fn_comp{facing_index} = @@(ii,jj,kk) ...
+    magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       magdir_rotate_sign ...
       * sind(90*part([ii,jj,kk],planar_index(1))) ...
       * sind(90*part([ii,jj,kk],planar_index(2)));
@@ -2030,7 +2243,7 @@ if ~isfield(array,'magdir_fn')
     error('Array property ''magdir_fn'' not defined and I have no way to infer it.')
   end
 
-  array.magdir_fn = @@(ii,jj,kk)   ...
+  array.magdir_fn = @(ii,jj,kk)   ...
     [ magdir_fn_comp{1}(ii,jj,kk) ...
       magdir_fn_comp{2}(ii,jj,kk) ...
       magdir_fn_comp{3}(ii,jj,kk) ];
@@ -2041,7 +2254,7 @@ end
 
 @ Sub-functions.
 
-@< Extrapolate variables from input @>=
+<< Extrapolate variables from input >>=
 
 function array_out = extrapolate_variables(array)
 
@@ -2100,27 +2313,27 @@ end
 
 @ When users type \texttt{help multipoleforces} this is what they see.
 
-@< Matlab help text (multipole) @>=
+<< Matlab help text (multipole) >>=
 
-@%% MULTIPOLEFORCES  Calculate forces between two multipole arrays of magnets
-@%
-@% Finish this off later. Please read the PDF documentation instead for now.
-@%
+%% MULTIPOLEFORCES  Calculate forces between two multipole arrays of magnets
+%
+% Finish this off later. Please read the PDF documentation instead for now.
+%
 
-@*1 Test files for multipole arrays.  Not much here yet.
+@ Test files for multipole arrays.  Not much here yet.
 
-@( testall.m @>+=
+<< testall.m >>=
 	
-multiforce_test002a
-multiforce_test002b
-multiforce_test002c
-multiforce_test002d
+test002a
+test002b
+test002c
+test002d
 
-multiforce_test003a
+test003a
 
 @ First test just to check the numbers aren't changing.
 
-@( multiforce_test002a.m @>=
+<< test002a.m >>=
 
 disp('=================')
 fprintf('TEST 002a: ')
@@ -2155,7 +2368,7 @@ disp('=================')
 
 @ Test against single magnet.
 
-@( multiforce_test002b.m @>=
+<< test002b.m >>=
 
 disp('=================')
 fprintf('TEST 002b: ')
@@ -2193,7 +2406,7 @@ disp('=================')
 
 @ Test that linear arrays give consistent results regardless of orientation.
 
-@( multiforce_test002c.m @>=
+<< test002c.m >>=
 
 disp('=================')
 fprintf('TEST 002c: ')
@@ -2281,7 +2494,7 @@ disp('=================')
 
 @ Test that planar arrays give consistent results regardless of orientation.
 
-@( multiforce_test002d.m @>=
+<< test002d.m >>=
 
 disp('=================')
 fprintf('TEST 002d: ')
@@ -2347,7 +2560,7 @@ disp('=================')
 @ Check that the |linear-quasi| array gives same output as |linear| array
   for equivalent parameters.
 
-@( multiforce_test003a.m @>=
+<< test003a.m >>=
 
 disp('=================')
 fprintf('TEST 003a: ')
@@ -2432,9 +2645,11 @@ fprintf('passed\n')
 
 disp('=================')
 
-
-@  These are \textsc{matlabweb} declarations to improve the formatting
-   of this document. Ignore unless you're editing \texttt{magnetforces.web}.
-
-@d END = end
-@f END TeX
+@
+\section{Chunks}
+\nowebchunks
+\twocolumn[\section{Index}]
+\nowebindex*
+@
+\printbibliography
+\end{document}
