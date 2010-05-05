@@ -1,4 +1,14 @@
 
+help:
+	@echo 'This is the MAGCODE makefile.'
+	@echo 'The following targets are available to generate respectively:'
+	@echo '  '
+	@echo '     code - Matlab .m files and test suite'
+	@echo '      doc - documentation in PDF format'
+	@echo '      all - both of the above'
+	@echo '  '
+	@echo 'E.g., type `make all` to generate everything.'
+
 Name = magcode-matlab
 Source  = $(Name).nw
 DocName = $(Name)
@@ -16,8 +26,10 @@ TestNames = testall.m \
 Tests = $(addprefix $(TestDir),$(TestNames))
 
 all: $(Outputs) $(Tests) $(Doc)
+code: $(Outputs) $(Tests)
+doc: $(Doc)
 
-.PHONY: all
+.PHONY: all code doc
 
 $(Outputs):	$(Source)
 	notangle -R' $@ ' $< > $@
