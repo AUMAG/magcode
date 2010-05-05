@@ -56,7 +56,7 @@ for this_ratio = ratios
 
 end
 
-xlabel('Face gap, m')
+xlabel('Displacement, m')
 ylabel('Vertical force, N')
 set(gca,'box','on','ticklength',[0.02 0.05])
 axis tight
