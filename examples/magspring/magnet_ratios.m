@@ -44,7 +44,7 @@ for this_ratio = ratios
   magnet_fixed.dim = magsize(this_ratio);
   magnet_float.dim = magsize(this_ratio);
   
-  displ = 2*height(this_ratio)+ linspace(0, 0.015, displ_steps);
+  displ = height(this_ratio)+ linspace(0.0001, 0.015, displ_steps);
   displ_range = [0; 0; 1]*displ;
 
   these_forces = magnetforces(magnet_fixed,magnet_float,displ_range,'z');
