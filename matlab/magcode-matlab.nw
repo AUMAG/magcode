@@ -2,6 +2,7 @@
 \documentclass{article}
 \usepackage{amsmath,array,booktabs,enumitem,upquote,shortvrb,underscore}
 \usepackage{noweb}
+\noweboptions{longxref}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage{hyperref}
