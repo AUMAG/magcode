@@ -5,8 +5,7 @@
 
 close all
 clc
-
-timestamp(mfilename)
+arrowsetup = {'HeadLength',6.5,'HeadWidth',4.5,'HeadStyle','cback3'};
 
 m = 0.01;
 gaps = 0:0.05:0.5;
@@ -53,7 +52,7 @@ xlabel('Displacement, mm')
 ylabel('Force, N')
 
 H = annotation('textarrow',[0.8 0.75],[0.52 0.2]);
-set(H,'HeadStyle','cback3','String',{'Increasing','gap'})
+set(H,'String',{'Increasing','gap'},arrowsetup{:})
 
 matlabfrag('fig/mbq-fvx-gaps')
 
@@ -87,7 +86,7 @@ ylim([-0.5 5])
 set(gca,'xtick',0:2.5:10)
 
 H = annotation('textarrow',[0.8 0.75],[0.52 0.25]);
-set(H,'HeadStyle','cback3','String',{'Increasing','gap'})
+set(H,'String',{'Increasing','gap'},arrowsetup{:})
 
 matlabfrag('fig/mbq-kvx-gaps')
 
@@ -112,7 +111,7 @@ colourplot
 xlabel('Force, N')
 ylabel('Stiffness, kN/m')
 H = annotation('textarrow',[0.77 0.5],[0.77 0.41]);
-set(H,'String',{'Increasing','gap'},'HorizontalAlignment','Left')
+set(H,'String',{'Increasing','gap'},'HorizontalAlignment','Left',arrowsetup{:})
 
 matlabfrag('fig/mbq-kvf-gaps')
 
@@ -148,6 +147,6 @@ xlim([0 50])
 xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
 H = annotation('textarrow',[0.38 0.2],[0.72 0.4]);
-set(H,'String',{'Increasing','gap'},'HorizontalAlignment','Left')
+set(H,'String',{'Increasing','gap'},'HorizontalAlignment','Left',arrowsetup{:})
 
 matlabfrag('fig/mbq-wvf-gaps')

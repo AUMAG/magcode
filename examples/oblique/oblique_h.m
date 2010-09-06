@@ -3,11 +3,14 @@
 % Explanation forthcoming
 %
 
-%%
+%% Init
 
 close all
 clc
 timestamp(mfilename)
+arrowsetup = {'HeadLength',6.5,'HeadWidth',4.5,'HeadStyle','cback3'};
+
+%%
 
 m = 0.01;
 angles = 0:5:90;
@@ -184,7 +187,7 @@ xlabel('Displ.\ $\mbqvdisp$, mm')
 set(gca,'xtick',0:2:10)
 ylabel('Stiffness, kN/m')
 draworigin
-annotation('arrow',[0.18 0.33],[0.7 0.7])
+annotation('arrow',[0.2 0.3],[0.7 0.7],arrowsetup{:});
 text(6,7,'Vertical')
 
 subplot(1,2,2);
@@ -193,7 +196,7 @@ ylim([-1 8])
 xlabel('Displ.\ $\mbqvdisp$, mm')
 set(gca,'xtick',0:2:10)
 draworigin
-annotation('arrow',[0.65 0.8],[0.22 0.22])
+annotation('arrow',[0.65 0.8],[0.22 0.22],arrowsetup{:})
 text(6,7,'Horizontal')
 
 matlabfrag('fig/mbq-kvxy-gaps')
@@ -243,7 +246,7 @@ colourplot
 xlim([5 35])
 ylim([0 8])
 xlabel('Load force, N')
-ylabel('Resonance frequency, Hz')
+ylabel('Natural frequency, Hz')
 
 
 

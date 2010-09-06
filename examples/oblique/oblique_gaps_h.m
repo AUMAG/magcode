@@ -230,7 +230,7 @@ colourplot
 xlim([5 40])
 ylim([0 10])
 xlabel('Load force, N')
-ylabel('Resonance frequency, Hz')
+ylabel('Natural frequency, Hz')
 
 
 

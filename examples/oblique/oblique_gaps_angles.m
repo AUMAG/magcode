@@ -118,7 +118,7 @@ for nn = 1:0%N_ngl
   xlim([5 50])
   ylim([0 10])
   xlabel('Load force, N')
-  ylabel('Resonance frequency, Hz')
+  ylabel('Natural frequency, Hz')
   
 end
 
@@ -171,7 +171,7 @@ for mm = 1:0%N_gaps
   xlim([5 50])
   ylim([0 10])
   xlabel('Load force, N')
-  ylabel('Resonance frequency, Hz')
+  ylabel('Natural frequency, Hz')
   
 end
 
@@ -256,7 +256,7 @@ colourplot
 xlim([5 35])
 ylim([0 7])
 xlabel('Load force, N')
-ylabel('Resonance frequency, Hz')
+ylabel('Natural frequency, Hz')
 
 % annotation('arrow',[0.5 0.3],[0.9 0.9])
 % annotation('arrow',[0.45 0.25],[0.2 0.2])

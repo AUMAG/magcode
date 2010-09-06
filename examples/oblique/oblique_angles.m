@@ -7,7 +7,7 @@
 
 close all
 clc
-timestamp(mfilename)
+arrowsetup = {'HeadLength',6.5,'HeadWidth',4.5,'HeadStyle','cback3'};
 
 m = 0.01;
 angles = 0:5:90;
@@ -55,7 +55,7 @@ ylabel('Force, N')
 colourplot(1,N_ngl:-1:1)
 
 H = annotation('arrow',[0.8 0.7],[0.6 0.2]);
-set(H,'HeadStyle','cback3')
+set(H,arrowsetup{:})
 text(8.5,35,{'Increasing','angle'},'HorizontalAlignment','Center')
 
 matlabfrag('fig/mbq-fvx-angle')
@@ -91,7 +91,7 @@ ylabel('Stiffness, kN/m')
 colourplot
 
 H = annotation('arrow',[0.24 0.35],[0.45 0.65]);
-set(H,'HeadStyle','cback3')
+set(H,arrowsetup{:})
 text(2.8,12.8,{'Increasing','angle'})
 
 matlabfrag('fig/mbq-kvx-angle')
@@ -122,7 +122,7 @@ ylabel('Natural frequency, Hz')
 colourplot
 
 H = annotation('arrow',[0.24 0.35],[0.45 0.65]);
-set(H,'HeadStyle','cback3')
+set(H,arrowsetup{:})
 text(2.8,12.8,{'Increasing','angle'})
 
 matlabfrag('fig/mbq-wvx-angle')
@@ -159,7 +159,7 @@ xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
 
 H = annotation('textarrow',[0.26 0.35],[0.35 0.65]);
-set(H,'HeadStyle','cback3','String',{'Increasing','angle'},'HorizontalAlignment','Center')
+set(H,'String',{'Increasing','angle'},'HorizontalAlignment','Center',arrowsetup{:})
 
 matlabfrag('fig/mbq-wvf-angle')
 
@@ -216,6 +216,6 @@ xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
 
 H = annotation('textarrow',[0.56 0.65],[0.35 0.65]);
-set(H,'HeadStyle','cback3','String',{'Increasing','angle'},'HorizontalAlignment','Center')
+set(H,'String',{'Increasing','angle'},'HorizontalAlignment','Center',arrowsetup{:})
 
 matlabfrag('fig/mbq-wvf-angle2')

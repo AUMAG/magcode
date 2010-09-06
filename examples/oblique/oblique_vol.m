@@ -90,38 +90,13 @@ xlabel('Displacement, mm')
 ylabel('Force, N')
 
 
-%%
-
-willfig('frequency v force, by volume'); clf; hold on
-
-
-for tt = 1:N_msz
-  
-  ff = squeeze(vol_forces(2,tt,:));
-  yy = squeeze(vol_yrange(tt,:)-vol_yrange(tt,1));
-  kk = -gradient(ff,yy(2)-yy(1));
-  kk(kk<0)=NaN;
-  
-  ww = sqrt(kk./(ff/9.81)); % resonance frequency
-  
-  plot(ff,ww/(2*pi))
-  
-  
-end
-
-colourplot
-
-xlabel('Load force, N')
-ylabel('Natural frequency, Hz')
-
-
 
 %%
 
 willfig('frequency v force, by volume'); clf; hold on
 
 
-for tt = 1:N_msz
+for tt = 1:2:N_msz
   
   ff = squeeze(vol_forces(2,tt,2:end-1));
   
@@ -131,18 +106,30 @@ for tt = 1:N_msz
   ww_nice = ww;
   ww_nice(~nicek(tt,:)) = NaN;
   
-  plot(ff,ww_nice/(2*pi))
+  last_stable = find(~isnan(ww_nice),1,'last');
+  
+  plot(1000\ff,ww_nice/(2*pi))
+  plot(1000\ff(last_stable),ww_nice(last_stable)/(2*pi),'k.','userdata','colourplot:ignore')
+  
+  text(1000\ff(last_stable),ww_nice(last_stable)/(2*pi),...
+    [' \SI{', num2str(round(1000*msizes(tt))),'}{mm^3}'],...
+      'Interpreter','none',...
+      'HorizontalAlignment','left',...
+      'VerticalAlignment','baseline')
   
   kk_not_nice = kk;
   kk_not_nice(nicek(tt,:)) = NaN;
   ww_not_nice = sqrt(kk_not_nice./(ff/9.81)); % resonance frequency
   
-  plot(ff,ww_not_nice/(2*pi),'-','color',0.85*[1 1 1],'userdata','colourplot:ignore')
+  plot(1000\ff,ww_not_nice/(2*pi),'-','color',0.85*[1 1 1],'userdata','colourplot:ignore')
   
   
 end
 
 colourplot
-
-xlabel('Load force, N')
+xlim([0 0.6])
+set(gca,'xtick',[0:0.1:0.6])
+xlabel('Load force, kN')
 ylabel('Natural frequency, Hz')
+
+matlabfrag('fig/mbq-wvf-vol')
