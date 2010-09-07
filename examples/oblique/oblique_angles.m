@@ -9,9 +9,23 @@ close all
 clc
 arrowsetup = {'HeadLength',6.5,'HeadWidth',4.5,'HeadStyle','cback3'};
 
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  colourplot = @(varargin) disp('');
+  draworigin = @(varargin) disp('');
+  matlabfrag = @(varargin) disp('');
+end
+
+%%
+
 m = 0.01;
 angles = 0:5:90;
 N_ngl = length(angles);
+
+if isempty(mfilename)
+  error('This code chunk must be executed as an m-file')
+end
 
 datafile = [mfilename,'.mat'];
 if exist(datafile,'file')
@@ -39,7 +53,7 @@ for tt = N_ngl:-1:1
   [Fmax,iFmax]=max(ff);
   
   if iFmax ~= 1
-    plot(yy(1:iFmax),ff(1:iFmax),'--','color',0.7*[1 1 1],'UserData','colourplot:ignore')
+    plot(yy(1:iFmax),ff(1:iFmax),'-','color',0.8*[1 1 1],'UserData','colourplot:ignore')
     plot(yy(iFmax:end),ff(iFmax:end))
     plot(yy(iFmax),Fmax,'.','color',[0 0 0],'UserData','colourplot:ignore')
   else
@@ -58,6 +72,7 @@ H = annotation('arrow',[0.8 0.7],[0.6 0.2]);
 set(H,arrowsetup{:})
 text(8.5,35,{'Increasing','angle'},'HorizontalAlignment','Center')
 
+set(gca,'box','on','ticklength',[0.02 0.05])
 matlabfrag('fig/mbq-fvx-angle')
 
 
@@ -88,11 +103,12 @@ ylim([-5 20])
 set(gca,'xtick',0:2.5:10)
 xlabel('Displacement, mm')
 ylabel('Stiffness, kN/m')
-colourplot
+colourplot;
 
 H = annotation('arrow',[0.24 0.35],[0.45 0.65]);
 set(H,arrowsetup{:})
 text(2.8,12.8,{'Increasing','angle'})
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 matlabfrag('fig/mbq-kvx-angle')
 
@@ -119,12 +135,13 @@ xlim([0 10])
 set(gca,'xtick',0:2.5:10)
 xlabel('Displacement, mm')
 ylabel('Natural frequency, Hz')
-colourplot
+colourplot;
 
 H = annotation('arrow',[0.24 0.35],[0.45 0.65]);
 set(H,arrowsetup{:})
 text(2.8,12.8,{'Increasing','angle'})
 
+set(gca,'box','on','ticklength',[0.02 0.05])
 matlabfrag('fig/mbq-wvx-angle')
 
 %% resonance v force
@@ -153,13 +170,14 @@ end
 
 %xlim([0 45])
 ylim([0 15])
-colourplot
+colourplot;
 
 xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
 
 H = annotation('textarrow',[0.26 0.35],[0.35 0.65]);
 set(H,'String',{'Increasing','angle'},'HorizontalAlignment','Center',arrowsetup{:})
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 matlabfrag('fig/mbq-wvf-angle')
 
@@ -210,12 +228,14 @@ end
 
 xlim([0 80])
 ylim([0 15])
-colourplot
+colourplot;
 
 xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
 
 H = annotation('textarrow',[0.56 0.65],[0.35 0.65]);
 set(H,'String',{'Increasing','angle'},'HorizontalAlignment','Center',arrowsetup{:})
+
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 matlabfrag('fig/mbq-wvf-angle2')

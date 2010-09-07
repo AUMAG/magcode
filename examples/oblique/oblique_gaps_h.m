@@ -7,11 +7,16 @@
 
 close all
 clc
-timestamp(mfilename)
 
-if isempty(mfilename)
-  error('This code chunk must be executed as an m-file')
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  colourplot = @(varargin) disp('');
+  draworigin = @(varargin) disp('');
+  matlabfrag = @(varargin) disp('');
 end
+
+%%
 
 m = 0.01;
 gaps = 0.05:0.05:0.5;
@@ -30,6 +35,10 @@ calc_f = @(offset) oblique_forces(...
     'gapratio',gaps, ...
     'dispoffset',offset...
     );
+
+if isempty(mfilename)
+  error('This code chunk must be executed as an m-file')
+end
 
 datafile = [mfilename,'.mat'];
 if exist(datafile,'file')

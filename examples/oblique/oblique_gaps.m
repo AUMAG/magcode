@@ -7,9 +7,23 @@ close all
 clc
 arrowsetup = {'HeadLength',6.5,'HeadWidth',4.5,'HeadStyle','cback3'};
 
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  colourplot = @(varargin) disp('');
+  draworigin = @(varargin) disp('');
+  matlabfrag = @(varargin) disp('');
+end
+
+%%
+
 m = 0.01;
 gaps = 0:0.05:0.5;
 N_gaps = length(gaps);
+
+if isempty(mfilename)
+  error('This code chunk must be executed as an m-file')
+end
 
 datafile = [mfilename,'.mat'];
 if exist(datafile,'file')
@@ -45,11 +59,12 @@ for tt = 1:N_gaps
   end
 end
 
-colourplot
+colourplot;
 ylim([0 25])
 set(gca,'xtick',0:2.5:10)
 xlabel('Displacement, mm')
 ylabel('Force, N')
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 H = annotation('textarrow',[0.8 0.75],[0.52 0.2]);
 set(H,'String',{'Increasing','gap'},arrowsetup{:})
@@ -79,11 +94,12 @@ for tt = 1:N_gaps
 end
 
 draworigin([0 0],'h','--')
-colourplot
+colourplot;
 xlabel('Displacement, mm')
 ylabel('Stiffness, kN/m')
 ylim([-0.5 5])
 set(gca,'xtick',0:2.5:10)
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 H = annotation('textarrow',[0.8 0.75],[0.52 0.25]);
 set(H,'String',{'Increasing','gap'},arrowsetup{:})
@@ -106,10 +122,12 @@ for tt = 1:N_gaps
 end
 
 ylim([0 6])
-colourplot
+colourplot;
 
 xlabel('Force, N')
 ylabel('Stiffness, kN/m')
+set(gca,'box','on','ticklength',[0.02 0.05])
+
 H = annotation('textarrow',[0.77 0.5],[0.77 0.41]);
 set(H,'String',{'Increasing','gap'},'HorizontalAlignment','Left',arrowsetup{:})
 
@@ -140,12 +158,14 @@ for tt = 1:N_gaps
   
 end
 
-colourplot
+colourplot;
 
 xlim([0 50])
 
 xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
+set(gca,'box','on','ticklength',[0.02 0.05])
+
 H = annotation('textarrow',[0.38 0.2],[0.72 0.4]);
 set(H,'String',{'Increasing','gap'},'HorizontalAlignment','Left',arrowsetup{:})
 

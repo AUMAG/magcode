@@ -7,11 +7,16 @@
 
 close all
 clc
-timestamp(mfilename)
 
-if isempty(mfilename)
-  error('This code chunk must be executed as an m-file')
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  colourplot = @(varargin) disp('');
+  draworigin = @(varargin) disp('');
+  matlabfrag = @(varargin) disp('');
 end
+
+%%
 
 m = 0.01;
 gaps = 0.05:0.05:0.5;
@@ -31,6 +36,10 @@ calc_f = @(offset) oblique_forces(...
     'gapratio',gaps, ...
     'dispoffset',offset...
     );
+
+if isempty(mfilename)
+  error('This code chunk must be executed as an m-file')
+end
 
 datafile = [mfilename,'.mat'];
 if exist(datafile,'file')
@@ -114,12 +123,13 @@ for nn = 1:0%N_ngl
     
   end
   
-  colourplot
+  colourplot;
   xlim([5 50])
   ylim([0 10])
   xlabel('Load force, N')
   ylabel('Natural frequency, Hz')
-  
+  set(gca,'box','on','ticklength',[0.02 0.05]);
+
 end
 
 %%
@@ -167,12 +177,13 @@ for mm = 1:0%N_gaps
     
   end
 
-  colourplot
+  colourplot;
   xlim([5 50])
   ylim([0 10])
   xlabel('Load force, N')
-  ylabel('Natural frequency, Hz')
-  
+  ylabel('Natural frequency, Hz')  
+  set(gca,'box','on','ticklength',[0.02 0.05])
+
 end
 
 
@@ -207,7 +218,7 @@ for mm = 1:N_gaps
   ww_unstabl(mm) = ww(pp);
   if any(taggap==mm)
     plot(ff(pp),ww(pp)/2/pi,'k.','userdata','colourplot:ignore')
-    text(ff(pp),ww(pp)/2/pi,['~',num2str(gaps(mm))])
+    text(ff(pp),ww(pp)/2/pi,[num2str(gaps(mm)),'~'],'horizontalalignment','right')
   end
   
   kk = squeeze(ga_stiffness_Y(nn,mm,:));
@@ -242,7 +253,7 @@ for dd = d_first:displ_step:N_displ
   plot(ff,ww/(2*pi),':','color',0*[1 1 1],'LineWidth',1,'userdata','colourplot:ignore')
   
   if any(lbl==incr)
-    if incr == 3, halign = 'center'; else, halign = 'left'; end
+    if incr == 3, halign = 'center'; else halign = 'left'; end
     plot(ff(1),ww(1)/2/pi,'k.','userdata','colourplot:ignore')
     text(ff(1),ww(1)/2/pi,[' ', num2str(round(1000*ga_yrange(1,1,dd))),'\,mm'],...
       'Interpreter','none',...
@@ -252,11 +263,12 @@ for dd = d_first:displ_step:N_displ
   
 end
 
-colourplot
-xlim([5 35])
-ylim([0 7])
+colourplot;
+xlim([5 37])
+ylim([0 6.9])
 xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 % annotation('arrow',[0.5 0.3],[0.9 0.9])
 % annotation('arrow',[0.45 0.25],[0.2 0.2])

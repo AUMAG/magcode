@@ -6,11 +6,16 @@
 
 close all
 clc
-timestamp(mfilename)
 
-if isempty(mfilename)
-  error('This code chunk must be executed as an m-file')
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  colourplot = @(varargin) disp('');
+  draworigin = @(varargin) disp('');
+  matlabfrag = @(varargin) disp('');
 end
+
+%%
 
 msizes = [0.01:0.005:0.05];
 N_msz = length(msizes);
@@ -27,6 +32,10 @@ calc_f = @(offset) oblique_forces(...
     'gapratio',0.15, ...
     'dispoffset',offset...
     );
+
+if isempty(mfilename)
+  error('This code chunk must be executed as an m-file')
+end
 
 datafile = [mfilename,'.mat'];
 if exist(datafile,'file')
@@ -85,10 +94,10 @@ for tt = 1:N_msz
   end
 end
 
-colourplot
+colourplot;
 xlabel('Displacement, mm')
 ylabel('Force, N')
-
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 
 %%
@@ -126,10 +135,12 @@ for tt = 1:2:N_msz
   
 end
 
-colourplot
-xlim([0 0.6])
+colourplot;
+xlim([0 0.58])
+ylim([0 6.5])
 set(gca,'xtick',[0:0.1:0.6])
 xlabel('Load force, kN')
 ylabel('Natural frequency, Hz')
+set(gca,'box','on','ticklength',[0.02 0.05])
 
 matlabfrag('fig/mbq-wvf-vol')

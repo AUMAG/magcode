@@ -7,8 +7,15 @@
 
 close all
 clc
-timestamp(mfilename)
 arrowsetup = {'HeadLength',6.5,'HeadWidth',4.5,'HeadStyle','cback3'};
+
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  colourplot = @(varargin) disp('');
+  draworigin = @(varargin) disp('');
+  matlabfrag = @(varargin) disp('');
+end
 
 %%
 
@@ -27,6 +34,11 @@ calc_f = @(offset) oblique_forces(...
     'gapratio',0.2, ...
     'dispoffset',offset...
     );
+
+  
+if isempty(mfilename)
+  error('This code chunk must be executed as an m-file')
+end
 
 datafile = [mfilename,'.mat'];
 if exist(datafile,'file')
@@ -180,24 +192,25 @@ for mm = 1:N_ngl
 end
 
 subplot(1,2,1);
-axis tight
-ylim([-1 8])
-xlim([0 10])
+xlim([0 9.9])
+ylim([-1 7.9])
 xlabel('Displ.\ $\mbqvdisp$, mm')
 set(gca,'xtick',0:2:10)
 ylabel('Stiffness, kN/m')
 draworigin
+set(gca,'box','on','ticklength',[0.02 0.05])
 annotation('arrow',[0.2 0.3],[0.7 0.7],arrowsetup{:});
 text(6,7,'Vertical')
 
 subplot(1,2,2);
-xlim([0 10])
-ylim([-1 8])
+xlim([0 9.9])
+ylim([-1 7.9])
 xlabel('Displ.\ $\mbqvdisp$, mm')
 set(gca,'xtick',0:2:10)
+set(gca,'box','on','ticklength',[0.02 0.05])
 draworigin
 annotation('arrow',[0.65 0.8],[0.22 0.22],arrowsetup{:})
-text(6,7,'Horizontal')
+text(5,7,'Horizontal')
 
 matlabfrag('fig/mbq-kvxy-gaps')
 
