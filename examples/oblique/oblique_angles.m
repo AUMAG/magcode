@@ -72,7 +72,6 @@ H = annotation('arrow',[0.8 0.7],[0.6 0.2]);
 set(H,arrowsetup{:})
 text(8.5,35,{'Increasing','angle'},'HorizontalAlignment','Center')
 
-set(gca,'box','on','ticklength',[0.02 0.05])
 matlabfrag('fig/mbq-fvx-angle')
 
 
@@ -108,7 +107,6 @@ colourplot;
 H = annotation('arrow',[0.24 0.35],[0.45 0.65]);
 set(H,arrowsetup{:})
 text(2.8,12.8,{'Increasing','angle'})
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 matlabfrag('fig/mbq-kvx-angle')
 
@@ -141,7 +139,6 @@ H = annotation('arrow',[0.24 0.35],[0.45 0.65]);
 set(H,arrowsetup{:})
 text(2.8,12.8,{'Increasing','angle'})
 
-set(gca,'box','on','ticklength',[0.02 0.05])
 matlabfrag('fig/mbq-wvx-angle')
 
 %% resonance v force
@@ -177,7 +174,6 @@ ylabel('Natural frequency, Hz')
 
 H = annotation('textarrow',[0.26 0.35],[0.35 0.65]);
 set(H,'String',{'Increasing','angle'},'HorizontalAlignment','Center',arrowsetup{:})
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 matlabfrag('fig/mbq-wvf-angle')
 
@@ -235,7 +231,5 @@ ylabel('Natural frequency, Hz')
 
 H = annotation('textarrow',[0.56 0.65],[0.35 0.65]);
 set(H,'String',{'Increasing','angle'},'HorizontalAlignment','Center',arrowsetup{:})
-
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 matlabfrag('fig/mbq-wvf-angle2')

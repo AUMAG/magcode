@@ -198,7 +198,6 @@ xlabel('Displ.\ $\mbqvdisp$, mm')
 set(gca,'xtick',0:2:10)
 ylabel('Stiffness, kN/m')
 draworigin
-set(gca,'box','on','ticklength',[0.02 0.05])
 annotation('arrow',[0.2 0.3],[0.7 0.7],arrowsetup{:});
 text(6,7,'Vertical')
 
@@ -207,7 +206,6 @@ xlim([0 9.9])
 ylim([-1 7.9])
 xlabel('Displ.\ $\mbqvdisp$, mm')
 set(gca,'xtick',0:2:10)
-set(gca,'box','on','ticklength',[0.02 0.05])
 draworigin
 annotation('arrow',[0.65 0.8],[0.22 0.22],arrowsetup{:})
 text(5,7,'Horizontal')

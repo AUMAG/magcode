@@ -128,7 +128,6 @@ for nn = 1:0%N_ngl
   ylim([0 10])
   xlabel('Load force, N')
   ylabel('Natural frequency, Hz')
-  set(gca,'box','on','ticklength',[0.02 0.05]);
 
 end
 
@@ -182,7 +181,6 @@ for mm = 1:0%N_gaps
   ylim([0 10])
   xlabel('Load force, N')
   ylabel('Natural frequency, Hz')  
-  set(gca,'box','on','ticklength',[0.02 0.05])
 
 end
 
@@ -268,7 +266,6 @@ xlim([5 37])
 ylim([0 6.9])
 xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 % annotation('arrow',[0.5 0.3],[0.9 0.9])
 % annotation('arrow',[0.45 0.25],[0.2 0.2])

@@ -64,7 +64,6 @@ ylim([0 25])
 set(gca,'xtick',0:2.5:10)
 xlabel('Displacement, mm')
 ylabel('Force, N')
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 H = annotation('textarrow',[0.8 0.75],[0.52 0.2]);
 set(H,'String',{'Increasing','gap'},arrowsetup{:})
@@ -99,7 +98,6 @@ xlabel('Displacement, mm')
 ylabel('Stiffness, kN/m')
 ylim([-0.5 5])
 set(gca,'xtick',0:2.5:10)
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 H = annotation('textarrow',[0.8 0.75],[0.52 0.25]);
 set(H,'String',{'Increasing','gap'},arrowsetup{:})
@@ -126,7 +124,6 @@ colourplot;
 
 xlabel('Force, N')
 ylabel('Stiffness, kN/m')
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 H = annotation('textarrow',[0.77 0.5],[0.77 0.41]);
 set(H,'String',{'Increasing','gap'},'HorizontalAlignment','Left',arrowsetup{:})
@@ -164,7 +161,6 @@ xlim([0 50])
 
 xlabel('Load force, N')
 ylabel('Natural frequency, Hz')
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 H = annotation('textarrow',[0.38 0.2],[0.72 0.4]);
 set(H,'String',{'Increasing','gap'},'HorizontalAlignment','Left',arrowsetup{:})

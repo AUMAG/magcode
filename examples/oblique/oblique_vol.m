@@ -97,7 +97,6 @@ end
 colourplot;
 xlabel('Displacement, mm')
 ylabel('Force, N')
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 
 %%
@@ -141,6 +140,5 @@ ylim([0 6.5])
 set(gca,'xtick',[0:0.1:0.6])
 xlabel('Load force, kN')
 ylabel('Natural frequency, Hz')
-set(gca,'box','on','ticklength',[0.02 0.05])
 
 matlabfrag('fig/mbq-wvf-vol')
