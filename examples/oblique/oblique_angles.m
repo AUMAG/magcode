@@ -1,9 +1,25 @@
-%% Oblique magnets for low stiffness
+%% Oblique magnets for low stiffness: vary angles
 %
-% Explanation forthcoming
+% This script examines the effect of varying the magnet angle
+% in the force, stiffness, and resonance characteristics of
+% an inclined permanent magnet spring.
+%
+% Vertical force and vertical displacement only are considered here.
+%
+% A constant magnet gap of zero is used in the first simulation.
+% For this simulation, four plots are generated:
+%
+% * force v displacement
+% * stiffness v displacement
+% * natural frequency v displacement
+% * natural frequency v force
+%
+% Another simulation is performed below with a larger gap value. The final
+% graph (natural frequency v force) is shown only, and a clear difference
+% can be seen comparing the two cases.
 %
 
-%%
+%% setup
 
 close all
 clc
@@ -17,7 +33,7 @@ if ~exist('willfig','file')
   matlabfrag = @(varargin) disp('');
 end
 
-%%
+%% constants and calculations
 
 m = 0.01;
 angles = 0:5:90;
@@ -27,7 +43,7 @@ if isempty(mfilename)
   error('This code chunk must be executed as an m-file')
 end
 
-datafile = [mfilename,'.mat'];
+datafile = ['data/',mfilename,'.mat'];
 if exist(datafile,'file')
   load(datafile)
 else
@@ -177,7 +193,13 @@ set(H,'String',{'Increasing','angle'},'HorizontalAlignment','Center',arrowsetup{
 
 matlabfrag('fig/mbq-wvf-angle')
 
+
+
+
 %% resonance 2
+%
+% Recalculate the above simulations with a different value of magnet gap.
+% 
 
 m = 0.01;
 angles = 0:5:90;
@@ -199,7 +221,13 @@ else
   save(datafile,'ngl_yrange2','ngl_forces2')
 end
 
-%%
+%% frequency v force plot
+%
+% In this case skip the force and stiffness v displacement graphs,
+% since we know what they look like from above and it's the resonance
+% that we're most interested in.
+% 
+
 willfig('frequency v force, by angle 2'); clf; hold on
 
 best_angle = angles==70;

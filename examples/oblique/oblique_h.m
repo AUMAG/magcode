@@ -1,9 +1,15 @@
-%% Oblique magnets for low stiffness
+%% Oblique magnets for low stiffness: vary angle; 3 DOF
 %
-% Explanation forthcoming
+% First investigation into 3 DOF behaviour while varying magnet angle.
+% (|oblique_gaps_h.m| is the same but varying magnet gap.)
+% Stiffnesses are analysed by calculated the numerical gradient of the
+% forces in each direction.
 %
+% Many graphs are produced; few are used for publication. A graph is
+% produced demonstrating the positive stiffness can be achieved in two
+% orthogonal directions simultaneously.
 
-%% Init
+%% setup
 
 close all
 clc
@@ -17,7 +23,7 @@ if ~exist('willfig','file')
   matlabfrag = @(varargin) disp('');
 end
 
-%%
+%% constants and calculations
 
 m = 0.01;
 angles = 0:5:90;
@@ -40,7 +46,7 @@ if isempty(mfilename)
   error('This code chunk must be executed as an m-file')
 end
 
-datafile = [mfilename,'.mat'];
+datafile = ['data/',mfilename,'.mat'];
 if exist(datafile,'file')
   load(datafile)
 else
@@ -53,7 +59,7 @@ else
   )
 end
 
-%%
+%% calculate stiffnesses
 
 yy = hk_yrange(1,:);
 yys = yy;
@@ -80,7 +86,7 @@ if ~all(hk_forces(1,mm,:)<1e-10);
   for mm = 1:N_ngl
     plot(yy,squeeze(hk_forces(1,mm,:)))
   end
-  colourplot
+  colourplot;
 end
 
 if false % shown below
@@ -88,7 +94,7 @@ if false % shown below
   for mm = 1:N_ngl
     plot(yy,squeeze(hk_forces(2,mm,:)))
   end
-  colourplot
+  colourplot;
 end
 
 if ~all(hk_forces(3,mm,:)<1e-10);
@@ -97,7 +103,7 @@ if ~all(hk_forces(3,mm,:)<1e-10);
   for mm = 1:N_ngl
     plot(yy,squeeze(hk_forces(3,mm,:)))
   end
-  colourplot
+  colourplot;
 end
 
 
@@ -110,14 +116,14 @@ willfig('x force x'); clf; hold on
 for mm = 1:N_ngl
   plot(yy,squeeze(hk_forcesX2(1,mm,:)))
 end
-colourplot
+colourplot;
 
 willfig('x force y'); clf; hold on
 
 for mm = 1:N_ngl
   plot(yy,squeeze(hk_forcesX2(2,mm,:)))
 end
-colourplot
+colourplot;
 
 if ~all(hk_forces(3,mm,:)<1e-10);
   disp('WARNING: z forces not zero')
@@ -125,7 +131,7 @@ if ~all(hk_forces(3,mm,:)<1e-10);
   for mm = 1:N_ngl
     plot(yy,squeeze(hk_forcesX2(3,mm,:)))
   end
-  colourplot
+  colourplot;
 end
 
 
@@ -140,24 +146,24 @@ willfig('x stiffness2'); clf; hold on
 for mm = 1:N_ngl
   plot(yys,hk_stiffness_X(mm,:),'tag','X')
 end
-draworigin
-colourplot
+draworigin;
+colourplot;
 
 willfig('y stiffness2'); clf; hold on
 
 for mm = 1:N_ngl
   plot(yys,hk_stiffness_Y(mm,:),'tag','Y')
 end
-draworigin
-colourplot
+draworigin;
+colourplot;
 
 willfig('z stiffness2'); clf; hold on
 
 for mm = 1:N_ngl
   plot(yys,hk_stiffness_Z(mm,:),'tag','Z')
 end
-draworigin
-colourplot
+draworigin;
+colourplot;
 
 %%
 
@@ -197,7 +203,7 @@ ylim([-1 7.9])
 xlabel('Displ.\ $\mbqvdisp$, mm')
 set(gca,'xtick',0:2:10)
 ylabel('Stiffness, kN/m')
-draworigin
+draworigin;
 annotation('arrow',[0.2 0.3],[0.7 0.7],arrowsetup{:});
 text(6,7,'Vertical')
 
@@ -206,7 +212,7 @@ xlim([0 9.9])
 ylim([-1 7.9])
 xlabel('Displ.\ $\mbqvdisp$, mm')
 set(gca,'xtick',0:2:10)
-draworigin
+draworigin;
 annotation('arrow',[0.65 0.8],[0.22 0.22],arrowsetup{:})
 text(5,7,'Horizontal')
 
@@ -223,7 +229,7 @@ for mm = 1:N_ngl
   hk_k_ratio(mm,pospos) = hk_stiffness_Y(mm,pospos)./hk_stiffness_X(mm,pospos);
   plot(yys,hk_k_ratio(mm,:))
 end
-colourplot
+colourplot;
 ylim([0 10])
 
 %%
@@ -253,7 +259,7 @@ for mm = 1:N_ngl
 
 end
 
-colourplot
+colourplot;
 xlim([5 35])
 ylim([0 8])
 xlabel('Load force, N')

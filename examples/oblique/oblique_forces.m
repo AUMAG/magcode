@@ -1,6 +1,9 @@
 function [ displ, forces ] = oblique_forces( varargin )
 %OBLIQUE_FORCES
 %
+% This function calculates the forces generated on a magnetic spring
+% consisting of two pairs of inclined permanent magnets.
+%
 % INPUTS:         DEFAULT  DESCRIPTION
 %
 %  'magn'         1T      magnet magnetisation

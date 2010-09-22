@@ -1,7 +1,15 @@
-%% Oblique magnets for low stiffness
+%% Oblique magnets for low stiffness: vary magnet gap
 %
-% Explanation forthcoming
+% The orthogonal test run to |oblique_angles.m|.
+% Here, the magnet angle is held constant and the magnet gap is
+% varied. A single simulation is performed with four plots produced:
 %
+% * force v displacement
+% * stiffness v displacement
+% * natural frequency v displacement
+% * natural frequency v force
+
+%% setup 
 
 close all
 clc
@@ -15,7 +23,7 @@ if ~exist('willfig','file')
   matlabfrag = @(varargin) disp('');
 end
 
-%%
+%% constants and calculations
 
 m = 0.01;
 gaps = 0:0.05:0.5;
@@ -25,7 +33,7 @@ if isempty(mfilename)
   error('This code chunk must be executed as an m-file')
 end
 
-datafile = [mfilename,'.mat'];
+datafile = ['data/',mfilename,'.mat'];
 if exist(datafile,'file')
   load(datafile)
 else
@@ -73,7 +81,6 @@ matlabfrag('fig/mbq-fvx-gaps')
 
 
 %% stiffnesses
-
 
 willfig('stiffnesses by gap'); clf; hold on
 

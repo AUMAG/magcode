@@ -1,6 +1,14 @@
-%% Oblique magnets for low stiffness
+%% Oblique magnets for low stiffness: vary gaps; 3 DOF
 %
-% Explanation forthcoming
+% The script was an early experiment investigating the 3 DOF behaviour
+% while keeping the magnet angle fixed and varying the magnet gap.
+% It is the orthogonal test file to |oblique_h.m|.
+%
+% A number of graphs are produced but none of them ended up being used
+% for publication.
+%
+% See |oblique_gaps_angles.m| for a more developed approach to the same
+% investigation.
 %
 
 %%
@@ -40,7 +48,7 @@ if isempty(mfilename)
   error('This code chunk must be executed as an m-file')
 end
 
-datafile = [mfilename,'.mat'];
+datafile = ['data/',mfilename,'.mat'];
 if exist(datafile,'file')
   load(datafile)
 else
@@ -80,7 +88,7 @@ if ~all(hkg_forces(1,:,:)<1e-10);
   for mm = 1:N_gaps
     plot(yy,squeeze(hkg_forces(1,mm,:)))
   end
-  colourplot
+  colourplot;
 end
 
 if false % shown below
@@ -88,7 +96,7 @@ if false % shown below
   for mm = 1:N_gaps
     plot(yy,squeeze(hkg_forces(2,mm,:)))
   end
-  colourplot
+  colourplot;
 end
 
 if ~all(hkg_forces(3,:,:)<1e-10);
@@ -97,7 +105,7 @@ if ~all(hkg_forces(3,:,:)<1e-10);
   for mm = 1:N_gaps
     plot(yy,squeeze(hkg_forces(3,mm,:)))
   end
-  colourplot
+  colourplot;
 end
 
 
@@ -110,14 +118,14 @@ willfig('x force x'); clf; hold on
 for mm = 1:N_gaps
   plot(yy,squeeze(hkg_forcesX2(1,mm,:)))
 end
-colourplot
+colourplot;
 
 willfig('x force y'); clf; hold on
 
 for mm = 1:N_gaps
   plot(yy,squeeze(hkg_forcesX2(2,mm,:)))
 end
-colourplot
+colourplot;
 
 if ~all(hkg_forces(3,mm,:)<1e-10);
   disp('WARNING: z forces not zero')
@@ -125,7 +133,7 @@ if ~all(hkg_forces(3,mm,:)<1e-10);
   for mm = 1:N_gaps
     plot(yy,squeeze(hkg_forcesX2(3,mm,:)))
   end
-  colourplot
+  colourplot;
 end
 
 
@@ -140,24 +148,24 @@ willfig('x stiffness2'); clf; hold on
 for mm = 1:N_gaps
   plot(yys,hkg_stiffness_X(mm,:),'tag','X')
 end
-draworigin
-colourplot
+draworigin;
+colourplot;
 
 willfig('y stiffness2'); clf; hold on
 
 for mm = 1:N_gaps
   plot(yys,hkg_stiffness_Y(mm,:),'tag','Y')
 end
-draworigin
-colourplot
+draworigin;
+colourplot;
 
 willfig('z stiffness2'); clf; hold on
 
 for mm = 1:N_gaps
   plot(yys,hkg_stiffness_Z(mm,:),'tag','Z')
 end
-draworigin
-colourplot
+draworigin;
+colourplot;
 
 %%
 
@@ -185,12 +193,12 @@ end
 
 subplot(1,2,1);
 axis tight
-colourplot
+colourplot;
 ylim([-1 10])
 
 subplot(1,2,2);
 axis tight
-colourplot
+colourplot;
 title('Y')
 ylim([-1 10])
 
@@ -205,7 +213,7 @@ for mm = 1:N_gaps
   hkg_k_ratio(mm,pospos) = hkg_stiffness_Y(mm,pospos)./hkg_stiffness_X(mm,pospos);
   plot(yys,hkg_k_ratio(mm,:))
 end
-colourplot
+colourplot;
 ylim([0 10])
 
 %%
@@ -235,7 +243,7 @@ for mm = 1:N_gaps
 
 end
 
-colourplot
+colourplot;
 xlim([5 40])
 ylim([0 10])
 xlabel('Load force, N')

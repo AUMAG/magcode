@@ -1,8 +1,14 @@
-%% Oblique vs volume
+%% Oblique magnetic spring: investigation of magnet volume
 %
-% Explanatino forthcoming
+% This is the final investigation for the oblique magnet spring.
+% Here, the magnet volume is varied; in all other investigations it has
+% been kept constant.
+%
+% The most important plot produced is the last one: it shows natural
+% frequency v load over a range of magnet sizes; larger magnets produce
+% lower frequency resonances.
 
-%%
+%% setup
 
 close all
 clc
@@ -15,7 +21,7 @@ if ~exist('willfig','file')
   matlabfrag = @(varargin) disp('');
 end
 
-%%
+%% constants and calculations
 
 msizes = [0.01:0.005:0.05];
 N_msz = length(msizes);
@@ -37,7 +43,7 @@ if isempty(mfilename)
   error('This code chunk must be executed as an m-file')
 end
 
-datafile = [mfilename,'.mat'];
+datafile = ['data/',mfilename,'.mat'];
 if exist(datafile,'file')
   load(datafile)
 else
@@ -75,8 +81,7 @@ end
 nicekratio = inf;
 nicek = vol_k_ratio < nicekratio & vol_k_ratio > 1/nicekratio;
 
-%%
-
+%% plot forces
 
 willfig('forces by volume'); clf; hold on
 
@@ -99,7 +104,7 @@ xlabel('Displacement, mm')
 ylabel('Force, N')
 
 
-%%
+%% plot resonances
 
 willfig('frequency v force, by volume'); clf; hold on
 
@@ -120,7 +125,7 @@ for tt = 1:2:N_msz
   plot(1000\ff(last_stable),ww_nice(last_stable)/(2*pi),'k.','userdata','colourplot:ignore')
   
   text(1000\ff(last_stable),ww_nice(last_stable)/(2*pi),...
-    [' \SI{', num2str(round(1000*msizes(tt))),'}{mm^3}'],...
+    [' $(\SI{', num2str(round(1000*msizes(tt))),'}{mm})^3$'],...
       'Interpreter','none',...
       'HorizontalAlignment','left',...
       'VerticalAlignment','baseline')

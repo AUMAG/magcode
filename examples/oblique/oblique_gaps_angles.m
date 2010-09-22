@@ -1,9 +1,19 @@
-%% Oblique magnets for low stiffness
+%% Oblique magnets for low stiffness: vary gap & angle; 3 DOF
 %
-% Explanation forthcoming
+% Building on the previous |oblique_angles.m| and |oblique_gaps.m|,
+% this simulation varies both magnet angle and magnet gap simultaneously.
+% Forces are calculated with offsets in two orthogonal directions so all
+% three translatory stiffnesses can be calculated.
+%
+% As this simulation was performed to produce graphics for publication,
+% the number of points in the graph is very high; this script takes a long
+% time to run.
+%
+% After generating all of the variations of graph, a single configuration
+% is selected and shown with addition annotations for publication.
 %
 
-%%
+%% setup
 
 close all
 clc
@@ -16,7 +26,7 @@ if ~exist('willfig','file')
   matlabfrag = @(varargin) disp('');
 end
 
-%%
+%% constants and calculations
 
 m = 0.01;
 gaps = 0.05:0.05:0.5;
@@ -41,7 +51,7 @@ if isempty(mfilename)
   error('This code chunk must be executed as an m-file')
 end
 
-datafile = [mfilename,'.mat'];
+datafile = ['data/',mfilename,'.mat'];
 if exist(datafile,'file')
   load(datafile)
 else
@@ -54,7 +64,7 @@ else
   )
 end
 
-%%
+%% calculate stiffnesses
 
 yy = ga_yrange(1,1,:);
 yys = yy;
@@ -78,9 +88,9 @@ for mm = 1:N_gaps
 end
 end
 
-%%
+%% resonance v load curves for fixed angles
 
-for nn = 1:0%N_ngl
+for nn = 1:0%N_ngl  % don't show these by default
   
   willfig(['load/res at angle ',num2str(magangles(nn))]); clf; hold on
   
@@ -131,7 +141,7 @@ for nn = 1:0%N_ngl
 
 end
 
-%%
+%% resonance v load curves for fixed gaps
 
 for mm = 1:0%N_gaps
   
@@ -184,8 +194,7 @@ for mm = 1:0%N_gaps
 
 end
 
-
-%%
+%% plot a single configuration with fixed magnet angle
 
 nn = find(magangles==40);
 
@@ -228,8 +237,6 @@ for mm = 1:N_gaps
   
 end
 
-% plot(ff_unstabl,ww_unstabl/2/pi,'k--')
-
 N_displ = length(ff);
 d_incr = 0.001;
 d_first = find(yy>0.001,1);
@@ -238,7 +245,6 @@ displ_step = round(d_incr/((ga_yrange(1,1,end)-ga_yrange(1,1,1))/N_displ));
 lbl = [1 2 3];
 
 incr = 0;
-
 for dd = d_first:displ_step:N_displ
   incr = incr+1;
   
