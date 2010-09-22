@@ -62,9 +62,9 @@ for mm = 1:4
 end
 
 axis tight
-text(8,0.8,'0.1')
-text(6,1.05,'0.2')
-text(4,1.13,'0.3')
+text(8,0.8,'$0.1$')
+text(6,1.05,'$0.2$')
+text(4,1.13,'$0.3$')
 text(1.5,1.22,'$\gamma=0.4$')
 
 ylim([0.7,1.3])
@@ -86,11 +86,11 @@ for mm = Nm-2:-1:4
 end
 
 axis tight
-text(8,1.3,'$\gamma=0.4$','HorizontalAlignment','Right')
-text(8,1.26,'0.5')
-text(8.5,1.21,'0.6')
-text(9,1.16,'0.7')
-text(9.5,1.1,'0.8')
+text(7.9,1.3,'$\gamma=0.4$','HorizontalAlignment','Right')
+text(8,1.255,'$0.5$')
+text(8.25,1.21,'$0.6$')
+text(8.5,1.155,'$0.7$')
+text(8.75,1.1,'$0.8$')
 
 xlabel('Displacement $x$, mm')
 ylabel('Normalised force $\bar F$')
@@ -140,7 +140,9 @@ ylabel 'Force, N'
 set(gca,'xtick',0:0.2:1)
 
 H = annotation('textarrow',[0.77 0.77],[0.67 0.3]);
-set(H,'HeadStyle','cback3', 'String',{'Increasing','displacement'},'HorizontalAlignment','Center')
+set(H,...
+  'HeadLength',6.5,'HeadWidth',4.5,'HeadStyle','cback3',...
+  'String',{'Increasing','displacement'},'HorizontalAlignment','Center')
 
 
 if ~simple_graph
