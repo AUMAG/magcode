@@ -16,7 +16,7 @@ calc_stiffness_bool = false;
 % Undefined calculation flags for the three directions:
 calc_xyz = [-1 -1 -1];
 
-for ii = 1:length(varargin) 
+for ii = 1:length(varargin)
   switch varargin{ii}
     case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
@@ -46,7 +46,7 @@ if size(displ,1) == 3
 elseif size(displ,2) == 3
   displ = transpose(displ);
 else
-  error(['Displacements matrix should be of size (3, D)',...
+  error(['Displacements matrix should be of size (3, D) ',...
          'where D is the number of displacements.'])
 end
 
@@ -109,7 +109,7 @@ for ii = 1:fixed_array.total
       [array_forces(:,:,ii,jj) array_stiffnesses(:,:,ii,jj)] = ...
           magnetforces(fixed_magnet, float_magnet, mag_displ,varargin{:});
     end
-  
+
   end
 end
 
@@ -203,7 +203,7 @@ if linear_index ~= 0
 elseif ~isequal( planar_index, [0 0] )
   if any( planar_index == facing_index )
     error('Planar-type arrays can only face into their orthogonal direction')
-  end 
+  end
 end
 
 
@@ -222,7 +222,7 @@ if isfield(array,'ratio') && isfield(array,'mlength')
   error('Cannot specify both ''ratio'' and ''mlength''.')
 elseif ~isfield(array,'ratio') && ~isfield(array,'mlength')
   error('Must specify either ''ratio'' or ''mlength''.')
-end  
+end
 
 
 array.Nmag_per_wave = 4;
@@ -423,7 +423,7 @@ if ~isfield(array,'magdir_fn')
   if ~isfield(array,'face')
     array.face = '+z';
   end
-  
+
   switch array.face
     case {'up','+z','+y','+x'},   magdir_rotate_sign =  1;
     case {'down','-z','-y','-x'}, magdir_rotate_sign = -1;
@@ -432,19 +432,19 @@ if ~isfield(array,'magdir_fn')
   if ~isfield(array,'magdir_first')
     array.magdir_first = magdir_rotate_sign*90;
   end
-  
+
   magdir_fn_comp{1} = @(ii,jj,kk) 0;
   magdir_fn_comp{2} = @(ii,jj,kk) 0;
   magdir_fn_comp{3} = @(ii,jj,kk) 0;
-  
+
   switch array.type
   case 'linear'
     magdir_theta = @(nn) ...
       array.magdir_first+magdir_rotate_sign*array.magdir_rotate*(nn-1);
-    
+
     magdir_fn_comp{linear_index} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],linear_index)));
-    
+
     magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],linear_index)));
 
@@ -452,10 +452,10 @@ if ~isfield(array,'magdir_fn')
 
     magdir_theta = @(nn) ...
       array.magdir_first+magdir_rotate_sign*90*(nn-1);
-    
+
     magdir_fn_comp{linear_index} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],linear_index)));
-    
+
     magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],linear_index)));
 
@@ -466,7 +466,7 @@ if ~isfield(array,'magdir_fn')
 
     magdir_phi = @(nn) ...
       array.magdir_first(end)+magdir_rotate_sign*array.magdir_rotate(end)*(nn-1);
-    
+
     magdir_fn_comp{planar_index(1)} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],planar_index(2))));
 
@@ -490,7 +490,7 @@ if ~isfield(array,'magdir_fn')
             + 1 ...
           );
 
-  case 'quasi-halbach'  
+  case 'quasi-halbach'
 
     magdir_fn_comp{planar_index(1)} = @(ii,jj,kk) ...
       sind(90*part([ii,jj,kk],planar_index(1))) ...
@@ -591,8 +591,8 @@ function array_out = extrapolate_variables(array)
 var_names = {'wavelength','length','Nwaves','mlength',...
              'Nmag','Nmag_per_wave','magdir_rotate'};
 
-if isfield(array,'Nwaves') 
-  mcount_extra  =  1; 
+if isfield(array,'Nwaves')
+  mcount_extra  =  1;
 else
   mcount_extra  =  0;
 end
@@ -625,7 +625,7 @@ var_known = var_matrix(:,idx)*variables(idx);
 var_calc = var_matrix(:,~idx)\(var_results-var_known);
 variables(~idx) = var_calc;
 variables = exp(variables);
-  
+
 for iii = 1:length(var_names);
   array.(var_names{iii}) = variables(iii);
 end

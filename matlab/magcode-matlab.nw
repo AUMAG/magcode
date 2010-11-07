@@ -1337,7 +1337,7 @@ test001b
 test001c
 test001d
 
-test_cyl_01
+testcyl01
 
 
 @ Force testing.
@@ -1795,7 +1795,7 @@ disp('=================')
 
 @ Cylindrical magnets testing.
 
-<< test_cyl_1.m >>=
+<< testcyl1.m >>=
 
 disp('=================')
 fprintf('TEST cylinder forces: ')

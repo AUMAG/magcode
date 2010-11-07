@@ -4,7 +4,7 @@ function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
 %% MAGNETFORCES  Calculate forces between two cuboid magnets
 %
-% Finish this off later. Please read the PDF documentation instead for now.  
+% Finish this off later. Please read the PDF documentation instead for now.
 %
 
 
@@ -18,7 +18,7 @@ calc_stiffness_bool = false;
 % Undefined calculation flags for the three directions:
 calc_xyz = [-1 -1 -1];
 
-for ii = 1:length(varargin) 
+for ii = 1:length(varargin)
   switch varargin{ii}
     case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
@@ -48,7 +48,7 @@ if size(displ,1) == 3
 elseif size(displ,2) == 3
   displ = transpose(displ);
 else
-  error(['Displacements matrix should be of size (3, D)',...
+  error(['Displacements matrix should be of size (3, D) ',...
          'where D is the number of displacements.'])
 end
 
@@ -63,11 +63,87 @@ if calc_stiffness_bool
 end
 
 
-size1 = reshape(magnet_fixed.dim/2,[3 1]);
-size2 = reshape(magnet_float.dim/2,[3 1]);
+if ~isfield(magnet_fixed,'type')
+  if length(magnet_fixed.dim) == 2
+    magnet_fixed.type = 'cylinder';
+  else
+    magnet_fixed.type = 'cuboid';
+  end
+end
 
-J1 = resolve_magnetisations(magnet_fixed.magn,magnet_fixed.magdir);
-J2 = resolve_magnetisations(magnet_float.magn,magnet_float.magdir);
+if ~isfield(magnet_float,'type')
+  if length(magnet_float.dim) == 2
+    magnet_float.type = 'cylinder';
+  else
+    magnet_float.type = 'cuboid';
+  end
+end
+
+if ~strcmp(magnet_fixed.type, magnet_float.type)
+  error('Magnets must be of same type')
+end
+
+magtype = magnet_fixed.type;
+
+if strcmp(magtype,'cuboid')
+
+  size1 = reshape(magnet_fixed.dim/2,[3 1]);
+  size2 = reshape(magnet_float.dim/2,[3 1]);
+
+  J1 = resolve_magnetisations(magnet_fixed.magn,magnet_fixed.magdir);
+  J2 = resolve_magnetisations(magnet_float.magn,magnet_float.magdir);
+
+elseif strcmp(magtype,'cylinder')
+
+  size1 = reshape(magnet_fixed.dim,[2 1]);
+  size2 = reshape(magnet_float.dim,[2 1]);
+
+  if ~isfield(magnet_fixed,'dir')
+    magnet_fixed.dir = [0 0 1];
+  end
+  if ~isfield(magnet_float,'dir')
+    magnet_float.dir = [0 0 1];
+  end
+  if abs(magnet_fixed.dir) ~= abs(magnet_float.dir)
+    error('Cylindrical magnets must be oriented in the same direction')
+  end
+
+  if ~isfield(magnet_fixed,'magdir')
+    magnet_fixed.magdir = [0 0 1];
+  end
+  if abs(magnet_fixed.dir) ~= abs(magnet_fixed.magdir)
+    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
+  end
+
+  if ~isfield(magnet_float,'magdir')
+    magnet_float.magdir = [0 0 1];
+  end
+  if abs(magnet_float.dir) ~= abs(magnet_float.magdir)
+    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
+  end
+
+  cyldir = find(magnet_float.magdir ~= 0);
+  cylnotdir = find(magnet_float.magdir == 0);
+  if length(cyldir) ~= 1
+    error('Cylindrical magnets must be aligned in one of the x, y or z directions')
+  end
+
+  magnet_float.magdir = magnet_float.magdir(:);
+  magnet_fixed.magdir = magnet_fixed.magdir(:);
+  magnet_float.dir = magnet_float.dir(:);
+  magnet_fixed.dir = magnet_fixed.dir(:);
+
+  if ~isfield(magnet_fixed,'magn')
+    magnet_fixed.magn = mu0*magnet_fixed.turns*magnet_fixed.current/magnet_fixed.size(2);
+  end
+  if ~isfield(magnet_float,'magn')
+    magnet_float.magn = mu0*magnet_float.turns*magnet_float.current/magnet_float.size(2);
+  end
+
+  J1 = magnet_fixed.magn*magnet_fixed.magdir;
+  J2 = magnet_float.magn*magnet_float.magdir;
+
+end
 
 
 magconst = 1/(4*pi*(4*pi*1e-7));
@@ -76,6 +152,8 @@ magconst = 1/(4*pi*(4*pi*1e-7));
 
 index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
 
+
+if strcmp(magtype,'cuboid')
 
 swap_x_y = @(vec) vec([2 1 3]);
 swap_x_z = @(vec) vec([3 2 1]);
@@ -100,18 +178,43 @@ size2_y = swap_y_z(size2);
 J1_y    = rotate_y_to_z(J1);
 J2_y    = rotate_y_to_z(J2);
 
+end
 
+
+
+if strcmp(magtype,'cuboid')
 
 if calc_force_bool
   for ii = 1:Ndispl
-    forces_out(:,ii)  =  single_magnet_force(displ(:,ii)); 
+    forces_out(:,ii)  =  single_magnet_force(displ(:,ii));
   end
 end
 
 if calc_stiffness_bool
   for ii = 1:Ndispl
-    stiffnesses_out(:,ii)  =  single_magnet_stiffness(displ(:,ii)); 
+    stiffnesses_out(:,ii)  =  single_magnet_stiffness(displ(:,ii));
   end
+end
+
+elseif strcmp(magtype,'cylinder')
+
+if strcmp(magtype,'cylinder')
+  if any(displ(cylnotdir,:)~=0)
+    error(['Displacements for cylindrical magnets may only be axial. ',...
+           'I.e., only in the direction of their alignment.'])
+  end
+end
+
+if calc_force_bool
+  forces_out = magnet_fixed.dir*...
+    forces_cyl_calc(size1, size2, squeeze(displ(cyldir,:)), J1(cyldir), J2(cyldir));
+end
+
+if calc_stiffness_bool
+  error('Stiffness cannot be calculated for cylindrical magnets yet.')
+end
+
+
 end
 
 
@@ -217,7 +320,7 @@ force_out = sum(force_components);
 end
 
 
-function stiffness_out = single_magnet_stiffness(displ) 
+function stiffness_out = single_magnet_stiffness(displ)
 
 stiffness_components = repmat(NaN,[9 3]);
 
@@ -292,10 +395,10 @@ J1 = J1(3);
 J2 = J2(3);
 
 
-if (J1==0 || J2==0) 
+if (J1==0 || J2==0)
   debug_disp('Zero magnetisation.')
-  calc_out  =  [0; 0; 0]; 
-  return; 
+  calc_out  =  [0; 0; 0];
+  return;
 end
 
 u = offset(1) + size2(1)*(-1).^index_j - size1(1)*(-1).^index_i;
@@ -368,10 +471,10 @@ J1 = J1(3);
 J2 = J2(2);
 
 
-if (J1==0 || J2==0) 
+if (J1==0 || J2==0)
   debug_disp('Zero magnetisation.')
-  calc_out  =  [0; 0; 0]; 
-  return; 
+  calc_out  =  [0; 0; 0];
+  return;
 end
 
 u = offset(1) + size2(1)*(-1).^index_j - size1(1)*(-1).^index_i;
@@ -463,10 +566,10 @@ J1 = J1(3);
 J2 = J2(3);
 
 
-if (J1==0 || J2==0) 
+if (J1==0 || J2==0)
   debug_disp('Zero magnetisation.')
-  calc_out  =  [0; 0; 0]; 
-  return; 
+  calc_out  =  [0; 0; 0];
+  return;
 end
 
 u = offset(1) + size2(1)*(-1).^index_j - size1(1)*(-1).^index_i;
@@ -525,10 +628,10 @@ J1 = J1(3);
 J2 = J2(2);
 
 
-if (J1==0 || J2==0) 
+if (J1==0 || J2==0)
   debug_disp('Zero magnetisation.')
-  calc_out  =  [0; 0; 0]; 
-  return; 
+  calc_out  =  [0; 0; 0];
+  return;
 end
 
 u = offset(1) + size2(1)*(-1).^index_j - size1(1)*(-1).^index_i;
@@ -596,6 +699,186 @@ calc_xyz = swap_x_y(calc_xyz);
 calc_out = swap_x_y(stiffnesses_xyz);
 
 end
+
+
+
+function calc_out = forces_cyl_calc(size1,size2,h_gap,J1,J2)
+
+% constants
+mu0 = 4*pi*10^(-7);
+
+% inputs
+
+SS = size(h_gap);
+h1 = repmat(size1(2),SS);
+h2 = repmat(size2(2),SS);
+r1 = repmat(size1(1),SS);
+r2 = repmat(size2(1),SS);
+
+% implicit
+z = nan(4,length(h_gap));
+z(1,:) = -h1/2;
+z(2,:) =  h1/2;
+z(3,:) = h_gap - h2/2;
+z(4,:) = h_gap + h2/2;
+
+C_d = zeros(SS);
+
+for ii = [1 2]
+
+  for jj = [3 4]
+
+    c1 = z(ii,:) - z(jj,:);
+    c2 = r1-r2;
+    c3 = r1+r2;
+    c4 = sqrt(c1.^2+c2.^2);
+
+    c5 = sqrt((c3.^2+c1.^2)./(c2.^2+c1.^2));
+
+    [K E] = ellipke(1-1./c5.^2);
+    KK = EllipticK(1-c5.^2);
+
+    if c2 == 0
+      % singularities at c2=0 (i.e., equal radii)
+      PI = 0;
+    else
+      PI = EllipticPI(1-c3.^2./c2.^2,1-c5.^2);
+    end
+
+    f_z = ...
+      +(c5+1./c5).*K...
+      -2*c5.*E...
+      +(c2.^2+c3.^2)./c4.^2.*KK...
+      -2*c3.^2./c4.^2.*PI;
+
+    C_d = C_d + (-1)^(ii+jj)*c1.*c4.*f_z;
+
+
+  end
+
+end
+
+calc_out = J1*J2/(4*mu0)*C_d;
+
+end
+
+function K = EllipticK(c)
+
+if c < 0
+  K = ellipke(c./(c-1))./sqrt(1-c);
+else
+  K = ellipke(c);
+end
+
+end
+
+
+function PI = EllipticPI(a,b)
+
+if b < 0
+  PI = 1./( (b-a).*sqrt(1-b) ).*...
+       ( ...
+         b.*ellipke(b./(b-1)) ...
+         - a.*elliptic3( pi/2 , b./(b-1) , (b-a)./(b-1)) ...
+       );
+elseif b > 1
+  error('Oh no! I can''t evaluate EllipticPI with large modulus (>1) yet.')
+else
+  PI = elliptic3(pi/2,b,a);
+end
+
+end
+
+
+
+
+
+function Pi = elliptic3(u,m,c)
+% ELLIPTIC3 evaluates incomplete elliptic integral of the third kind.
+%   Pi = ELLIPTIC3(U,M,C) where U is a phase in radians, 0<M<1 is
+%   the module and 0<C<1 is a parameter.
+%
+%   ELLIPTIC3 uses Gauss-Legendre 10 points quadrature template
+%   described in [3] to determine the value of the Incomplete Elliptic
+%   Integral of the Third Kind (see [1, 2]).
+%
+%   Pi(u,m,c) = int(1/((1 - c*sin(t)^2)*sqrt(1 - m*sin(t)^2)), t=0..u)
+%
+%   Tables generating code ([1], pp. 625-626):
+%           [phi,alpha,c] = meshgrid(0:15:90, 0:15:90, 0:0.1:1);
+%       Pi = elliptic3(pi/180*phi, sin(pi/180*alpha).^2, c);  % values of integrals
+%
+%   References:
+%   [1] M. Abramowitz and I.A. Stegun, "Handbook of Mathematical
+%       Functions" Dover Publications", 1965, Ch. 17.7.
+%   [2] D. F. Lawden, "Elliptic Functions and Applications"
+%       Springer-Verlag, vol. 80, 1989.
+%   [3] S. Zhang, J. Jin "Computation of Special Functions" (Wiley, 1996).
+
+
+if nargin<3, error('Not enough input arguments.'); end
+if ~isreal(u) || ~isreal(m) || ~isreal(c)
+    error('Input arguments must be real.')
+end
+if any(m < 0) || any(m > 1)
+  error('M must be in the range [0, 1].');
+end
+%if any(c < 0) || any(c > 1)
+%  error('C must be in the range [0, 1].');
+%end
+if any(u > pi/2) || any(u < 0)
+    error('U must be in the range [0, pi/2].');
+end
+
+[mm,nm] = size(m);
+[mu,nu] = size(u);
+if length(m)==1, m = m(ones(size(u))); end
+if length(c)==1, c = c(ones(size(u))); end
+if length(u)==1, u = u(ones(size(m))); end
+if ~isequal(size(m), size(c), size(u)),
+        error('U, M and C must be the same size.');
+end
+
+Pi = zeros(size(u));
+m = m(:).';    % make a row vector
+u = u(:).';
+c = c(:).';
+
+I =  u==pi/2 & m==1 | u==pi/2 & c==1;
+
+t = [ 0.9931285991850949,  0.9639719272779138,...            % Base points
+      0.9122344282513259,  0.8391169718222188,...            % for Gauss-Legendre integration
+      0.7463319064601508,  0.6360536807265150,...
+      0.5108670019508271,  0.3737060887154195,...
+      0.2277858511416451,  0.07652652113349734 ];
+w = [ 0.01761400713915212, 0.04060142980038694,...           % Weights
+      0.06267204833410907, 0.08327674157670475,...           % for Gauss-Legendre integration
+      0.1019301198172404,  0.1181945319615184,...
+      0.1316886384491766,  0.1420961093183820,...
+      0.1491729864726037,  0.1527533871307258  ];
+
+P = 0;  i = 0;
+while i < 10
+    i  = i + 1;
+    c0 = u.*t(i)/2;
+    P  = P + w(i).*(g(u/2+c0,m,c) + g(u/2-c0,m,c));
+end
+P = u/2.*P;
+Pi(:) = P;                                                   % Incomplete elliptic integral of the third kind
+
+% special values u==pi/2 & m==1 | u==pi/2 & c==1
+Pi(I) = inf;
+
+function g = g(u,m,c)
+%  g = 1/((1 - c*sin(u)^2)*sqrt(1 - m*sin(u)^2));
+
+ sn2 = sin(u).^2;
+ g = 1./((1 - c.*sn2).*sqrt(1 - m.*sn2));
+
+end
+
+end
+
 
 
 
