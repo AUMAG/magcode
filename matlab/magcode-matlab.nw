@@ -338,7 +338,7 @@ if size(displ,1) == 3
 elseif size(displ,2) == 3
   displ = transpose(displ);
 else
-  error(['Displacements matrix should be of size (3, D)',...
+  error(['Displacements matrix should be of size (3, D) ',...
          'where D is the number of displacements.'])
 end
 
@@ -366,7 +366,7 @@ calc_stiffness_bool = false;
 % Undefined calculation flags for the three directions:
 calc_xyz = [-1 -1 -1];
 
-for ii = 1:length(varargin) 
+for ii = 1:length(varargin)
   switch varargin{ii}
     case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
@@ -415,13 +415,13 @@ function and we iterate to generate a matrix of vector outputs.
 
 if calc_force_bool
   for ii = 1:Ndispl
-    forces_out(:,ii)  =  single_magnet_force(displ(:,ii)); 
+    forces_out(:,ii)  =  single_magnet_force(displ(:,ii));
   end
 end
 
 if calc_stiffness_bool
   for ii = 1:Ndispl
-    stiffnesses_out(:,ii)  =  single_magnet_stiffness(displ(:,ii)); 
+    stiffnesses_out(:,ii)  =  single_magnet_stiffness(displ(:,ii));
   end
 end
 
@@ -446,7 +446,7 @@ end
 
 << Function for single stiffness calculation >>=
 
-function stiffness_out = single_magnet_stiffness(displ) 
+function stiffness_out = single_magnet_stiffness(displ)
 
 stiffness_components = repmat(NaN,[9 3]);
 
@@ -832,10 +832,10 @@ end
 
 << Initialise subfunction variables >>=
 
-if (J1==0 || J2==0) 
+if (J1==0 || J2==0)
   debug_disp('Zero magnetisation.')
-  calc_out  =  [0; 0; 0]; 
-  return; 
+  calc_out  =  [0; 0; 0];
+  return;
 end
 
 u = offset(1) + size2(1)*(-1).^index_j - size1(1)*(-1).^index_i;
@@ -1007,7 +1007,7 @@ debug_disp(J2')
 
 %% MAGNETFORCES  Calculate forces between two cuboid magnets
 %
-% Finish this off later. Please read the PDF documentation instead for now.  
+% Finish this off later. Please read the PDF documentation instead for now.
 %
 
 
@@ -1170,12 +1170,12 @@ fzyz = [];
 for ii = [1, -1]
   for jj = [1, -1]
     for kk = [1, -1]
-  
+
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = jj*[90 0];  % $\pm y$
       displ = kk*[0 0 0.1];  % $\pm z$
       fzyz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
-  
+
     end
   end
 end
@@ -1192,12 +1192,12 @@ fzxz = [];
 for ii = [1, -1]
   for jj = [1, -1]
     for kk = [1, -1]
-  
+
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = [90+jj*90 0];  % $\pm x$
       displ = kk*[0.1 0 0];  % $\pm x$
       fzxz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
-  
+
     end
   end
 end
@@ -1214,12 +1214,12 @@ fzyy = [];
 for ii = [1, -1]
   for jj = [1, -1]
     for kk = [1, -1]
-  
+
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = jj*[90 0];  % $\pm y$
       displ = kk*[0 0.1 0];  % $\pm y$
       fzyy(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
-  
+
     end
   end
 end
@@ -1236,12 +1236,12 @@ fzxx = [];
 for ii = [1, -1]
   for jj = [1, -1]
     for kk = [1, -1]
-  
+
       magnet_fixed.magdir = ii*[0  90];  % $\pm z$
       magnet_float.magdir = [90+jj*90 0];  % $\pm x$
       displ = kk*[0 0 0.1];  % $\pm z$
       fzxx(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
-  
+
     end
   end
 end
@@ -1304,12 +1304,12 @@ for ii = [-1 1]
     for xx = 0.12*[-1, 1]
       for yy = 0.12*[-1, 1]
         for zz = 0.12*[-1, 1]
-          
+
               magnet_fixed.magdir = [0  ii*90];  % $z$
               magnet_float.magdir = [0  jj*90];  % $z$
               displ = [xx yy zz];
               f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
-        
+
         end
       end
     end
@@ -1331,12 +1331,12 @@ for ii = [-1 1]
     for xx = 0.12*[-1, 1]
       for yy = 0.12*[-1, 1]
         for zz = 0.12*[-1, 1]
-          
+
               magnet_fixed.magdir = [0  ii*90];  % $\pm z$
               magnet_float.magdir = [jj*90  0];  % $\pm y$
               displ = [xx yy zz];
               f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
-        
+
         end
       end
     end
@@ -1648,7 +1648,7 @@ for ii = 1:fixed_array.total
       [array_forces(:,:,ii,jj) array_stiffnesses(:,:,ii,jj)] = ...
           magnetforces(fixed_magnet, float_magnet, mag_displ,varargin{:});
     end
-  
+
   end
 end
 
@@ -1916,7 +1916,7 @@ if linear_index ~= 0
 elseif ~isequal( planar_index, [0 0] )
   if any( planar_index == facing_index )
     error('Planar-type arrays can only face into their orthogonal direction')
-  end 
+  end
 end
 
 @ We need to finish off infering those variables that weren't specified but
@@ -1941,7 +1941,7 @@ if isfield(array,'ratio') && isfield(array,'mlength')
   error('Cannot specify both ''ratio'' and ''mlength''.')
 elseif ~isfield(array,'ratio') && ~isfield(array,'mlength')
   error('Must specify either ''ratio'' or ''mlength''.')
-end  
+end
 
 
 array.Nmag_per_wave = 4;
@@ -2157,7 +2157,7 @@ if ~isfield(array,'magdir_fn')
   if ~isfield(array,'face')
     array.face = '+z';
   end
-  
+
   switch array.face
     case {'up','+z','+y','+x'},   magdir_rotate_sign =  1;
     case {'down','-z','-y','-x'}, magdir_rotate_sign = -1;
@@ -2166,19 +2166,19 @@ if ~isfield(array,'magdir_fn')
   if ~isfield(array,'magdir_first')
     array.magdir_first = magdir_rotate_sign*90;
   end
-  
+
   magdir_fn_comp{1} = @(ii,jj,kk) 0;
   magdir_fn_comp{2} = @(ii,jj,kk) 0;
   magdir_fn_comp{3} = @(ii,jj,kk) 0;
-  
+
   switch array.type
   case 'linear'
     magdir_theta = @(nn) ...
       array.magdir_first+magdir_rotate_sign*array.magdir_rotate*(nn-1);
-    
+
     magdir_fn_comp{linear_index} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],linear_index)));
-    
+
     magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],linear_index)));
 
@@ -2186,10 +2186,10 @@ if ~isfield(array,'magdir_fn')
 
     magdir_theta = @(nn) ...
       array.magdir_first+magdir_rotate_sign*90*(nn-1);
-    
+
     magdir_fn_comp{linear_index} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],linear_index)));
-    
+
     magdir_fn_comp{facing_index} = @(ii,jj,kk) ...
       sind(magdir_theta(part([ii,jj,kk],linear_index)));
 
@@ -2200,7 +2200,7 @@ if ~isfield(array,'magdir_fn')
 
     magdir_phi = @(nn) ...
       array.magdir_first(end)+magdir_rotate_sign*array.magdir_rotate(end)*(nn-1);
-    
+
     magdir_fn_comp{planar_index(1)} = @(ii,jj,kk) ...
       cosd(magdir_theta(part([ii,jj,kk],planar_index(2))));
 
@@ -2224,7 +2224,7 @@ if ~isfield(array,'magdir_fn')
 	    + 1 ...
 	  );
 
-  case 'quasi-halbach'  
+  case 'quasi-halbach'
 
     magdir_fn_comp{planar_index(1)} = @(ii,jj,kk) ...
       sind(90*part([ii,jj,kk],planar_index(1))) ...
@@ -2261,8 +2261,8 @@ function array_out = extrapolate_variables(array)
 var_names = {'wavelength','length','Nwaves','mlength',...
              'Nmag','Nmag_per_wave','magdir_rotate'};
 
-if isfield(array,'Nwaves') 
-  mcount_extra  =  1; 
+if isfield(array,'Nwaves')
+  mcount_extra  =  1;
 else
   mcount_extra  =  0;
 end
@@ -2295,7 +2295,7 @@ var_known = var_matrix(:,idx)*variables(idx);
 var_calc = var_matrix(:,~idx)\(var_results-var_known);
 variables(~idx) = var_calc;
 variables = exp(variables);
-  
+
 for iii = 1:length(var_names);
   array.(var_names{iii}) = variables(iii);
 end
@@ -2548,11 +2548,11 @@ f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
 ind = [3 4 8];
 
-assert( all(round(f(ind) * 100)/100==589.05) ,  ... 
-  'Arrays aligned in different directions should produce consistent results.'); 
+assert( all(round(f(ind) * 100)/100==589.05) ,  ...
+  'Arrays aligned in different directions should produce consistent results.');
 
-assert( all(f(~ind)<1e-10) ,  ... 
-  'These forces should all be (essentially) zero.'); 
+assert( all(f(~ind)<1e-10) ,  ...
+  'These forces should all be (essentially) zero.');
 
 fprintf('passed\n')
 disp('=================')
@@ -2602,7 +2602,7 @@ float_array.face = 'down';
 f2 = multipoleforces(fixed_array, float_array, displ);
 
 assert( all(chop(f1,6)==chop(f2,6)) , ...
-  'linear (4mag) and linear-quasi should be equivalent'); 
+  'linear (4mag) and linear-quasi should be equivalent');
 
 % Test against Halbach array with two magnets per wavelength
 
@@ -2639,7 +2639,7 @@ float_array.face = 'down';
 f4 = multipoleforces(fixed_array, float_array, displ);
 
 assert( all(chop(f3,6)==chop(f4,6)) , ...
-  'linear (2mag) and linear-quasi should be equivalent'); 
+  'linear (2mag) and linear-quasi should be equivalent');
 
 fprintf('passed\n')
 
