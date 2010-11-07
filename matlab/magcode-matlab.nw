@@ -201,21 +201,31 @@ addpath ~/magcode/matlab
 \paragraph{Licensing}
 This work may be freely modified and distributed under the terms and conditions of the Apache License v2.0.\footnote{\url{http://www.apache.org/licenses/LICENSE-2.0}}
 This work is Copyright 2009--2010 by Will Robertson.
+This work contains a modified version of Moiseev Igor's code for
+calcuting the elliptic function of the third kind,%
+\footnote{\url{http://code.google.com/p/elliptic/}}
+which is originally distributed under the BSD license.
+
+This means, in essense, that you may freely modify and distribute this
+code provided that you acknowledge your changes to the work and retain
+my copyright. See the License text for the specific language governing
+permissions and limitations under the License.
 
 \paragraph{Contributing and feedback}
 Please report problems and suggestions at the GitHub issue tracker.%
 \footnote{\url{http://github.com/wspr/magnetocode/issues}}
 
-The Matlab source code is written using Matlabweb.%
-\footnote{\url{http://www.ctan.org/tex-archive/web/matlabweb/}}
-After it is installed, use \verb|mtangle magnetforces| to extract the Matlab files \texttt{magnetforces.m} and \texttt{multipoleforces.m}, as well as extracting the test suite (such as it is, for now).
-Running the Makefile with no targets (i.e., \verb|make|) will perform this step as well as compiling the documentation you are currently reading.
+The Matlab source code is written using Norman Ramsey's \textsc{Noweb} literate
+programming tool.%
+\footnote{\url{http://www.cs.tufts.edu/~nr/noweb/}}
+After it is installed, use \verb|make code| to extract the Matlab files \texttt{magnetforces.m} and \texttt{multipoleforces.m}, as well as extracting the test suite (such as it is, for now).
+Running \verb|make doc|) will compiling the documentation you are currently reading.
 
-
+\DeleteShortVerb\|
 
 @ About this file. This is a `literate programming` approach to writing Matlab
-code using \textsc{matlabweb}%
-\footnote{\url{http://tug.ctan.org/pkg/matlabweb}}. To be honest I don't know
+code using \textsc{Noweb}%
+\footnote{\url{http://www.cs.tufts.edu/~nr/noweb/}}. To be honest I don't know
 if it's any better than simply using the Matlab programming language directly.
 The big advantage for me is that you have access to the entire \LaTeX\
 document environment, which gives you access to vastly better tools for
@@ -226,17 +236,6 @@ The downside is obviously that you miss out on Matlab's IDE with its
 integrated M-Lint program, debugger, profiler, and so on. Depending on one's
 work habits, this may be more or less of limiting factor to using literate
 programming in this way.
-
-@ This work consists of the source file \texttt{magnetforces.web} and its
-  associated derived files. It is released under the Apache License v2.0.%
-     \footnote{\url{http://www.apache.org/licenses/LICENSE-2.0}}
-
-  This means, in essense, that you may freely modify and distribute this
-  code provided that you acknowledge your changes to the work and retain
-  my copyright. See the License text for the specific language governing
-  permissions and limitations under the License.
-
-  Copyright \textcopyright\ 2009 Will Robertson.
 
 @ Calculating forces between magnets. This is the source of some code to
 calculate the forces and/or stiffnesses between two
