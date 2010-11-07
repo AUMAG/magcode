@@ -19,10 +19,7 @@ TestDir = testsuite/
 
 Outputs = magnetforces.m multipoleforces.m
 
-TestNames = testall.m \
-        test001a.m test001b.m test001c.m test001d.m test001e.m \
-        test002a.m test002b.m test002c.m test002d.m \
-        test003a.m
+TestNames = $(shell grep -o 'test.*\.m' magcode-matlab.nw | sort | uniq )
 Tests = $(addprefix $(TestDir),$(TestNames))
 
 all: $(Outputs) $(Tests) $(Doc)
