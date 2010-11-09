@@ -402,10 +402,10 @@ elseif strcmp(magtype,'cylinder')
   magnet_fixed.dir = magnet_fixed.dir(:);
 
   if ~isfield(magnet_fixed,'magn')
-    magnet_fixed.magn = mu0*magnet_fixed.turns*magnet_fixed.current/magnet_fixed.size(2);
+    magnet_fixed.magn = 4*pi*1e-7*magnet_fixed.turns*magnet_fixed.current/magnet_fixed.dim(2);
   end
   if ~isfield(magnet_float,'magn')
-    magnet_float.magn = mu0*magnet_float.turns*magnet_float.current/magnet_float.size(2);
+    magnet_float.magn = 4*pi*1e-7*magnet_float.turns*magnet_float.current/magnet_float.dim(2);
   end
 
   J1 = magnet_fixed.magn*magnet_fixed.magdir;
