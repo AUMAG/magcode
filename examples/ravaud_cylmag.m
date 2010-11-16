@@ -26,8 +26,8 @@ mu0 = 4*pi*10^(-7);
 J1 = mu0*Nturns*current/h1;
 
 % Displacement:
-NN = 101;
-displ_range = 0.04;
+NN = 45;
+displ_range = 0.045;
 displ = linspace(-displ_range,displ_range,NN);
 
 % Calculate forces:
@@ -57,3 +57,8 @@ try
   draworigin
   matlabfrag('fig/cylmag-matlab')
 end
+
+%% Save output to file
+
+f = fopen('data/magcyl-matlab.txt','w');
+fprintf(f,'%f %f\n',[1000*displ' fcyl(3,:)']');
