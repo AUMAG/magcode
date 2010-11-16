@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[     46065,       1456]
-NotebookOptionsPosition[     43800,       1379]
-NotebookOutlinePosition[     44268,       1398]
-CellTagsIndexPosition[     44225,       1395]
+NotebookDataLength[     46541,       1468]
+NotebookOptionsPosition[     44237,       1390]
+NotebookOutlinePosition[     44705,       1409]
+CellTagsIndexPosition[     44662,       1406]
 WindowFrame->Normal
 ContainsDynamic->False*)
 
@@ -407,6 +407,17 @@ Cell[CellGroupData[{
 
 Cell["Published version", "Subsubsection"],
 
+Cell[TextData[{
+ "If you have reached this far, I have a confession to make: the following \
+equation comes verbatim from Ravaud's paper but it does not calculate the \
+same values as his ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " code listed above; I must therefore conclude that there is a typo in his \
+paper. Nonetheless, the equation below is used to compare the performance of \
+the simplified equation."
+}], "Text"],
+
 Cell[BoxData[{
  RowBox[{
   RowBox[{"muo", "=", 
@@ -693,7 +704,7 @@ Cell[BoxData[
          "\[IndentingNewLine]", 
          RowBox[{"{", "NN", "}"}]}], "]"}], "]"}], "]"}], "/", "NN"}]}], 
    "]"}]}]], "Input"]
-}, Closed]],
+}, Open  ]],
 
 Cell[CellGroupData[{
 
@@ -1411,51 +1422,52 @@ Cell[11891, 355, 1772, 47, 88, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
 Cell[13700, 407, 42, 0, 19, "Subsubsection"],
-Cell[13745, 409, 8144, 236, 759, "Input"],
-Cell[21892, 647, 1772, 47, 88, "Input"]
+Cell[13745, 409, 434, 9, 56, "Text"],
+Cell[14182, 420, 8144, 236, 759, "Input"],
+Cell[22329, 658, 1772, 47, 88, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[24138, 710, 43, 0, 25, "Subsubsection"],
+Cell[24184, 712, 3868, 122, 388, "Input"],
+Cell[28055, 836, 685, 15, 58, "Input"],
+Cell[28743, 853, 1772, 47, 88, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[23701, 699, 43, 0, 19, "Subsubsection"],
-Cell[23747, 701, 3868, 122, 388, "Input"],
-Cell[27618, 825, 685, 15, 58, "Input"],
-Cell[28306, 842, 1772, 47, 88, "Input"]
-}, Closed]],
-Cell[CellGroupData[{
-Cell[30115, 894, 42, 0, 19, "Subsubsection"],
-Cell[30160, 896, 117, 2, 43, "Input"]
+Cell[30552, 905, 42, 0, 19, "Subsubsection"],
+Cell[30597, 907, 117, 2, 43, "Input"]
 }, Closed]]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[30338, 905, 26, 0, 67, "Section"],
-Cell[30367, 907, 99, 2, 26, "Text"],
-Cell[30469, 911, 345, 9, 58, "Input"],
-Cell[30817, 922, 2663, 72, 118, "Input"],
-Cell[33483, 996, 309, 9, 43, "Input"]
+Cell[30775, 916, 26, 0, 67, "Section"],
+Cell[30804, 918, 99, 2, 26, "Text"],
+Cell[30906, 922, 345, 9, 58, "Input"],
+Cell[31254, 933, 2663, 72, 118, "Input"],
+Cell[33920, 1007, 309, 9, 43, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[33829, 1010, 34, 0, 67, "Section"],
+Cell[34266, 1021, 34, 0, 67, "Section"],
 Cell[CellGroupData[{
-Cell[33888, 1014, 57, 0, 34, "Subsection"],
-Cell[33948, 1016, 43, 0, 26, "Text"],
-Cell[33994, 1018, 518, 17, 53, "Input"],
-Cell[34515, 1037, 720, 23, 71, "Input"]
+Cell[34325, 1025, 57, 0, 34, "Subsection"],
+Cell[34385, 1027, 43, 0, 26, "Text"],
+Cell[34431, 1029, 518, 17, 53, "Input"],
+Cell[34952, 1048, 720, 23, 71, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[35272, 1065, 47, 0, 26, "Subsection"],
-Cell[35322, 1067, 644, 22, 108, "Input"],
-Cell[35969, 1091, 1021, 35, 74, "Input"]
+Cell[35709, 1076, 47, 0, 26, "Subsection"],
+Cell[35759, 1078, 644, 22, 108, "Input"],
+Cell[36406, 1102, 1021, 35, 74, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[37027, 1131, 68, 0, 26, "Subsection"],
-Cell[37098, 1133, 760, 26, 67, "Input"],
-Cell[37861, 1161, 1117, 40, 87, "Input"]
+Cell[37464, 1142, 68, 0, 26, "Subsection"],
+Cell[37535, 1144, 760, 26, 67, "Input"],
+Cell[38298, 1172, 1117, 40, 87, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[39015, 1206, 67, 0, 26, "Subsection"],
-Cell[39085, 1208, 1515, 54, 139, "Input"],
-Cell[40603, 1264, 1507, 52, 104, "Input"],
-Cell[42113, 1318, 1659, 57, 97, "Input"]
+Cell[39452, 1217, 67, 0, 26, "Subsection"],
+Cell[39522, 1219, 1515, 54, 139, "Input"],
+Cell[41040, 1275, 1507, 52, 104, "Input"],
+Cell[42550, 1329, 1659, 57, 97, "Input"]
 }, Closed]]
 }, Open  ]]
 }
