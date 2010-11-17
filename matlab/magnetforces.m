@@ -709,50 +709,52 @@ mu0 = 4*pi*10^(-7);
 
 % inputs
 
-SS = size(h_gap);
-h1 = repmat(size1(2),SS);
-h2 = repmat(size2(2),SS);
-r1 = repmat(size1(1),SS);
-r2 = repmat(size2(1),SS);
+h1 = size1(2);
+h2 = size2(2);
+r1 = size1(1);
+r2 = size2(1);
 
 % implicit
+
 z = nan(4,length(h_gap));
 z(1,:) = -h1/2;
 z(2,:) =  h1/2;
 z(3,:) = h_gap - h2/2;
 z(4,:) = h_gap + h2/2;
 
-C_d = zeros(SS);
+C_d = zeros(size(h_gap));
 
+c2 = r1-r2;
+c3 = r1+r2;
+  
 for ii = [1 2]
-
+  
   for jj = [3 4]
 
     c1 = z(ii,:) - z(jj,:);
-    c2 = r1-r2;
-    c3 = r1+r2;
     c4 = sqrt(c1.^2+c2.^2);
-
     c5 = sqrt((c3.^2+c1.^2)./(c2.^2+c1.^2));
-
+    
     [K E] = ellipke(1-1./c5.^2);
     KK = EllipticK(1-c5.^2);
-
-    if c2 == 0
-      % singularities at c2=0 (i.e., equal radii)
-      PI = 0;
+    
+    if all(c2) == 0
+      % singularity at c2=0 (i.e., equal radii)
+      PI_term = 0;
     else
-      PI = EllipticPI(1-c3.^2./c2.^2,1-c5.^2);
+      PI_term = 2*c3.^2./c4.^2.*EllipticPI(1-c3.^2./c2.^2,1-c5.^2);
+      PI_term(isinf(PI_term)) = 0;
     end
-
+    
     f_z = ...
       +(c5+1./c5).*K...
       -2*c5.*E...
       +(c2.^2+c3.^2)./c4.^2.*KK...
-      -2*c3.^2./c4.^2.*PI;
-
+      -PI_term;
+    
+    f_z(abs(c1)<eps)=0; % singularity at c4=0 (i.e., coincident faces)
+    
     C_d = C_d + (-1)^(ii+jj)*c1.*c4.*f_z;
-
 
   end
 
