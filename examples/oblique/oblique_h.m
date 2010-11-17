@@ -75,38 +75,6 @@ hk_stiffness_Y(:,[1 end]) = [];
 hk_stiffness_Z(:,[1 end]) = [];
 
 
-
-%% XYZ plain forces
-%
-% These are the forces in each direction without any offset
-
-if ~all(hk_forces(1,mm,:)<1e-10);
-  disp('WARNING: x forces not zero')  
-  willfig('force x'); clf; hold on
-  for mm = 1:N_ngl
-    plot(yy,squeeze(hk_forces(1,mm,:)))
-  end
-  colourplot;
-end
-
-if false % shown below
-  willfig('force y'); clf; hold on
-  for mm = 1:N_ngl
-    plot(yy,squeeze(hk_forces(2,mm,:)))
-  end
-  colourplot;
-end
-
-if ~all(hk_forces(3,mm,:)<1e-10);
-  disp('WARNING: z forces not zero')
-  willfig('force z'); clf; hold on
-  for mm = 1:N_ngl
-    plot(yy,squeeze(hk_forces(3,mm,:)))
-  end
-  colourplot;
-end
-
-
 %% X-offset forces
 %
 % Forces in xyz for offset in X
@@ -168,7 +136,7 @@ colourplot;
 %%
 
 willfig('compare stiffness');
-figuresize(10,6,'centimeters')
+figuresize(14,6,'centimeters')
 
 % for colours only:
 for mm = 1:N_ngl

@@ -225,7 +225,7 @@ for mm = 1:N_gaps
   ww_unstabl(mm) = ww(pp);
   if any(taggap==mm)
     plot(ff(pp),ww(pp)/2/pi,'k.','userdata','colourplot:ignore')
-    text(ff(pp),ww(pp)/2/pi,[num2str(gaps(mm)),'~'],'horizontalalignment','right')
+    text(ff(pp),ww(pp)/2/pi,[num2str(gaps(mm)),'\,'],'horizontalalignment','right')
   end
   
   kk = squeeze(ga_stiffness_Y(nn,mm,:));
