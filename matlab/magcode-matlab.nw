@@ -897,151 +897,82 @@ for ii = [1 2]
   for jj = [3 4]
 
     c1 = z(ii,:) - z(jj,:);
-    c4 = sqrt(c1.^2+c2.^2);
-    c5 = sqrt((c3.^2+c1.^2)./(c2.^2+c1.^2));
+    c4 = c1.^2+c2.^2;
+    c5 = sqrt(c1.^2+c3.^2);
+    c6 = (c3.^2-c2.^2)./(c1.^2+c3.^2);
     
-    [K E] = ellipke(1-1./c5.^2);
-    KK = EllipticK(1-c5.^2);
+    [K, E, PI] = ellippi(c6,-c6.*(c1./c2).^2);
     
-    if all(c2) == 0
+    if c2 == 0
       % singularity at c2=0 (i.e., equal radii)
       PI_term = 0;
     else
-      PI_term = 2*c3.^2./c4.^2.*EllipticPI(1-c3.^2./c2.^2,1-c5.^2);
-      PI_term(isinf(PI_term)) = 0;
+      PI_term = c3.^2.*c4./(c1.*c5).*PI;
+      % PI_term(isinf(PI_term)) = 0;
     end
     
     f_z = ...
-      +(c5+1./c5).*K...
-      -2*c5.*E...
-      +(c2.^2+c3.^2)./c4.^2.*KK...
+      +c4.*c5./c1.*K...
+      -c1.*c5.*E...
       -PI_term;
     
     f_z(abs(c1)<eps)=0; % singularity at c4=0 (i.e., coincident faces)
     
-    C_d = C_d + (-1)^(ii+jj)*c1.*c4.*f_z;
+    C_d = C_d + (-1)^(ii+jj).*f_z;
 
   end
 
 end
 
-calc_out = J1*J2/(4*mu0)*C_d;
-
-end
-
-function K = EllipticK(c)
-
-if c < 0
-  K = ellipke(c./(c-1))./sqrt(1-c);
-else
-  K = ellipke(c);
-end
+calc_out = J1*J2/(2*mu0)*C_d;
 
 end
 
 
-function PI = EllipticPI(a,b)
+function [k,e,PI] = ellippi(m,a)
 
-if b < 0
-  PI = 1./( (b-a).*sqrt(1-b) ).*...
-       ( ...
-         b.*ellipke(b./(b-1)) ...
-         - a.*elliptic3( pi/2 , b./(b-1) , (b-a)./(b-1)) ...
-       );
-elseif b > 1
-  error('Oh no! I can''t evaluate EllipticPI with large modulus (>1) yet.')
-else
-  PI = elliptic3(pi/2,b,a);
+a0 = 1;
+b0 = sqrt(1-m);
+s0 = m;
+i1 = 0;
+
+p0 = sqrt(1-a);
+Q0 = 1;
+QQ = Q0;
+
+mm = 1;
+while mm > eps
+
+  % for Elliptic 1 & 2
+  a1 = (a0+b0)/2;
+  b1 = sqrt(a0.*b0);
+  c1 = (a0-b0)/2;
+  i1 = i1 + 1;
+  w1 = 2^i1*c1.^2;
+  s0 = s0 + w1;
+  mm = max(w1(:)); % assume ellip12 converges slower than ellip3
+  
+  % for Elliptic 3
+  rr = p0.^2+a0.*b0;
+  p1 = rr./(2.*p0);
+  Q1 = 0.5*Q0.*(p0.^2-a0.*b0)./rr;
+  QQ = QQ+Q1;
+  
+  a0 = a1;
+  b0 = b1;
+  Q0 = Q1;
+  p0 = p1;
 end
 
-end
+k = pi./(2*a1);
+e = k.*(1-s0/2);
+PI = pi./(4.*a1).*(2+a./(1-a).*QQ);
 
-
-
-
-
-function Pi = elliptic3(u,m,c)
-% ELLIPTIC3 evaluates incomplete elliptic integral of the third kind.
-%   Pi = ELLIPTIC3(U,M,C) where U is a phase in radians, 0<M<1 is
-%   the module and 0<C<1 is a parameter.
-%
-%   ELLIPTIC3 uses Gauss-Legendre 10 points quadrature template
-%   described in [3] to determine the value of the Incomplete Elliptic
-%   Integral of the Third Kind (see [1, 2]).
-%
-%   Pi(u,m,c) = int(1/((1 - c*sin(t)^2)*sqrt(1 - m*sin(t)^2)), t=0..u)
-%
-%   Tables generating code ([1], pp. 625-626):
-%	    [phi,alpha,c] = meshgrid(0:15:90, 0:15:90, 0:0.1:1);
-%   	Pi = elliptic3(pi/180*phi, sin(pi/180*alpha).^2, c);  % values of integrals
-%
-%   References:
-%   [1] M. Abramowitz and I.A. Stegun, "Handbook of Mathematical
-%       Functions" Dover Publications", 1965, Ch. 17.7.
-%   [2] D. F. Lawden, "Elliptic Functions and Applications"
-%       Springer-Verlag, vol. 80, 1989.
-%   [3] S. Zhang, J. Jin "Computation of Special Functions" (Wiley, 1996).
-
-
-if nargin<3, error('Not enough input arguments.'); end
-if ~isreal(u) || ~isreal(m) || ~isreal(c)
-    error('Input arguments must be real.')
-end
-if any(m < 0) || any(m > 1)
-  error('M must be in the range [0, 1].');
-end
-%if any(c < 0) || any(c > 1)
-%  error('C must be in the range [0, 1].');
-%end
-if any(u > pi/2) || any(u < 0)
-    error('U must be in the range [0, pi/2].');
-end
-
-[mm,nm] = size(m);
-[mu,nu] = size(u);
-if length(m)==1, m = m(ones(size(u))); end
-if length(c)==1, c = c(ones(size(u))); end
-if length(u)==1, u = u(ones(size(m))); end
-if ~isequal(size(m), size(c), size(u)),
-        error('U, M and C must be the same size.');
-end
-
-Pi = zeros(size(u));
-m = m(:).';    % make a row vector
-u = u(:).';
-c = c(:).';
-
-I =  u==pi/2 & m==1 | u==pi/2 & c==1;
-
-t = [ 0.9931285991850949,  0.9639719272779138,...            % Base points
-      0.9122344282513259,  0.8391169718222188,...            % for Gauss-Legendre integration
-      0.7463319064601508,  0.6360536807265150,...
-      0.5108670019508271,  0.3737060887154195,...
-      0.2277858511416451,  0.07652652113349734 ];
-w = [ 0.01761400713915212, 0.04060142980038694,...           % Weights
-      0.06267204833410907, 0.08327674157670475,...           % for Gauss-Legendre integration
-      0.1019301198172404,  0.1181945319615184,...
-      0.1316886384491766,  0.1420961093183820,...
-      0.1491729864726037,  0.1527533871307258  ];
-
-P = 0;  i = 0;
-while i < 10
-    i  = i + 1;
-    c0 = u.*t(i)/2;
-    P  = P + w(i).*(g(u/2+c0,m,c) + g(u/2-c0,m,c));
-end
-P = u/2.*P;
-Pi(:) = P;                                                   % Incomplete elliptic integral of the third kind
-
-% special values u==pi/2 & m==1 | u==pi/2 & c==1
-Pi(I) = inf;
-
-function g = g(u,m,c)
-%  g = 1/((1 - c*sin(u)^2)*sqrt(1 - m*sin(u)^2));
-
- sn2 = sin(u).^2;
- g = 1./((1 - c.*sn2).*sqrt(1 - m.*sn2));
-
+im = find(m == 1);
+if ~isempty(im)
+  e(im) = ones(length(im),1);
+  k(im) = inf;
+  PI(im) = inf;
 end
 
 end

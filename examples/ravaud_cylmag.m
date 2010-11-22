@@ -32,7 +32,7 @@ displ = linspace(-displ_range,displ_range,NN);
 
 % Calculate forces:
 fcyl = magnetforces(...
-  struct('turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0  1]),...
+  struct('turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]),...
   struct('magn',J2,'dim',[r2 h2],'dir',[0 0 1]),...
   displ'*[0 0 1]...
 );
@@ -55,7 +55,7 @@ try
   colourplot
   axistight
   draworigin
-  matlabfrag('fig/cylmag-matlab')
+  % matlabfrag('fig/cylmag-matlab')
 end
 
 %% Save output to file
