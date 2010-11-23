@@ -736,22 +736,19 @@ for ii = [1 2]
     c5 = sqrt(c1.^2+c3.^2);
     c6 = (c3.^2-c2.^2)./(c1.^2+c3.^2);
     
-    [K, E, PI] = ellippi(c6,-c6.*(c1./c2).^2);
+    [K, E, PI] = ellippi( -c6.*(c1./c2).^2 , c6 );
     
     if c2 == 0
       % singularity at c2=0 (i.e., equal radii)
       PI_term = 0;
     else
-      PI_term = c3.^2.*c4./(c1.*c5).*PI
+      PI_term = c3.^2.*c4./(c1.*c5).*PI;
       % PI_term(isinf(PI_term)) = 0;
     end
     
-    f_z = ...
-      +c4.*c5./c1.*K...
-      -c1.*c5.*E...
-      -PI_term;
-    
-    f_z(abs(c1)<eps)=0; % singularity at c4=0 (i.e., coincident faces)
+    f_z = c4.*c5./c1.*K - c1.*c5.*E - PI_term;
+
+    f_z(abs(c1)<eps)=0; % singularity at c1=0 (i.e., coincident faces)
     
     C_d = C_d + (-1)^(ii+jj).*f_z;
 
@@ -764,59 +761,58 @@ calc_out = J1*J2/(2*mu0)*C_d;
 end
 
 
-function [k,e,PI] = ellippi(m,a,tol)
+function [k,e,PI] = ellippi(a,m)
 
-if nargin<2
-  error('MATLAB:ellipke:NotEnoughInputs','Not enough input arguments.'); 
-end
-
-classin = superiorfloat(m);
-
-if nargin<3, tol = eps(classin); end
-if ~isreal(m),
-    error('MATLAB:ellipke:ComplexInputs', 'Input arguments must be real.')
-end
-if isempty(m), k = zeros(size(m),classin); e = k; return, end
-if any(m(:) < 0) || any(m(:) > 1), 
-  error('MATLAB:ellipke:MOutOfRange', 'M must be in the range 0 <= M <= 1.');
-end
+% Complete elliptic integrals calculated with the arithmetric-geometric mean
+% algorithms contained here: http://dlmf.nist.gov/19.8
+%
+% Valid for a <= 1 and m <= 1
 
 a0 = 1;
-b0 = sqrt(1-m);
+g0 = sqrt(1-m);
 s0 = m;
-i1 = 0;
+nn = 0;
 
 p0 = sqrt(1-a);
 Q0 = 1;
 QQ = Q0;
 
-mm = 1;
-while mm > tol
-    a1 = (a0+b0)/2;
-    b1 = sqrt(a0.*b0);
-    c1 = (a0-b0)/2;
-    i1 = i1 + 1;
-    w1 = 2^i1*c1.^2;
-    mm = max(w1(:));
-    
-    rr = p0.^2+a0.*b0;
-    p1 = rr./(2.*p0);
-    Q1 = 0.5*Q0.*(p0.^2-a0.*b0)./rr;
-    QQ = QQ+Q1;
-    
-    s0 = s0 + w1;
-    a0 = a1;
-    b0 = b1;
-    Q0 = Q1;
-    p0 = p1;
+w1 = ones(size(m));
+
+while max(w1(:)) > eps % assume ellip2 converges slower than ellip3
+
+  % for Elliptic I
+  a1 = (a0+g0)/2;
+  g1 = sqrt(a0.*g0);
+
+  % for Elliptic II
+  nn = nn + 1;
+  c1 = (a0-g0)/2;
+  w1 = 2^nn*c1.^2;
+  s0 = s0 + w1;
+
+  % for Elliptic III
+  rr = p0.^2+a0.*g0;
+  p1 = rr./(2.*p0);
+  Q1 = 0.5*Q0.*(p0.^2-a0.*g0)./rr;
+  QQ = QQ+Q1;
+
+  a0 = a1;
+  g0 = g1;
+  Q0 = Q1;
+  p0 = p1;
+
 end
+
 k = pi./(2*a1);
 e = k.*(1-s0/2);
 PI = pi./(4.*a1).*(2+a./(1-a).*QQ);
-im = find(m ==1);
+
+im = find(m == 1);
 if ~isempty(im)
-    e(im) = ones(length(im),1);
-    k(im) = inf;
+  k(im) = inf;
+  e(im) = ones(length(im),1);
+  PI(im) = inf;
 end
 
 end
