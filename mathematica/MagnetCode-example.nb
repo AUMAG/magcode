@@ -1,0 +1,172 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 6.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      5573,        163]
+NotebookOptionsPosition[      4963,        137]
+NotebookOutlinePosition[      5300,        152]
+CellTagsIndexPosition[      5257,        149]
+WindowFrame->Normal
+ContainsDynamic->False*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{"SetDirectory", "@", 
+  RowBox[{"NotebookDirectory", "[", "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"<<", "\"\<MagnetCode`\>\""}]}], "Input"],
+
+Cell[BoxData["\<\"/Users/will/magcode/mathematica\"\>"], "Output"]
+}, Open  ]],
+
+Cell[BoxData[{
+ RowBox[{"mm", ":=", "0.001"}], "\[IndentingNewLine]", 
+ RowBox[{"tesla", ":=", "1"}], "\[IndentingNewLine]", 
+ RowBox[{"amps", ":=", "1"}]}], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"magnet", "=", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"MagnetRadius", "\[Rule]", 
+     RowBox[{"5", "mm"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"MagnetLength", "\[Rule]", 
+     RowBox[{"10", "mm"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"Magnetisation", "\[Rule]", 
+     RowBox[{"1", " ", "tesla"}]}]}], "\[IndentingNewLine]", 
+   "}"}]}], "\[IndentingNewLine]", 
+ RowBox[{"coil", "=", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"CoilRadii", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"6", "mm"}], ",", 
+       RowBox[{"8", "mm"}]}], "}"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"CoilLength", "\[Rule]", 
+     RowBox[{"20", "mm"}]}], ",", "\[IndentingNewLine]", 
+    RowBox[{"CoilTurns", "\[Rule]", "400"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"Current", "\[Rule]", 
+     RowBox[{"1", " ", "amps"}]}]}], "\[IndentingNewLine]", "}"}]}]}], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"MagnetRadius", "\[Rule]", "0.005`"}], ",", 
+   RowBox[{"MagnetLength", "\[Rule]", "0.01`"}], ",", 
+   RowBox[{"Magnetisation", "\[Rule]", "1"}]}], "}"}]], "Output"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"CoilRadii", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"0.006`", ",", "0.008`"}], "}"}]}], ",", 
+   RowBox[{"CoilLength", "\[Rule]", "0.02`"}], ",", 
+   RowBox[{"CoilTurns", "\[Rule]", "400"}], ",", 
+   RowBox[{"Current", "\[Rule]", "1"}]}], "}"}]], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Plot", "[", "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"MagnetCoilForce", "[", 
+    RowBox[{"magnet", ",", "coil", ",", "  ", 
+     RowBox[{"Displacement", "\[Rule]", "x"}]}], "]"}], ",", 
+   "\[IndentingNewLine]", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", 
+     RowBox[{"1", "mm"}], ",", 
+     RowBox[{"10", "mm"}]}], "}"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ GraphicsBox[{{}, {}, 
+   {Hue[0.67, 0.6, 0.6], LineBox[CompressedData["
+1:eJwVx30wFHgYwPGlVK5k5EozqRC9eStFUTyLKSm5tQ0nOUVUZEPe1nIsthTX
+tXWtxQihIknZ9VLSo7BaL3ldrNNtolC2CJFNd7/74zvf+ej6BNH9lCkUijPp
+/6tfPqfi7EOD7shqodPQDczNr+0dYNAgxDrtodvkDdxZs/p+eBQNDLcZ2Xsr
+89Bj5gX9JpcGx7R2mTB1eHjHTytn7BkNLmyQbSr25OFeuxqrlDUusPCXWtWd
+Eh4GKDSCX3a5wIfovpRKUSrWM8r67ByOQI/q+TphURqKxrUmkwPcYIUg9pt2
+eyam6NVm892PQihXM3veKwf583fr5bs8gWc4YD1Dz0V5RIEJ3/U45A/Jvhey
+8pHTOstTXu8NkeNPu92T7mCFmaHFyVIfkFxLDuxuKsArAXPXz9j4wuJtJmYL
+NItQ9E1u2VbiB5cU4mgKtRj13YMSvKmnwZhNS2IVleCQ2sqVruVnwOWyVW/L
+j4fokParr1w/ABjUwYVqW0uxbWKTa0npWaBoXtUIYQqwKleb22nAAEmU4tq+
+J0Js0ssO1K08B+mjs/4FeuWIe2TKybrB8NHmAFX5WgWKNeLDhNJgqHzsd77s
+SyWeah0tD70VAtuOmGueZT9BYaXvuqFj50FVHLqjQekp8i7fcRs1CAW9FC+V
+fkE1NtRZyKljoYCqD3Q+BiEWGUoLHG+HQVLZ4i85V2tQl2VnPswIB8p7i1On
+E5/jganq9+ZbImCngdL01+AX+Lw36Wv3mwjwLDzMaTlZiy35q3uWFURCyW71
+vNWRdZicWdU/6c0Ej7Bjr7oS61EabSAIMoyCH0Meel1CEbLqXw9bT0SBeLNs
+ldrnBmy2KrCtLmTBY3N9Y2M9MT7iWwa2h0SDr7xbGB/XiA46r6tSjWIgL3zr
+6EtJE5pqtvo/GIwBY4eNe7zMW7BQnjTice93GBHmCKT1r7Brkv5H5clYsI3d
+mLphUxteHxiiFBnFAev50cmsRe2opLiU4TwSB/rNDUGjA+3ojdaOejQ2LPVU
+veVY24FLwzOKhwVsCOynaHTUduIVKjtfRSMebAyb9OXPulAaJ17wKTweorZz
+Z5f3S/DwlOX1f3vjgSk8yHBU6sGM2B0Cf/ME8Oif/i19XS8+jOHuzUpPgIU3
+b78/fUKK2dwId8OZBDBrX+vczO/DCmli3gA9EVTt372w6fgb01Kn3HzKE2HC
+fMZixPQ10v0/Ze7R5IAoZo4/Hf0PSkoOHZJFckDYUHhKe1iGs3Mbjnwkpl5d
+/8aBWHv/d48Z4oO8G0dDiX367weoMznQ5Bbj1Ej8acnyZCBmsO3MmCMyXOTT
+9jKbuEdxd75zVIa7fnbdfyKKA+NKzX+ljMnQ47ixcyDxXv+NahXEsfdU3JjE
+Vn1xF98S11HL/bjEtzpMoyzlMqQxtC7UECd/TvQaJj4jktbqsDgw7afYbP9Z
+hikapU1GxNa5+3LPET/wTO7cTSxs+XNNBvHUF6tBGrHa2NrlE8Ts9ZnK8cSD
+q0wns8ZlmBcQ9tMVYkVWcGAjsajMaUU68Yclj95NEy9zmtd9RFwZY9LrNCFD
+U75kSzXxWMJZFyYx/W3xdjHxfd+7jXnEEcYXLSXEtjpv7VuJ05letgPEVYI1
+1XPE/wFUPZZJ
+     "]]}},
+  AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
+  Axes->True,
+  AxesOrigin->{0.002, 0},
+  PlotRange->{{0.001, 0.01}, {-0.49914425342177154`, 0.}},
+  PlotRangeClipping->True,
+  PlotRangePadding->{
+    Scaled[0.02], 
+    Scaled[0.02]}]], "Output"]
+}, Open  ]]
+},
+WindowSize->{640, 750},
+WindowMargins->{{Automatic, -8}, {104, Automatic}},
+FrontEndVersion->"6.0 for Mac OS X x86 (32-bit) (June 19, 2007)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[590, 23, 165, 3, 43, "Input"],
+Cell[758, 28, 66, 0, 27, "Output"]
+}, Open  ]],
+Cell[839, 31, 166, 3, 58, "Input"],
+Cell[CellGroupData[{
+Cell[1030, 38, 956, 23, 188, "Input"],
+Cell[1989, 63, 216, 5, 27, "Output"],
+Cell[2208, 70, 311, 8, 27, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2556, 83, 369, 10, 58, "Input"],
+Cell[2928, 95, 2019, 39, 238, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
