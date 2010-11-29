@@ -201,10 +201,6 @@ addpath ~/magcode/matlab
 \paragraph{Licensing}
 This work may be freely modified and distributed under the terms and conditions of the Apache License v2.0.\footnote{\url{http://www.apache.org/licenses/LICENSE-2.0}}
 This work is Copyright 2009--2010 by Will Robertson.
-This work contains a modified version of Moiseev Igor's code for
-calcuting the elliptic function of the third kind,%
-\footnote{\url{http://code.google.com/p/elliptic/}}
-which is originally distributed under the BSD license.
 
 This means, in essense, that you may freely modify and distribute this
 code provided that you acknowledge your changes to the work and retain
@@ -213,7 +209,7 @@ permissions and limitations under the License.
 
 \paragraph{Contributing and feedback}
 Please report problems and suggestions at the GitHub issue tracker.%
-\footnote{\url{http://github.com/wspr/magnetocode/issues}}
+\footnote{\url{http://github.com/wspr/magcode/issues}}
 
 The Matlab source code is written using Norman Ramsey's \textsc{Noweb} literate
 programming tool.%
