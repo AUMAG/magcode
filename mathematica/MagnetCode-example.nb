@@ -10,30 +10,26 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[     13042,        367]
-NotebookOptionsPosition[     12038,        329]
-NotebookOutlinePosition[     12415,        346]
-CellTagsIndexPosition[     12372,        343]
+NotebookDataLength[     11655,        316]
+NotebookOptionsPosition[     10985,        289]
+NotebookOutlinePosition[     11362,        306]
+CellTagsIndexPosition[     11319,        303]
 WindowFrame->Normal
 ContainsDynamic->False*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
-
-Cell[CellGroupData[{
 Cell[BoxData[{
  RowBox[{"SetDirectory", "@", 
   RowBox[{"NotebookDirectory", "[", "]"}]}], "\[IndentingNewLine]", 
  RowBox[{"<<", "\"\<MagnetCode`\>\""}]}], "Input"],
 
-Cell[BoxData["\<\"/Users/will/magcode/mathematica\"\>"], "Output"]
-}, Open  ]],
-
 Cell[BoxData[{
  RowBox[{"mm", ":=", "0.001"}], "\[IndentingNewLine]", 
  RowBox[{"tesla", ":=", "1"}], "\[IndentingNewLine]", 
+ RowBox[{"amps", ":=", "1"}], "\[IndentingNewLine]", 
  RowBox[{
-  RowBox[{"amps", ":=", "1"}], 
+  RowBox[{"ohms", ":=", "1"}], 
   "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{"magnet", "=", 
   RowBox[{"{", "\[IndentingNewLine]", 
@@ -99,15 +95,14 @@ Cell[BoxData[{
            RowBox[{"CoilThickness", " ", "->", " ", 
             RowBox[{
              RowBox[{"(", " ", 
-              RowBox[{"WireLength", " ", 
+              RowBox[{"2", " ", "WireLength", " ", 
                RowBox[{
                 RowBox[{"(", 
-                 RowBox[{
-                  RowBox[{"2", "WireRadius"}], "+", 
-                  RowBox[{"2", "WireCoating"}]}], ")"}], "^", "2"}]}], " ", 
-              ")"}], " ", "/", "\n", "                                ", 
-             RowBox[{"(", " ", 
-              RowBox[{"2", " ", "\[Pi]", " ", "CoilLength", " ", 
+                 RowBox[{"WireRadius", "+", "WireCoating"}], ")"}], "^", 
+                "2"}]}], " ", ")"}], " ", "/", "\n", 
+             "                                ", 
+             RowBox[{"(", "  ", 
+              RowBox[{"\[Pi]", " ", "CoilLength", " ", 
                RowBox[{"(", 
                 RowBox[{"CoilRadius", "+", "WireRadius", "+", "WireCoating"}],
                  ")"}]}], " ", ")"}]}]}], " ", ",", "\n", "    ", 
@@ -127,7 +122,8 @@ Cell[BoxData[{
                RowBox[{"WireRadius", "+", "WireCoating"}], ")"}], "^", 
               "2"}]}]}], ",", "\n", "    ", 
            RowBox[{"TotalTurns", " ", "->", " ", 
-            RowBox[{"TurnsZ", " ", "TurnsR"}]}], ",", "\n", "    ", 
+            RowBox[{"Round", "[", 
+             RowBox[{"TurnsZ", " ", "TurnsR"}], "]"}]}], ",", "\n", "    ", 
            RowBox[{"TurnsZ", " ", "->", " ", 
             RowBox[{"CoilLength", " ", "/", " ", 
              RowBox[{"(", 
@@ -160,7 +156,7 @@ Cell[BoxData[
    RowBox[{"{", "\[IndentingNewLine]", "\[IndentingNewLine]", 
     RowBox[{
      RowBox[{"MagnetRadius", "\[Rule]", 
-      RowBox[{"10", "mm"}]}], ",", "\[IndentingNewLine]", 
+      RowBox[{"9", "mm"}]}], ",", "\[IndentingNewLine]", 
      RowBox[{"MagnetLength", "\[Rule]", 
       RowBox[{"10", "mm"}]}], ",", "\[IndentingNewLine]", 
      RowBox[{"Magnetisation", "\[Rule]", 
@@ -175,10 +171,8 @@ Cell[BoxData[
      "\[IndentingNewLine]", 
      RowBox[{"Displacement", "\[Rule]", 
       RowBox[{"10", "mm"}]}], ",", "\[IndentingNewLine]", 
-     RowBox[{"IntegrationPrecision", "\[Rule]", "4"}]}], 
+     RowBox[{"IntegrationPrecision", "\[Rule]", "3"}]}], 
     "\[IndentingNewLine]", "}"}]}], ";"}]], "Input"],
-
-Cell[CellGroupData[{
 
 Cell[BoxData[{
  RowBox[{
@@ -198,17 +192,7 @@ Cell[BoxData[{
     RowBox[{"CoilThickness", "\[Rule]", 
      RowBox[{"0.1", "mm"}]}], ",", "\[IndentingNewLine]", 
     RowBox[{"Eccentricity", "\[Rule]", 
-     RowBox[{"0.01", "mm"}]}]}], "\[IndentingNewLine]", "}"}]}]}], "Input"],
-
-Cell[BoxData[
- RowBox[{"-", "3.3911828472831216`"}]], "Output"],
-
-Cell[BoxData[
- RowBox[{"-", "2.5156225045213003`"}]], "Output"],
-
-Cell[BoxData[
- RowBox[{"-", "2.5156253484032787`"}]], "Output"]
-}, Open  ]]
+     RowBox[{"0.01", "mm"}]}]}], "\[IndentingNewLine]", "}"}]}]}], "Input"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -216,42 +200,45 @@ Cell[CellGroupData[{
 Cell["Something else", "Section"],
 
 Cell[BoxData[
- RowBox[{"param", "=", 
-  RowBox[{"{", "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"MagnetRadius", "\[Rule]", 
-     RowBox[{"5", " ", "mm"}]}], ",", "\[IndentingNewLine]", 
-    RowBox[{"MagnetLength", "\[Rule]", 
-     RowBox[{"10", " ", "mm"}]}], ",", "\[IndentingNewLine]", 
-    RowBox[{"Magnetisation", "\[Rule]", "1"}], ",", "\[IndentingNewLine]", 
-    RowBox[{"CalculateCoilParams", "@", 
-     RowBox[{"{", "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"CoilRadius", " ", "\[Rule]", 
-        RowBox[{"7", " ", "mm"}]}], ",", "\[IndentingNewLine]", 
-       RowBox[{"CoilLength", "\[Rule]", " ", 
-        RowBox[{"10", "mm"}]}], ",", 
-       StyleBox[
-        RowBox[{" ", 
-         StyleBox[" ", "Text",
-          FontWeight->"Plain"]}]], "\[IndentingNewLine]", 
-       RowBox[{"Current", "\[Rule]", 
-        RowBox[{"3", "amps"}]}], ",", "\[IndentingNewLine]", 
-       RowBox[{"WireRadius", "\[Rule]", 
-        RowBox[{"0.1", "mm"}]}], ",", "\[IndentingNewLine]", 
-       RowBox[{"WireCoating", "\[Rule]", 
-        RowBox[{"0", "mm"}]}], ",", "\[IndentingNewLine]", 
-       RowBox[{"CoilResistance", "\[Rule]", 
-        RowBox[{"8", "ohms"}]}]}], 
-      StyleBox["\[IndentingNewLine]", "Text",
-       FontWeight->"Plain"], 
-      StyleBox["}", "Text",
-       FontWeight->"Plain"]}]}], ",", "\[IndentingNewLine]", 
-    RowBox[{"IntegrationPrecision", "->", "3"}]}], 
-   StyleBox["\[IndentingNewLine]", "Text",
-    FontWeight->"Plain"], 
-   StyleBox["}", "Text",
-    FontWeight->"Plain"]}]}]], "Input"],
+ RowBox[{
+  RowBox[{"param", "=", 
+   RowBox[{"{", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"MagnetRadius", "\[Rule]", 
+      RowBox[{"5", " ", "mm"}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{"MagnetLength", "\[Rule]", 
+      RowBox[{"10", " ", "mm"}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Magnetisation", "\[Rule]", "1"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"CalculateCoilParams", "@", 
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"CoilRadius", " ", "\[Rule]", 
+         RowBox[{"7", " ", "mm"}]}], ",", "\[IndentingNewLine]", 
+        RowBox[{"CoilLength", "\[Rule]", " ", 
+         RowBox[{"10", "mm"}]}], ",", 
+        StyleBox[
+         RowBox[{" ", 
+          StyleBox[" ", "Text",
+           FontWeight->"Plain"]}]], "\[IndentingNewLine]", 
+        RowBox[{"Current", "\[Rule]", 
+         RowBox[{"3", "amps"}]}], ",", "\[IndentingNewLine]", 
+        RowBox[{"WireRadius", "\[Rule]", 
+         RowBox[{"0.1", "mm"}]}], ",", "\[IndentingNewLine]", 
+        RowBox[{"WireCoating", "\[Rule]", 
+         RowBox[{"0", "mm"}]}], ",", "\[IndentingNewLine]", 
+        RowBox[{"CoilResistance", "\[Rule]", 
+         RowBox[{"8", "ohms"}]}]}], 
+       StyleBox["\[IndentingNewLine]", "Text",
+        FontWeight->"Plain"], 
+       StyleBox["}", "Text",
+        FontWeight->"Plain"]}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{"IntegrationPrecision", "->", "3"}]}], 
+    StyleBox["\[IndentingNewLine]", "Text",
+     FontWeight->"Plain"], 
+    StyleBox["}", "Text",
+     FontWeight->"Plain"]}]}], 
+  StyleBox[";", "Text",
+   FontWeight->"Plain"]}]], "Input"],
 
 Cell[BoxData[{
  RowBox[{"MagnetCoilForce", "@", 
@@ -269,62 +256,35 @@ Cell[BoxData[{
      RowBox[{"Eccentricity", "\[Rule]", 
       RowBox[{"0.1", "mm"}]}]}], "}"}], "]"}]}]}], "Input"],
 
-Cell[BoxData[{
- RowBox[{"Plot", "[", 
-  RowBox[{
-   RowBox[{"MagnetCoilForce", "@", 
-    RowBox[{"Flatten", "[", 
-     RowBox[{"{", 
-      RowBox[{"param", ",", 
-       RowBox[{"Displacement", "\[Rule]", "x"}], ",", 
-       RowBox[{"Eccentricity", "\[Rule]", 
-        RowBox[{"0", "mm"}]}]}], "}"}], "]"}]}], ",", 
-   RowBox[{"{", 
-    RowBox[{"x", ",", 
-     RowBox[{"0", "mm"}], ",", 
-     RowBox[{"50", "mm"}]}], "}"}]}], "]"}], "\[IndentingNewLine]", 
- RowBox[{"Plot", "[", 
-  RowBox[{
-   RowBox[{"MagnetCoilForce", "@", 
-    RowBox[{"Flatten", "[", 
-     RowBox[{"{", 
-      RowBox[{"param", ",", 
-       RowBox[{"Displacement", "\[Rule]", "x"}], ",", 
-       RowBox[{"Eccentricity", "\[Rule]", 
-        RowBox[{"0.1", "mm"}]}]}], "}"}], "]"}]}], ",", 
-   RowBox[{"{", 
-    RowBox[{"x", ",", 
-     RowBox[{"0", "mm"}], ",", 
-     RowBox[{"50", "mm"}]}], "}"}]}], "]"}]}], "Input"],
-
 Cell[BoxData[
- RowBox[{"Plot", "[", "\[IndentingNewLine]", 
+ RowBox[{"{", 
   RowBox[{
-   RowBox[{"MagnetCoilForce", "[", 
-    RowBox[{"magnet", ",", 
-     RowBox[{"CalculateCoilParams", "[", "coil", "]"}], ",", "  ", 
-     RowBox[{"Displacement", "\[Rule]", "x"}]}], "]"}], ",", 
-   "\[IndentingNewLine]", 
-   RowBox[{"{", 
-    RowBox[{"x", ",", 
-     RowBox[{"0", "mm"}], ",", 
-     RowBox[{"50", "mm"}]}], "}"}]}], "]"}]], "Input"],
-
-Cell["With eccentricity a more complex integral must be evaluated.", "Text"],
-
-Cell[BoxData[
- RowBox[{"Plot", "[", 
-  RowBox[{
-   RowBox[{"MagnetCoilForce", "[", 
-    RowBox[{"magnet", ",", 
-     RowBox[{"CalculateCoilParams", "[", "coil", "]"}], ",", "  ", 
-     RowBox[{"Eccentricity", "\[Rule]", 
-      RowBox[{"0.001", "mm"}]}], ",", 
-     RowBox[{"Displacement", "\[Rule]", "x"}]}], "]"}], ",", 
-   RowBox[{"{", 
-    RowBox[{"x", ",", 
-     RowBox[{"0", "mm"}], ",", 
-     RowBox[{"50", "mm"}]}], "}"}]}], "]"}]], "Input"]
+   RowBox[{"Plot", "[", 
+    RowBox[{
+     RowBox[{"MagnetCoilForce", "@", 
+      RowBox[{"Flatten", "[", 
+       RowBox[{"{", 
+        RowBox[{"param", ",", 
+         RowBox[{"Displacement", "\[Rule]", "x"}], ",", 
+         RowBox[{"Eccentricity", "\[Rule]", 
+          RowBox[{"0", "mm"}]}]}], "}"}], "]"}]}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", 
+       RowBox[{"0", "mm"}], ",", 
+       RowBox[{"30", "mm"}]}], "}"}]}], "]"}], ",", "\[IndentingNewLine]", 
+   RowBox[{"Plot", "[", 
+    RowBox[{
+     RowBox[{"MagnetCoilForce", "@", 
+      RowBox[{"Flatten", "[", 
+       RowBox[{"{", 
+        RowBox[{"param", ",", 
+         RowBox[{"Displacement", "\[Rule]", "x"}], ",", 
+         RowBox[{"Eccentricity", "\[Rule]", 
+          RowBox[{"0.1", "mm"}]}]}], "}"}], "]"}]}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", 
+       RowBox[{"0", "mm"}], ",", 
+       RowBox[{"30", "mm"}]}], "}"}]}], "]"}]}], "}"}]], "Input"]
 }, Open  ]]
 },
 Evaluator->"2nd",
@@ -345,29 +305,18 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
+Cell[568, 21, 165, 3, 43, "Input"],
+Cell[736, 26, 5100, 120, 583, "Input"],
 Cell[CellGroupData[{
-Cell[590, 23, 165, 3, 43, "Input"],
-Cell[758, 28, 66, 0, 27, "Output"]
-}, Open  ]],
-Cell[839, 31, 5054, 119, 590, "Input"],
-Cell[CellGroupData[{
-Cell[5918, 154, 42, 0, 67, "Section"],
-Cell[5963, 156, 1054, 22, 223, "Input"],
-Cell[CellGroupData[{
-Cell[7042, 182, 810, 18, 193, "Input"],
-Cell[7855, 202, 63, 1, 27, "Output"],
-Cell[7921, 205, 63, 1, 27, "Output"],
-Cell[7987, 208, 63, 1, 27, "Output"]
-}, Open  ]]
+Cell[5861, 150, 42, 0, 67, "Section"],
+Cell[5906, 152, 1053, 22, 223, "Input"],
+Cell[6962, 176, 810, 18, 193, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[8099, 215, 33, 0, 67, "Section"],
-Cell[8135, 217, 1530, 36, 223, "Input"],
-Cell[9668, 255, 515, 14, 58, "Input"],
-Cell[10186, 271, 885, 26, 103, "Input"],
-Cell[11074, 299, 418, 11, 58, "Input"],
-Cell[11495, 312, 76, 0, 26, "Text"],
-Cell[11574, 314, 448, 12, 43, "Input"]
+Cell[7809, 199, 33, 0, 67, "Section"],
+Cell[7845, 201, 1628, 39, 223, "Input"],
+Cell[9476, 242, 515, 14, 58, "Input"],
+Cell[9994, 258, 975, 28, 103, "Input"]
 }, Open  ]]
 }
 ]

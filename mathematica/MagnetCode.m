@@ -64,7 +64,6 @@ MagnetCoilForce[OptionsPattern[]] := Module[
   {
    coilarea,
    force,
-   mu0   = 4 \[Pi] 10^-7,
    magr  = OptionValue[MagnetRadius],
    magl  = OptionValue[MagnetLength],
    magn  = OptionValue[Magnetisation],
@@ -141,11 +140,11 @@ MagnetCoilForceKernel[l_,L_]:=
 
 MagnetCoilForceEccentricKernel[Z_,L_,e_] =
   2 r R (L-Z) / ( (r-R) Sqrt[ (r-R)^2+(L-Z)^2 ] ) *
-  (EllipticPi[(-4 r R)/(r-R)^2,\[Phi]/2, -4 r R/((r-R)^2+(L-Z)^2)] -
-   EllipticPi[(-4 r R)/(r-R)^2,\[Phi]/2-\[Pi],(-4 r R)/((r-R)^2+(L-Z)^2)]) //.
-  {r-> Sqrt[x1^2+y1^2], \[Phi]->ArcTan[y1,x1]} //.
-  {x1->x2+e, y1->y2} //.
-  {x2->r2 Cos[\[Phi]2], y2->r2 Sin[\[Phi]2]};
+  ( EllipticPi[ (-4 r R)/(r-R)^2,\[Phi]/2  , -4 r R /( (r-R)^2+(L-Z)^2 ) ] -
+    EllipticPi[ (-4 r R)/(r-R)^2,\[Phi]/2-\[Pi], -4 r R /( (r-R)^2+(L-Z)^2 ) ] ) //.
+    {r-> Sqrt[x1^2+y1^2], \[Phi]->ArcTan[y1,x1]} //.
+    {x1->x2+e, y1->y2} //.
+    {x2->r2 Cos[\[Phi]2], y2->r2 Sin[\[Phi]2]};
 
 
 (* ::Section:: *)
