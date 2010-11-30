@@ -31,6 +31,9 @@ BeginPackage["MagnetCode`"];
 
 
 MagnetCoilForce::usage = "";
+CalculateCoilParams::usage = "";
+
+MagnetCoilForceEccentricKernel::usage="";
 
 
 Begin["`Private`"]
@@ -41,50 +44,105 @@ Begin["`Private`"]
 
 
 Options[MagnetCoilForce]={
+
   MagnetRadius->0,
   MagnetLength->0,
+  Magnetisation->1,
+
   CoilRadii->{0,0},
   CoilLength->0,
-  Displacement->0,
-  Magnetisation->0,
   CoilTurns->0,
   Current->0,
+
+  Displacement->0.0,
+  Eccentricity->0.0,
+
   IntegrationPrecision->2
 };
 
 
 MagnetCoilForce[OptionsPattern[]] := Module[
   {
-   expr,
-   coilarea,force
+   coilarea,
+   force,
+   magr  = OptionValue[MagnetRadius],
+   magl  = OptionValue[MagnetLength],
+   magn  = OptionValue[Magnetisation],
+   coilr = OptionValue[CoilRadii][[1]],
+   coilR = OptionValue[CoilRadii][[2]],
+   coill = OptionValue[CoilLength],
+   turns = OptionValue[CoilTurns],
+   curr  = OptionValue[Current],
+   displ = OptionValue[Displacement],
+   eccen = OptionValue[Eccentricity],
+   prec  = OptionValue[IntegrationPrecision]
   },
-
-   prec=OptionValue[IntegrationPrecision];
-   magr=OptionValue[MagnetRadius];
-   coilr=OptionValue[CoilRadii][[1]];
-   coilR=OptionValue[CoilRadii][[2]];
-   magl=OptionValue[MagnetLength];
-   coill=OptionValue[CoilLength];
-   displ=OptionValue[Displacement];
-   current=OptionValue[Current];
-   magn=OptionValue[Magnetisation];
-   turns=OptionValue[CoilTurns];
-
+  
   coilarea=coill (coilR-coilr);
-
-  force = 2 current turns magn / coilarea NIntegrate[
-      Sum[(-1)^(a+b) MagnetCoilForceKernel[(-1)^a magl, displ+(-1)^b  coill]
-          ,{a,0,1},{b,0,1}],
-    {r,0,magr},{R,coilr,coilR},
-    PrecisionGoal->prec];
+  
+  If[ displ==0.0 ,
+    force = 0 , 
+    If[ eccen==0.0 ,
+      force = 2 curr turns magn / coilarea NIntegrate[
+        Sum[e1 e2 MagnetCoilForceKernel[ e1 magl, displ + e2 coill ]
+            ,{e1,{1,-1}},{e2,{1,-1}}],
+        {r,0,magr},{R,coilr,coilR},
+        PrecisionGoal->prec
+      ]
+    ,
+      force = curr turns magn / ( 4 \[Pi] coilarea ) NIntegrate[
+        Sum[e1 e2 MagnetCoilForceEccentricKernel[e2 magl/2,displ+e1 coill/2,eccen],
+          {e1,{1,-1}},{e2,{1,-1}}]
+        ,
+        {r2,0,magr}, {\[Phi]2,0,2\[Pi]}, {R,coilr,coilR},
+        PrecisionGoal->prec
+       ]
+    ]
+  ];
 
   force
 ]
 MagnetCoilForceKernel[l_,L_]:=
-  (
-    (-l+L) r R EllipticPi[-((4 r R)/(r-R)^2),-((4 r R)/((-l+L)^2+(r-R)^2))]
-  ) /
+  ( (-l+L) r R EllipticPi[-((4 r R)/(r-R)^2),-((4 r R)/((-l+L)^2+(r-R)^2))] ) /
   ( Sqrt[(-l+L)^2+(r-R)^2] (r-R) )
+
+
+MagnetCoilForceEccentricKernel[l_,L_,e_]=
+  ( 2 R r2 (l-L) *
+    Sqrt[
+         1-(2 r R ( Cos[\[Phi]]-1 ) ) /
+           ( (l-L)^2+(R-r)^2 )
+        ] 
+  ) /
+  (
+    (R-r) Sqrt[(l-L)^2+r^2+R^2-2 r R Cos[\[Phi]]]
+  ) *
+  ( 
+     EllipticPi[-(4 r R)/(R-r)^2,\[Phi]/2  ,-(4 r R)/( (l-L)^2+(R-r)^2 )]
+   - EllipticPi[-(4 r R)/(R-r)^2,\[Phi]/2-\[Pi],-(4 r R)/( (l-L)^2+(R-r)^2 )]
+  )//.
+          { r -> Sqrt[x^2+y^2] , \[Phi] -> ArcTan[y,x] } //.
+          { x -> x2 + e , y -> y2 } //.
+          { x2 -> r2 Cos[\[Phi]2] , y2 -> r2 Sin[\[Phi]2] }//.{(e+r2 Cos[\[Phi]2])^2+r2^2 Sin[\[Phi]2]^2->FullSimplify[ExpandAll[(e+r2 Cos[\[Phi]2])^2+r2^2 Sin[\[Phi]2]^2]]};
+
+
+CalculateCoilParams[parameters__] := 
+  ReleaseHold[{
+               Hold@Symbol["CoilRadii"]->{RadiusInner,RadiusOuter},
+               Hold@Symbol["CoilTurns"]->TotalTurns,
+               Hold@Symbol["CoilLength"]->CoilLength,
+               Hold@Symbol["Current"]->Current
+              } //. 
+  Flatten@{{
+    RadiusOuter -> RadiusInner + ( WireLength (2WireRadius+2WireCoating)^2 ) /
+                                ( 2 \[Pi] CoilLength (RadiusInner+WireRadius+WireCoating) ) ,
+    WireLength -> CoilResistance WireArea / WireResistivity ,
+    WireResistivity -> 1.7*10^-8, (* copper *)
+    WireArea -> \[Pi] (WireRadius+WireCoating)^2,
+    TotalTurns -> Round[TurnsZ TurnsR],
+    TurnsZ -> CoilLength / (2WireRadius+2WireCoating),
+    TurnsR -> (RadiusOuter-RadiusInner) / (2WireRadius+2WireCoating)
+    },parameters}//.{cm->0.01,mm->0.001,volts->1,ohms->1}]
 
 
 (* ::Section:: *)
