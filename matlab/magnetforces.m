@@ -709,46 +709,40 @@ mu0 = 4*pi*10^(-7);
 
 % inputs
 
-h1 = size1(2);
-h2 = size2(2);
 r1 = size1(1);
 r2 = size2(1);
 
 % implicit
 
 z = nan(4,length(h_gap));
-z(1,:) = -h1/2;
-z(2,:) =  h1/2;
-z(3,:) = h_gap - h2/2;
-z(4,:) = h_gap + h2/2;
+z(1,:) = -size1(2)/2;
+z(2,:) =  size1(2)/2;
+z(3,:) = h_gap - size2(2)/2;
+z(4,:) = h_gap + size2(2)/2;
 
 C_d = zeros(size(h_gap));
-
-c2 = r1-r2;
-c3 = r1+r2;
   
 for ii = [1 2]
   
   for jj = [3 4]
 
-    c1 = z(ii,:) - z(jj,:);
-    c4 = c1.^2+c2.^2;
-    c5 = sqrt(c1.^2+c3.^2);
-    c6 = (c3.^2-c2.^2)./(c1.^2+c3.^2);
+    a1 = z(ii,:) - z(jj,:);
+    a2 = 1 + ( (r1-r2)./a1 ).^2;
+    a3 = sqrt( (r1+r2).^2 + a1.^2 );
+    a4 = 4*r1.*r2./( (r1+r2).^2 + a1.^2 );
     
-    [K, E, PI] = ellippi( -c6.*(c1./c2).^2 , c6 );
+    [K, E, PI] = ellippi( a4./(1-a2) , a4 );
     
-    if c2 == 0
-      % singularity at c2=0 (i.e., equal radii)
+    if a2 == 1
+      % singularity at a2=1 (i.e., equal radii)
       PI_term = 0;
     else
-      PI_term = c3.^2.*c4./(c1.*c5).*PI;
-      % PI_term(isinf(PI_term)) = 0;
+      PI_term = (1-a1.^2/a3.^2).*PI;
     end
     
-    f_z = c4.*c5./c1.*K - c1.*c5.*E - PI_term;
+    f_z = a1.*a2.*a3.*( K - E./a2 - PI_term );
 
-    f_z(abs(c1)<eps)=0; % singularity at c1=0 (i.e., coincident faces)
+    f_z(abs(a1)<eps)=0; % singularity at a1=0 (i.e., coincident faces)
     
     C_d = C_d + (-1)^(ii+jj).*f_z;
 

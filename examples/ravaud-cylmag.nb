@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[     61929,       1946]
-NotebookOptionsPosition[     59093,       1853]
-NotebookOutlinePosition[     59561,       1872]
-CellTagsIndexPosition[     59518,       1869]
+NotebookDataLength[     61604,       1932]
+NotebookOptionsPosition[     58730,       1838]
+NotebookOutlinePosition[     59198,       1857]
+CellTagsIndexPosition[     59155,       1854]
 WindowFrame->Normal
 ContainsDynamic->False*)
 
@@ -29,8 +29,8 @@ Cell[TextData[{
   FontSlant->"Italic"],
  " notebook is an implementation of the expressions presented in the \
 publication \"A simplification of the force equation for radially-aligned \
-cylindrical magnets\" by Will Robertson and Romain Ravaud, IEEE Transactions \
-on Magnetics, 2010."
+cylindrical magnets\" by Will Robertson, Romain Ravaud, et al., IEEE \
+Transactions on Magnetics, 2010."
 }], "Text"],
 
 Cell[CellGroupData[{
@@ -735,7 +735,7 @@ Cell[BoxData[{
   RowBox[{
    FractionBox[
     RowBox[{"J1", " ", "J2"}], 
-    RowBox[{"4", 
+    RowBox[{"2", 
      SubscriptBox["\[Mu]", "0"]}]], 
    RowBox[{"fs1", "[", 
     RowBox[{"r1", ",", "r2", ",", "z1", ",", "z2", ",", "z3", ",", "z4"}], 
@@ -771,38 +771,20 @@ Cell[BoxData[{
     RowBox[{"r1", "-", "r2"}], ",", 
     RowBox[{"r1", "+", "r2"}]}], "]"}]}], "\[IndentingNewLine]", 
  RowBox[{
-  RowBox[{"fs4", "[", 
-   RowBox[{"c1_", ",", "c2_", ",", "c3_"}], "]"}], ":=", 
-  RowBox[{"If", "[", 
-   RowBox[{
-    RowBox[{"c1", "\[Equal]", "0"}], ",", "0", ",", " ", 
+  RowBox[{
+   RowBox[{"fs4", "[", 
+    RowBox[{"c1_", ",", "c2_", ",", "c3_"}], "]"}], ":=", 
+   RowBox[{"If", "[", 
     RowBox[{
+     RowBox[{"c1", "\[Equal]", "0"}], ",", "0", ",", " ", 
      RowBox[{
-      RowBox[{"-", "c1"}], " ", 
-      SqrtBox[
-       RowBox[{
-        SuperscriptBox["c1", "2"], "+", 
-        SuperscriptBox["c3", "2"]}]], " ", 
-      RowBox[{"EllipticE", "[", 
-       FractionBox[
-        RowBox[{
-         RowBox[{"-", 
-          SuperscriptBox["c2", "2"]}], "+", 
-         SuperscriptBox["c3", "2"]}], 
-        RowBox[{
-         SuperscriptBox["c1", "2"], "+", 
-         SuperscriptBox["c3", "2"]}]], "]"}]}], "+", 
-     FractionBox[
       RowBox[{
-       RowBox[{"(", 
-        RowBox[{
-         SuperscriptBox["c1", "2"], "+", 
-         SuperscriptBox["c2", "2"]}], ")"}], " ", 
+       RowBox[{"-", "c1"}], " ", 
        SqrtBox[
         RowBox[{
          SuperscriptBox["c1", "2"], "+", 
          SuperscriptBox["c3", "2"]}]], " ", 
-       RowBox[{"EllipticK", "[", 
+       RowBox[{"EllipticE", "[", 
         FractionBox[
          RowBox[{
           RowBox[{"-", 
@@ -810,46 +792,65 @@ Cell[BoxData[{
           SuperscriptBox["c3", "2"]}], 
          RowBox[{
           SuperscriptBox["c1", "2"], "+", 
-          SuperscriptBox["c3", "2"]}]], "]"}]}], "c1"], "-", 
-     RowBox[{"If", "[", 
-      RowBox[{
-       RowBox[{"c2", "\[Equal]", "0"}], ",", "0", ",", 
-       FractionBox[
-        RowBox[{
-         RowBox[{"(", 
+          SuperscriptBox["c3", "2"]}]], "]"}]}], "+", 
+      FractionBox[
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{
+          SuperscriptBox["c1", "2"], "+", 
+          SuperscriptBox["c2", "2"]}], ")"}], " ", 
+        SqrtBox[
+         RowBox[{
+          SuperscriptBox["c1", "2"], "+", 
+          SuperscriptBox["c3", "2"]}]], " ", 
+        RowBox[{"EllipticK", "[", 
+         FractionBox[
+          RowBox[{
+           RowBox[{"-", 
+            SuperscriptBox["c2", "2"]}], "+", 
+           SuperscriptBox["c3", "2"]}], 
           RowBox[{
            SuperscriptBox["c1", "2"], "+", 
-           SuperscriptBox["c2", "2"]}], ")"}], " ", 
-         SuperscriptBox["c3", "2"], " ", 
-         RowBox[{"EllipticPi", "[", 
-          RowBox[{
-           FractionBox[
-            RowBox[{
-             SuperscriptBox["c1", "2"], " ", 
-             RowBox[{"(", 
-              RowBox[{
-               SuperscriptBox["c2", "2"], "-", 
-               SuperscriptBox["c3", "2"]}], ")"}]}], 
-            RowBox[{
-             SuperscriptBox["c2", "2"], " ", 
-             RowBox[{"(", 
-              RowBox[{
-               SuperscriptBox["c1", "2"], "+", 
-               SuperscriptBox["c3", "2"]}], ")"}]}]], ",", 
-           FractionBox[
-            RowBox[{
-             RowBox[{"-", 
-              SuperscriptBox["c2", "2"]}], "+", 
-             SuperscriptBox["c3", "2"]}], 
-            RowBox[{
-             SuperscriptBox["c1", "2"], "+", 
-             SuperscriptBox["c3", "2"]}]]}], "]"}]}], 
-        RowBox[{"c1", " ", 
-         SqrtBox[
-          RowBox[{
-           SuperscriptBox["c1", "2"], "+", 
-           SuperscriptBox["c3", "2"]}]]}]]}], "]"}]}]}], 
-   "]"}]}], "\[IndentingNewLine]", 
+           SuperscriptBox["c3", "2"]}]], "]"}]}], "c1"], "-", 
+      RowBox[{"If", "[", 
+       RowBox[{
+        RowBox[{"c2", "\[Equal]", "0"}], ",", "0", ",", 
+        FractionBox[
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            SuperscriptBox["c1", "2"], "+", 
+            SuperscriptBox["c2", "2"]}], ")"}], " ", 
+          SuperscriptBox["c3", "2"], " ", 
+          RowBox[{"EllipticPi", "[", 
+           RowBox[{
+            FractionBox[
+             RowBox[{
+              SuperscriptBox["c1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{
+                SuperscriptBox["c2", "2"], "-", 
+                SuperscriptBox["c3", "2"]}], ")"}]}], 
+             RowBox[{
+              SuperscriptBox["c2", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{
+                SuperscriptBox["c1", "2"], "+", 
+                SuperscriptBox["c3", "2"]}], ")"}]}]], ",", 
+            FractionBox[
+             RowBox[{
+              RowBox[{"-", 
+               SuperscriptBox["c2", "2"]}], "+", 
+              SuperscriptBox["c3", "2"]}], 
+             RowBox[{
+              SuperscriptBox["c1", "2"], "+", 
+              SuperscriptBox["c3", "2"]}]]}], "]"}]}], 
+         RowBox[{"c1", " ", 
+          SqrtBox[
+           RowBox[{
+            SuperscriptBox["c1", "2"], "+", 
+            SuperscriptBox["c3", "2"]}]]}]]}], "]"}]}]}], "]"}]}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{"Timing", "[", 
   RowBox[{"newforce", "[", 
    RowBox[{"1", ",", 
@@ -926,13 +927,14 @@ Cell[CellGroupData[{
 
 Cell["Simplified version", "Subsubsection"],
 
+Cell[TextData[{
+ "This is implemented as a ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " package in the file \"MagnetCode.m\" in the same GitHub repository."
+}], "Text"],
+
 Cell[BoxData[{
- RowBox[{
-  RowBox[{
-   SubscriptBox["\[Mu]", "0"], "=", 
-   RowBox[{"4", "\[Pi]", " ", 
-    SuperscriptBox["10", 
-     RowBox[{"-", "7"}]]}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"newforce2", "[", 
    RowBox[{
@@ -941,8 +943,9 @@ Cell[BoxData[{
   RowBox[{
    FractionBox[
     RowBox[{"J1", " ", "J2"}], 
-    RowBox[{"2", 
-     SubscriptBox["\[Mu]", "0"]}]], 
+    RowBox[{"8", "\[Pi]", " ", 
+     SuperscriptBox["10", 
+      RowBox[{"-", "7"}]]}]], 
    RowBox[{"fff1", "[", 
     RowBox[{"r1", ",", "r2", ",", "z1", ",", "z2", ",", "z3", ",", "z4"}], 
     "]"}]}]}], "\[IndentingNewLine]", 
@@ -963,82 +966,64 @@ Cell[BoxData[{
    
   RowBox[{
    RowBox[{"fff3", "[", 
-    RowBox[{"r1", ",", "r2", ",", "zt", ",", "z4"}], "]"}], "-", 
+    RowBox[{"r1", ",", "r2", ",", 
+     RowBox[{"zt", "-", "z4"}]}], "]"}], "-", 
    RowBox[{"fff3", "[", 
-    RowBox[{"r1", ",", "r2", ",", "zt", ",", "z3"}], 
-    "]"}]}]}], "\[IndentingNewLine]", 
+    RowBox[{"r1", ",", "r2", ",", 
+     RowBox[{"zt", "-", "z3"}]}], "]"}]}]}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"fff3", "[", 
-   RowBox[{"r1_", ",", "r2_", ",", "zt_", ",", "ztt_"}], "]"}], ":=", " ", 
-  "\[IndentingNewLine]", 
-  RowBox[{"fff4", "[", 
+   RowBox[{"r1_", ",", "r2_", ",", "z_"}], "]"}], ":=", 
+  RowBox[{"If", "[", 
    RowBox[{
-    RowBox[{"zt", "-", "ztt"}], ",", 
-    RowBox[{"r1", "-", "r2"}], ",", 
-    RowBox[{"r1", "+", "r2"}], ",", 
-    RowBox[{
-     SuperscriptBox[
-      RowBox[{"(", 
-       RowBox[{"r1", "-", "r2"}], ")"}], "2"], "+", 
-     SuperscriptBox[
-      RowBox[{"(", 
-       RowBox[{"zt", "-", "ztt"}], ")"}], "2"]}], ",", 
-    SqrtBox[
-     RowBox[{
-      SuperscriptBox[
-       RowBox[{"(", 
-        RowBox[{"r1", "+", "r2"}], ")"}], "2"], "+", 
-      SuperscriptBox[
-       RowBox[{"(", 
-        RowBox[{"zt", "-", "ztt"}], ")"}], "2"]}]], ",", 
-    FractionBox[
-     RowBox[{
-      SuperscriptBox[
-       RowBox[{"(", 
-        RowBox[{"r1", "+", "r2"}], ")"}], "2"], "-", 
-      SuperscriptBox[
-       RowBox[{"(", 
-        RowBox[{"r1", "-", "r2"}], ")"}], "2"]}], 
-     RowBox[{
-      SuperscriptBox[
-       RowBox[{"(", 
-        RowBox[{"r1", "+", "r2"}], ")"}], "2"], "+", 
-      SuperscriptBox[
-       RowBox[{"(", 
-        RowBox[{"zt", "-", "ztt"}], ")"}], "2"]}]]}], 
+    RowBox[{"z", "\[Equal]", "0"}], ",", "0", ",", 
+    RowBox[{"fff4", "[", 
+     RowBox[{"z", ",", 
+      RowBox[{
+       FractionBox[
+        SuperscriptBox[
+         RowBox[{"(", 
+          RowBox[{"r1", "-", "r2"}], ")"}], "2"], 
+        SuperscriptBox["z", "2"]], "+", "1"}], ",", 
+      SqrtBox[
+       RowBox[{
+        SuperscriptBox[
+         RowBox[{"(", 
+          RowBox[{"r1", "+", "r2"}], ")"}], "2"], "+", 
+        SuperscriptBox["z", "2"]}]], ",", 
+      FractionBox[
+       RowBox[{"4", " ", "r1", " ", "r2"}], 
+       RowBox[{
+        SuperscriptBox[
+         RowBox[{"(", 
+          RowBox[{"r1", "+", "r2"}], ")"}], "2"], "+", 
+        SuperscriptBox["z", "2"]}]]}], "]"}]}], 
    "]"}]}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"fff4", "[", 
-   RowBox[{
-   "c1_", ",", "c2_", ",", "c3_", ",", "c4_", ",", "c5_", ",", "c6_"}], "]"}],
-   ":=", 
-  RowBox[{"If", "[", 
-   RowBox[{
-    RowBox[{"c1", "\[Equal]", "0"}], ",", "0", ",", 
-    RowBox[{"(", 
-     RowBox[{
+   RowBox[{"m1_", ",", "m2_", ",", "m3_", ",", "m4_"}], "]"}], ":=", 
+  RowBox[{"m1", " ", "m3", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"m2", " ", 
+      RowBox[{"EllipticK", "[", "m4", "]"}]}], "-", 
+     RowBox[{"EllipticE", "[", "m4", "]"}], "+", 
+     RowBox[{"If", "[", 
       RowBox[{
-       FractionBox[
-        RowBox[{"c4", " ", "c5", " "}], "c1"], 
-       RowBox[{"EllipticK", "[", "c6", "]"}]}], "-", 
-      RowBox[{"c1", " ", "c5", " ", 
-       RowBox[{"EllipticE", "[", "c6", "]"}]}], "-", 
-      RowBox[{"If", "[", 
-       RowBox[{
-        RowBox[{"c2", "\[Equal]", "0"}], ",", "0", ",", 
-        RowBox[{
-         FractionBox[
-          RowBox[{
-           SuperscriptBox["c3", "2"], "c4"}], 
-          RowBox[{"c1", " ", "c5"}]], 
-         RowBox[{"EllipticPi", "[", 
-          RowBox[{
-           RowBox[{"-", 
+       RowBox[{"m2", "\[Equal]", "1"}], ",", "0", ",", 
+       RowBox[{"m2", 
+        RowBox[{"(", 
+         RowBox[{
+          SuperscriptBox[
+           RowBox[{"(", 
             FractionBox[
-             RowBox[{
-              SuperscriptBox["c1", "2"], " ", "c6"}], 
-             SuperscriptBox["c2", "2"]]}], ",", "c6"}], "]"}]}]}], "]"}]}], 
-     ")"}]}], "]"}]}], "\[IndentingNewLine]", 
+             RowBox[{"m1", " "}], "m3"], ")"}], "2"], "-", "1"}], ")"}], " ", 
+        
+        RowBox[{"EllipticPi", "[", 
+         RowBox[{
+          FractionBox["m4", 
+           RowBox[{"1", "-", "m2"}]], ",", "m4"}], "]"}]}]}], "]"}]}], 
+    ")"}]}]}], "\[IndentingNewLine]", 
  RowBox[{"Timing", "[", 
   RowBox[{"newforce2", "[", 
    RowBox[{"1", ",", 
@@ -1263,7 +1248,7 @@ Cell[BoxData[{
     RowBox[{"fcyl", "//", "Chop"}], ")"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"Close", "[", "filename", "]"}], ";"}]}], "Input"]
-}, Open  ]],
+}, Closed]],
 
 Cell[CellGroupData[{
 
@@ -1873,79 +1858,80 @@ CellTagsIndex->{}
 Notebook[{
 Cell[CellGroupData[{
 Cell[590, 23, 49, 0, 67, "Section"],
-Cell[642, 25, 333, 8, 41, "Text"],
+Cell[642, 25, 338, 8, 41, "Text"],
 Cell[CellGroupData[{
-Cell[1000, 37, 33, 0, 34, "Subsection"],
-Cell[1036, 39, 244, 4, 41, "Text"],
+Cell[1005, 37, 33, 0, 34, "Subsection"],
+Cell[1041, 39, 244, 4, 41, "Text"],
 Cell[CellGroupData[{
-Cell[1305, 47, 57, 0, 25, "Subsubsection"],
-Cell[1365, 49, 9868, 287, 566, "Input"],
-Cell[11236, 338, 881, 20, 73, "Input"],
-Cell[12120, 360, 1772, 47, 88, "Input"]
+Cell[1310, 47, 57, 0, 25, "Subsubsection"],
+Cell[1370, 49, 9868, 287, 566, "Input"],
+Cell[11241, 338, 881, 20, 73, "Input"],
+Cell[12125, 360, 1772, 47, 88, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[13929, 412, 42, 0, 19, "Subsubsection"],
-Cell[13974, 414, 440, 9, 56, "Text"],
-Cell[14417, 425, 8390, 241, 777, "Input"],
-Cell[22810, 668, 1773, 47, 88, "Input"]
+Cell[13934, 412, 42, 0, 19, "Subsubsection"],
+Cell[13979, 414, 440, 9, 56, "Text"],
+Cell[14422, 425, 8390, 241, 777, "Input"],
+Cell[22815, 668, 1773, 47, 88, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[24620, 720, 64, 0, 19, "Subsubsection"],
-Cell[24687, 722, 5107, 150, 388, "Input"],
-Cell[29797, 874, 1769, 47, 88, "Input"]
+Cell[24625, 720, 64, 0, 19, "Subsubsection"],
+Cell[24692, 722, 5220, 151, 406, "Input"],
+Cell[29915, 875, 1769, 47, 88, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[31603, 926, 43, 0, 19, "Subsubsection"],
-Cell[31649, 928, 4454, 133, 388, "Input"],
-Cell[36106, 1063, 1770, 47, 88, "Input"]
+Cell[31721, 927, 43, 0, 19, "Subsubsection"],
+Cell[31767, 929, 178, 5, 26, "Text"],
+Cell[31948, 936, 3792, 110, 279, "Input"],
+Cell[35743, 1048, 1770, 47, 88, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[37913, 1115, 42, 0, 19, "Subsubsection"],
-Cell[37958, 1117, 209, 4, 73, "Input"],
-Cell[38170, 1123, 175, 3, 58, "Input"]
+Cell[37550, 1100, 42, 0, 19, "Subsubsection"],
+Cell[37595, 1102, 209, 4, 73, "Input"],
+Cell[37807, 1108, 175, 3, 58, "Input"]
 }, Closed]]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[38406, 1133, 26, 0, 67, "Section"],
-Cell[38435, 1135, 2828, 79, 133, "Input"],
-Cell[41266, 1216, 769, 20, 43, "Input"],
-Cell[42038, 1238, 48, 0, 26, "Text"],
-Cell[42089, 1240, 831, 24, 103, "Input"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[42957, 1269, 34, 0, 67, "Section"],
-Cell[CellGroupData[{
-Cell[43016, 1273, 57, 0, 34, "Subsection"],
-Cell[43076, 1275, 43, 0, 26, "Text"],
-Cell[43122, 1277, 518, 17, 53, "Input"],
-Cell[43643, 1296, 720, 23, 71, "Input"]
+Cell[38043, 1118, 26, 0, 67, "Section"],
+Cell[38072, 1120, 2828, 79, 133, "Input"],
+Cell[40903, 1201, 769, 20, 43, "Input"],
+Cell[41675, 1223, 48, 0, 26, "Text"],
+Cell[41726, 1225, 831, 24, 103, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[44400, 1324, 47, 0, 26, "Subsection"],
-Cell[44450, 1326, 644, 22, 108, "Input"],
-Cell[45097, 1350, 1021, 35, 74, "Input"]
+Cell[42594, 1254, 34, 0, 37, "Section"],
+Cell[CellGroupData[{
+Cell[42653, 1258, 57, 0, 34, "Subsection"],
+Cell[42713, 1260, 43, 0, 26, "Text"],
+Cell[42759, 1262, 518, 17, 53, "Input"],
+Cell[43280, 1281, 720, 23, 71, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[46155, 1390, 68, 0, 26, "Subsection"],
-Cell[46226, 1392, 760, 26, 67, "Input"],
-Cell[46989, 1420, 1117, 40, 87, "Input"]
+Cell[44037, 1309, 47, 0, 26, "Subsection"],
+Cell[44087, 1311, 644, 22, 108, "Input"],
+Cell[44734, 1335, 1021, 35, 74, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[48143, 1465, 67, 0, 26, "Subsection"],
-Cell[48213, 1467, 1515, 54, 139, "Input"],
-Cell[49731, 1523, 1356, 47, 81, "Input"],
-Cell[51090, 1572, 1659, 57, 97, "Input"]
+Cell[45792, 1375, 68, 0, 26, "Subsection"],
+Cell[45863, 1377, 760, 26, 67, "Input"],
+Cell[46626, 1405, 1117, 40, 87, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[52786, 1634, 35, 0, 26, "Subsection"],
-Cell[52824, 1636, 49, 0, 26, "Text"],
-Cell[52876, 1638, 1836, 61, 146, "Input"],
-Cell[54715, 1701, 105, 3, 27, "Input"],
-Cell[54823, 1706, 49, 0, 26, "Text"],
-Cell[54875, 1708, 1831, 61, 146, "Input"],
-Cell[56709, 1771, 91, 2, 26, "Text"],
-Cell[56803, 1775, 2262, 74, 186, "Input"]
+Cell[47780, 1450, 67, 0, 26, "Subsection"],
+Cell[47850, 1452, 1515, 54, 139, "Input"],
+Cell[49368, 1508, 1356, 47, 81, "Input"],
+Cell[50727, 1557, 1659, 57, 97, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[52423, 1619, 35, 0, 26, "Subsection"],
+Cell[52461, 1621, 49, 0, 26, "Text"],
+Cell[52513, 1623, 1836, 61, 146, "Input"],
+Cell[54352, 1686, 105, 3, 27, "Input"],
+Cell[54460, 1691, 49, 0, 26, "Text"],
+Cell[54512, 1693, 1831, 61, 146, "Input"],
+Cell[56346, 1756, 91, 2, 26, "Text"],
+Cell[56440, 1760, 2262, 74, 186, "Input"]
 }, Closed]]
 }, Open  ]]
 }

@@ -112,22 +112,33 @@ MagnetCoilForce[OptionsPattern[]] := Module[
 ]
 
 
-MagnetThinCoilForceKernel[r1_,r2_,z1_,z2_,z3_,z4_]:=
+CoilCoilFilamentForce[r_,R_,z_] = With[
+  { m = 4 r R/((r+R)^2+z^2) },
+  Sqrt[m] z (* needs (mu0 I1 I2) factor as well *)
+  ( 
+    2 EllipticK[m]-
+    (2-m)/(1-m) EllipticE[m]
+  ) / (4 Sqrt[r R])
+];
+
+
+MagnetThinCoilForceKernel[r1_,r2_,z1_,z2_,z3_,z4_] :=
   fff2[r1,r2,z2,z3,z4]-fff2[r1,r2,z1,z3,z4]
-fff2[r1_,r2_,zt_,z3_,z4_]:=
-  fff3[r1,r2,zt,z4]-fff3[r1,r2,zt,z3]
-fff3[r1_,r2_,zt_,ztt_]:=
-  fff4[
-    zt-ztt,r1-r2,r1+r2,
-    (r1-r2)^2+(zt-ztt)^2,Sqrt[(r1+r2)^2+(zt-ztt)^2],
-    (4 r1 r2)/((r1+r2)^2+(zt-ztt)^2)
+fff2[r1_,r2_,zt_,z3_,z4_] :=
+  fff3[r1,r2,zt-z4]-fff3[r1,r2,zt-z3]
+fff3[r1_,r2_,z_] :=
+  If[z==0,0,
+    fff4[z,(r1-r2)^2/z^2+1,
+      Sqrt[(r1+r2)^2+z^2],
+      (4 r1 r2)/((r1+r2)^2+z^2)
+    ]
   ]
-fff4[c1_,c2_,c3_,c4_,c5_,c6_]:=
-  If[c1==0,0,
-    (c4 c5 )/c1 EllipticK[c6]-
-    c1 c5 EllipticE[c6]-
-    If[c2==0,0,(c3^2 c4)/(c1 c5) EllipticPi[-((c1^2 c6)/c2^2),c6]]
-  ]
+fff4[m1_,m2_,m3_,m4_]:=
+  m1 m3 ( m2 EllipticK[m4] - EllipticE[m4] +
+    If[m2==1,0,
+      m2 ( (m1/m3)^2 - 1 ) EllipticPi[m4/(1-m2),m4]
+    ]
+  )
 
 
 MagnetCoilForceKernel[l_,L_]:=
