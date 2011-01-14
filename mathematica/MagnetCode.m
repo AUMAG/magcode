@@ -46,11 +46,14 @@ Options[MagnetCoilForce]={
   MagnetRadius->0,
   MagnetLength->0,
   Magnetisation->1,
+  MagnetCurrent->0, (* dummy *)
 
   CoilRadius->0,
   CoilThickness->0,
   CoilLength->0,
   CoilTurns->0,
+  CoilTurnsR->0,
+  CoilTurnsZ->0,
   Current->0,
 
   Displacement->0.0,
@@ -71,6 +74,8 @@ MagnetCoilForce[OptionsPattern[]] := Module[
    coilR = OptionValue[CoilRadius]+OptionValue[CoilThickness],
    coill = OptionValue[CoilLength],
    turns = OptionValue[CoilTurns],
+   turnsR = OptionValue[CoilTurnsR],
+   turnsZ = OptionValue[CoilTurnsZ],
    curr  = OptionValue[Current],
    displ = OptionValue[Displacement],
    eccen = OptionValue[Eccentricity],
@@ -78,6 +83,8 @@ MagnetCoilForce[OptionsPattern[]] := Module[
   },
   
   coilarea=coill (coilR-coilr);
+
+  If[ turns==0 , turns=turnsR*turnsZ ];
   
   If[ displ==0.0 ,
     force = 0 , 
@@ -86,10 +93,20 @@ MagnetCoilForce[OptionsPattern[]] := Module[
         force =  magn turns curr / ( 2 coill ) MagnetThinCoilForceKernel[
           coilr,magr,-coill/2,coill/2,displ-magl/2,displ+magl/2]
       ,
+(*
         force = 2 curr turns magn / coilarea NIntegrate[
           Sum[ e1 e2 MagnetCoilForceKernel[ e1 magl/2, displ + e2 coill/2 ]
               ,{e1,{1,-1}},{e2,{1,-1}}],
           {r,0,magr},{R,coilr,coilR},
+          PrecisionGoal->prec
+        ]
+
+*)
+        force = curr turns magn / coilarea NIntegrate[
+          MagnetThickCoilForceKernel[
+            magr, magl, R, Z
+          ],
+          {R,coilr,coilR}, {Z,displ-coill/2,displ+coill/2},
           PrecisionGoal->prec
         ]
       ]
@@ -139,6 +156,16 @@ fff4[m1_,m2_,m3_,m4_]:=
       m2 ( (m1/m3)^2 - 1 ) EllipticPi[m4/(1-m2),m4]
     ]
   )
+
+
+MagnetThickCoilForceKernel[r_,maglength_,R_,Z_]:=
+   -MagnetThickCoilForceKernel2[r, maglength/2,R,Z]+
+    MagnetThickCoilForceKernel2[r,-maglength/2,R,Z]
+
+MagnetThickCoilForceKernel2[r_,z_,R_,Z_]:=
+  (r^2+R^2+(z-Z)^2) / Sqrt[(r-R)^2+(z-Z)^2] *
+    EllipticK[-((4 r R)/((r-R)^2+(z-Z)^2))] -
+  Sqrt[(r-R)^2+(z-Z)^2] EllipticE[-((4 r R)/((r-R)^2+(z-Z)^2))]
 
 
 MagnetCoilForceKernel[l_,L_]:=
