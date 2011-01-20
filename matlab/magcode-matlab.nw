@@ -267,7 +267,7 @@ but may have different side lengths.)
  & |stiffnesses| & stiffnesses on the second magnet \\
 \hline
  Magnet properties:
- & |type|   & `\textsf{cuboid}` (default) or `\textsf{cylinder}` \\
+ & |type|   & `\textsf{cuboid}' (default) or `\textsf{cylinder}' \\
  & |dim|    & size of each magnet \\
  & |magn|   & magnetisation magnitude \\
  & |magdir| & magnetisation direction \\
