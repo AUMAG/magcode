@@ -12,6 +12,7 @@ function [varargout] = multipoleforces(fixed_array, float_array, displ, varargin
 debug_disp = @(str) disp([]);
 calc_force_bool = false;
 calc_stiffness_bool = false;
+calc_torque_bool = false;
 
 % Undefined calculation flags for the three directions:
 calc_xyz = [-1 -1 -1];
@@ -21,6 +22,7 @@ for ii = 1:length(varargin)
     case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
     case 'stiffness',  calc_stiffness_bool = true;
+    case 'torque',     calc_torque_bool    = true;
     case 'x',  calc_xyz(1) = 1;
     case 'y',  calc_xyz(2) = 1;
     case 'z',  calc_xyz(3) = 1;
@@ -36,7 +38,7 @@ end
 
 calc_xyz( calc_xyz == -1 ) = 0;
 
-if ~calc_force_bool && ~calc_stiffness_bool
+if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
   calc_force_bool = true;
 end
 
@@ -58,6 +60,10 @@ end
 
 if calc_stiffness_bool
   stiffnesses_out = repmat(NaN,[3 Ndispl]);
+end
+
+if calc_torque_bool
+  torques_out = repmat(NaN,[3 Ndispl]);
 end
 
 
@@ -131,6 +137,11 @@ end
 if calc_stiffness_bool
   ii = ii + 1;
   varargout{ii} = stiffnesses_out;
+end
+
+if calc_torque_bool
+  ii = ii + 1;
+  varargout{ii} = torques_out;
 end
 
 

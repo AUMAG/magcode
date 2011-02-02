@@ -3,6 +3,7 @@
 \usepackage{amsmath,array,booktabs,enumitem,upquote,shortvrb,underscore}
 \usepackage{noweb}
 \noweboptions{longxref}
+\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage{hyperref}
@@ -38,18 +39,33 @@ between magnets. The syntax is as follows:
 
 \begin{verbatim}
      forces = magnetforces(magnet_fixed, magnet_float, displ);
-stiffnesses = magnetforces( ... , 'stiffness');
-      [f s] = magnetforces( ... , 'force', 'stiffness');
-      ... = magnetforces( ... , 'x');
-      ... = magnetforces( ... , 'y');
-      ... = magnetforces( ... , 'z');
+        ... = magnetforces( ... , 'force');
+        ... = magnetforces( ... , 'stiffness');
+        ... = magnetforces( ... , 'torque');
+        ... = magnetforces( ... , 'x');
+        ... = magnetforces( ... , 'y');
+        ... = magnetforces( ... , 'z');
 \end{verbatim}
 
 |magnetforces| takes three mandatory inputs to specify the position and magnetisation of the first and second magnets and the displacement between them.
-Optional arguments appended indicate whether to calculate force or stiffness or both and whether to calculate components in $x$- and/or $y$- and/or $z$- components respectively.
-The force\footnote{From now I will omit most mention of calculating stiffnesses; assume whenever I say `force' I mean `force \emph{and} stiffness'} is calculated as that imposed on the second magnet; for this reason, I often call the first magnet the `fixed' magnet and the second `floating'. If you wish to calculate the force on the first magnet instead, simply reverse the sign of the output.
+Optional arguments appended indicate whether to calculate force and/or torque and/or stiffness and whether to calculate components in $x$- and/or $y$- and/or $z$- components respectively.
+The force\footnote{From now I will omit most mention of calculating torques and stiffnesses; assume whenever I say `force' I mean `force \emph{and/or} stiffness \emph{and/or} torque'} is calculated as that imposed on the second magnet; for this reason, I often call the first magnet the `fixed' magnet and the second `floating'.
 
-\paragraph{Inputs and outputs}
+\paragraph{Outputs}
+You must match up the output arguments according to the requested calculations.
+For example, when only calculating torque, the syntax is
+\begin{verbatim}
+  T = magnetforces(magnet_fixed, magnet_float, displ,'torque');
+\end{verbatim}
+Similarly, when calculating all three of force/stiffness/torque, write
+\begin{verbatim}
+  [F S T] = magnetforces(magnet_fixed, magnet_float, displ,...
+	         'force','stiffness','torque');
+\end{verbatim}
+As shown in the original example, if no calculation type is requested then
+the forces only are calculated.
+
+\paragraph{Cuboid magnets}
 The first two inputs are structures containing the following fields:
 \begin{description}[noitemsep,font=\ttfamily]
 \item[magnet.dim] A $(3\times1)$ vector of the side-lengths of the magnet.
@@ -69,6 +85,28 @@ In other words, the following unit vectors are equivalent:
 \end{align*}
 N.B.\ $\theta$ and $\phi$ must be input in degrees, not radians.
 This seemingly odd decision was made in order to calculate quantities such as $\cos(\pi/2)=0$ exactly rather than to machine precision.
+
+If you are calculating the torque on the second magnet, then it is assumed that the centre of rotation is at the centroid of the second magnet.
+If this is not the case, the centre of rotation of the second magnet can be specified with
+\begin{description}[noitemsep,font=\ttfamily]
+\item[magnet_float.lever] A $(3\times1)$ vector of the centre of rotation
+(or $(3\times D)$ if necessary; see $D$ below).
+\end{description}
+
+\paragraph{Cylindrical magnets/coils}
+If the dimension of the magnet (\texttt{magnet.dim}) only has two elements,
+or the \texttt{magnet.type} is `\textsf{cylinder}', the forces are calculated between two cylindrical magnets.
+
+Only the force between coaxial cylinders can be calculated at present; this is still an area of active investigation.
+\begin{description}[noitemsep,font=\ttfamily]
+\item[magnet.dim] A $(2\times1)$ vector containing, respectively, the magnet radius and length.
+\item[magnet.dir] Alignment direction of the cylindrical magnets;
+`\textsf{x}' or `\textsf{y}' or `\textsf{z}' (default).
+E.g., for an alignment direction of `\textsf{z}', the faces of the cylinder will be oriented in the $x$--$y$ plane.
+\end{description}
+
+
+\paragraph{Displacement inputs}
 
 The third mandatory input is |displ|, which is a matrix of displacement vectors between the two magnets. |displ| should be a $(3\times D)$ matrix,
 where $D$ is the number of displacements over which to calculate the forces.
@@ -215,11 +253,12 @@ The Matlab source code is written using Norman Ramsey's \textsc{Noweb} literate
 programming tool.%
 \footnote{\url{http://www.cs.tufts.edu/~nr/noweb/}}
 After it is installed, use \verb|make code| to extract the Matlab files \texttt{magnetforces.m} and \texttt{multipoleforces.m}, as well as extracting the test suite (such as it is, for now).
-Running \verb|make doc|) will compiling the documentation you are currently reading.
+Running \verb|make doc| will compiling the documentation you are currently reading.
 
-\DeleteShortVerb\|
+@
+\paragraph{About this file}
 
-@ About this file. This is a `literate programming` approach to writing Matlab
+This is a `literate programming` approach to writing Matlab
 code using \textsc{Noweb}%
 \footnote{\url{http://www.cs.tufts.edu/~nr/noweb/}}. To be honest I don't know
 if it's any better than simply using the Matlab programming language directly.
@@ -233,7 +272,11 @@ integrated M-Lint program, debugger, profiler, and so on. Depending on one's
 work habits, this may be more or less of limiting factor to using literate
 programming in this way.
 
-@ Calculating forces between magnets. This is the source of some code to
+@
+\section{Documented code in a literate programming style}
+\subsection{Calculating forces between magnets}
+
+This is the source of some code to
 calculate the forces and/or stiffnesses between two
 cuboid-shaped magnets with arbitary displacements and magnetisation direction.
 (A cuboid is like a three dimensional rectangle; its faces are all orthogonal
@@ -260,7 +303,7 @@ but may have different side lengths.)
  & |magnet_fixed| & structure describing first magnet \\
  & |magnet_float| & structure describing the second magnet \\
  & |displ| & displacement between the magnets \\
- & [\emph{what to calculate}] & `force' and/or `stiffness' \\
+ & [\emph{what to calculate}] & any of `\textsf{force}', `\textsf{torque}', `\textsf{stiffness}' \\
 \hline
  Outputs:
  & |forces| & forces on the second magnet \\
@@ -271,6 +314,8 @@ but may have different side lengths.)
  & |dim|    & size of each magnet \\
  & |magn|   & magnetisation magnitude \\
  & |magdir| & magnetisation direction \\
+ & |lever|  & displacement from centre of rotation \\
+ &          & (second magnet only when calculating torques) \\
  & |dir|    & alignment direction (cylindrical magnets only) \\
  & |current|& (\textsf{cylinder} only) current in the coil \\
  & |turns|  & (\textsf{cylinder} only) number of coil turns \\
@@ -294,12 +339,14 @@ function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
 << Function for resolving magnetisations >>
 << Function for single force calculation >>
+<< Function for single torque calculation >>
 << Function for single stiffness calculation >>
 << Functions for calculating forces and stiffnesses >>
 
 end
 
-@ Variables and data structures.
+@ 
+\subsubsection{Variables and data structures}
 First of all, address the data structures required for the input and output.
 Because displacement of a single magnet has three components, plus sizes of
 the faces another three, plus magnetisation strength and direction (two) makes
@@ -356,6 +403,12 @@ if strcmp(magtype,'cuboid')
 
   J1 = resolve_magnetisations(magnet_fixed.magn,magnet_fixed.magdir);
   J2 = resolve_magnetisations(magnet_float.magn,magnet_float.magdir);
+
+  if calc_torque_bool
+    if ~isfield(magnet_float,'lever')
+      magnet_float.lever = [0 0 0];
+    end
+  end
 
 elseif strcmp(magtype,'cylinder')
 
@@ -434,7 +487,12 @@ if calc_stiffness_bool
   stiffnesses_out = repmat(NaN,[3 Ndispl]);
 end
 
-@ Wrangling user input and output.
+if calc_torque_bool
+  torques_out = repmat(NaN,[3 Ndispl]);
+end
+
+@
+\subsubsection{Wrangling user input and output}
   We now have a choice of calculations to take based on the user input.
   This chunk and the next are used in both \texttt{magnetforces.m} and
   \texttt{multipoleforces.m}.
@@ -444,6 +502,7 @@ end
 debug_disp = @(str) disp([]);
 calc_force_bool = false;
 calc_stiffness_bool = false;
+calc_torque_bool = false;
 
 % Undefined calculation flags for the three directions:
 calc_xyz = [-1 -1 -1];
@@ -453,6 +512,7 @@ for ii = 1:length(varargin)
     case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
     case 'stiffness',  calc_stiffness_bool = true;
+    case 'torque',     calc_torque_bool    = true;
     case 'x',  calc_xyz(1) = 1;
     case 'y',  calc_xyz(2) = 1;
     case 'z',  calc_xyz(3) = 1;
@@ -468,7 +528,7 @@ end
 
 calc_xyz( calc_xyz == -1 ) = 0;
 
-if ~calc_force_bool && ~calc_stiffness_bool
+if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
   calc_force_bool = true;
 end
 
@@ -486,6 +546,11 @@ end
 if calc_stiffness_bool
   ii = ii + 1;
   varargout{ii} = stiffnesses_out;
+end
+
+if calc_torque_bool
+  ii = ii + 1;
+  varargout{ii} = torques_out;
 end
 
 
@@ -509,6 +574,10 @@ if calc_stiffness_bool
   end
 end
 
+if calc_torque_bool
+  torques_out  =  single_magnet_torque(displ,magnet_float.lever);
+end
+
 elseif strcmp(magtype,'cylinder')
 
 if strcmp(magtype,'cylinder')
@@ -525,6 +594,10 @@ end
 
 if calc_stiffness_bool
   error('Stiffness cannot be calculated for cylindrical magnets yet.')
+end
+
+if calc_torque_bool
+  error('Torques cannot be calculated for cylindrical magnets yet.')
 end
 
 
@@ -561,6 +634,21 @@ stiffness_components = repmat(NaN,[9 3]);
 
 stiffness_out = sum(stiffness_components);
 end
+
+<< Function for single torque calculation >>=
+
+function torques_out = single_magnet_torque(displ,lever)
+
+force_components = repmat(NaN,[9 3]);
+
+<< Precompute displacement rotations >>
+<< Print diagnostics >>
+<< Calculate torques >>
+
+torques_out = sum(torque_components);
+end
+
+
 
 @ The easy one first, where our magnetisation components align with the
   direction expected by the force functions.
@@ -672,7 +760,54 @@ stiffness_components(6,:) = ...
 
 calc_xyz = swap_y_z(calc_xyz);
 
-@ Functions for calculating forces and stiffnesses. The calculations for
+
+
+<< Calculate torques >>=
+
+debug_disp('Torque: z-z:')
+torque_components(9,:) = torques_calc_z_z( size1,size2,displ,lever,J1,J2 );
+
+debug_disp('Torque z-y:')
+torque_components(8,:) = torques_calc_z_y( size1,size2,displ,lever,J1,J2 );
+
+debug_disp('Torque z-x:')
+torque_components(7,:) = torques_calc_z_x( size1,size2,displ,lever,J1,J2 );
+
+calc_xyz = swap_x_z(calc_xyz);
+
+debug_disp('Torques x-x:')
+torque_components(1,:) = ...
+  rotate_z_to_x( torques_calc_z_z(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
+
+debug_disp('Torques x-y:')
+torque_components(2,:) = ...
+  rotate_z_to_x( torques_calc_z_y(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
+
+debug_disp('Torques x-z:')
+torque_components(3,:) = ...
+  rotate_z_to_x( torques_calc_z_x(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
+
+calc_xyz = swap_x_z(calc_xyz);
+
+calc_xyz = swap_y_z(calc_xyz);
+
+debug_disp('Torques y-x:')
+torque_components(4,:) = ...
+  rotate_z_to_y( torques_calc_z_x(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
+
+debug_disp('Torques y-y:')
+torque_components(5,:) = ...
+  rotate_z_to_y( torques_calc_z_z(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
+
+debug_disp('Torques y-z:')
+torque_components(6,:) = ...
+  rotate_z_to_y( torques_calc_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
+
+calc_xyz = swap_y_z(calc_xyz);
+
+@
+\subsubsection{Functions for calculating forces, torques, and stiffnesses}
+The calculations for
 forces between differently-oriented cuboid magnets are all directly from the
 literature. The stiffnesses have been derived by differentiating the force
 expressions, but that's the easy part.
@@ -684,6 +819,8 @@ expressions, but that's the easy part.
 
 << Parallel magnets stiffness calculation >>
 << Orthogonal magnets stiffness calculation >>
+
+<< Parallel magnets torque calculation >>
 
 << Cylindrical magnets force calculation >>
 
@@ -865,9 +1002,6 @@ end
 
 function calc_out = forces_cyl_calc(size1,size2,h_gap,J1,J2)
 
-% constants
-mu0 = 4*pi*10^(-7);
-
 % inputs
 
 r1 = size1(1);
@@ -892,7 +1026,7 @@ for ii = [1 2]
     a3 = sqrt( (r1+r2).^2 + a1.^2 );
     a4 = 4*r1.*r2./( (r1+r2).^2 + a1.^2 );
     
-    [K, E, PI] = ellippi( a4./(1-a2) , a4 );
+    [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
     
     if a2 == 1
       % singularity at a2=1 (i.e., equal radii)
@@ -911,12 +1045,12 @@ for ii = [1 2]
 
 end
 
-calc_out = J1*J2/(2*mu0)*C_d;
+calc_out = J1*J2/(8*pi*1e-7)*C_d;
 
 end
 
 
-function [k,e,PI] = ellippi(a,m)
+function [k,e,PI] = ellipkepi(a,m)
 
 % Complete elliptic integrals calculated with the arithmetric-geometric mean
 % algorithms contained here: http://dlmf.nist.gov/19.8
@@ -972,6 +1106,133 @@ end
 
 end
 
+
+@ The expressions here follow directly from \textcite{janssen2010-ietm}.
+  The code below was largely written by Allan Liu; thanks!
+  We have checked it against Janssen's own Matlab code and the two give
+  identical output.
+
+\begin{center}
+\begin{tabular}{lll}
+ Inputs:
+ & |size1|=|(a1,b1,c1)| & the half dimensions of the fixed magnet \\
+ & |size2|=|(a2,b2,c2)| & the half dimensions of the floating magnet \\
+ & |displ|=|(a,b,c)| & distance between magnet centres \\
+ & |lever|=|(d,e,f)| & distance between floating magnet and its centre of rotation \\
+ &     |(J,J2)| & magnetisations of the magnet in the z-direction \\
+ Outputs:
+ & |forces_xyz|=|(Fx,Fy,Fz)| & Forces of the second magnet \\
+\end{tabular}
+\end{center}
+
+<< Parallel magnets torque calculation >>=
+
+function calc_out = torques_calc_z_z(size1,size2,offset,lever,J1,J2)
+
+br1 = J1(3);
+br2 = J2(3);
+
+if br1==0 || br2==0
+  debug_disp('Zero magnetisation')
+  calc_out = 0*offset;
+  return
+end
+
+a1 = size1(1)/2;
+b1 = size1(2)/2;
+c1 = size1(3)/2;
+
+a2 = size2(1)/2;
+b2 = size2(2)/2;
+c2 = size2(3)/2;
+
+a = offset(1);
+b = offset(2);
+c = offset(3);
+
+d = a+lever(1);
+e = b+lever(2);
+f = c+lever(3);
+
+Tx=0;
+Ty=0;
+Tz=0;
+
+for ii=[0,1]
+  for jj=[0,1]
+    for kk=[0,1]
+      for ll=[0,1]
+        for mm=[0,1]
+          for nn=[0,1]
+                        
+            Cw=(-1)^mm.*c1-f;
+            Cv=(-1)^kk.*b1-e;
+            Cu=(-1)^ii.*a1-d;
+            
+            w=c-(-1)^mm.*c1+(-1)^nn.*c2;
+            v=b-(-1)^kk.*b1+(-1)^ll.*b2;
+            u=a-(-1)^ii.*a1+(-1)^jj.*a2;
+            
+            s=sqrt(u.^2+v.^2+w.^2);
+
+            Ex=(1/8).*(-2.*Cw.*(-4.*v.*u+s.^2+2.*v.*s)-w.*...
+              (-8.*v.*u+s.^2+8.*Cv.*s+6.*v.*s)+4.*(2.*Cv.*u.*...
+              w.*acoth(u./s)+w.*(v.^2+2.*Cv.*v-w.*(2.*Cw+w))...
+              *acoth(v./s)-u.*(2.*w.*(Cw+w).*atan(v./w)+2*v.*...
+              (Cw+w).*log(s-u)+(w.^2+2.*Cw.*w-v.*(2.*Cv+v)).*...
+              atan(u.*v./(w.*s))))+2.*(2.*Cw+w).*(u.^2+w.^2).*log(v+s));
+
+            Ey=(1/8)*...
+              ((2.*Cw+w).*u.^2-8.*u.*v.*(Cw+w)+8.*u.*v.*(Cw+w).*log(s-v)...
+              +4.*Cw.*u.*s+6.*w.*s.*u+(2.*Cw+w).*(v.^2+w.^2)+...
+              4.*w.*(w.^2+2.*Cw.*w-u.*(2.*Cu+u)).*acoth(u./s)+...
+              4.*v.*(-2.*Cu.*w.*acoth(v./s)+2.*w.*(Cw+w).*atan(u./w)...
+              +(w.^2+2.*Cw.*w-u.*(2.*Cu+u)).*atan(u.*v./(w.*s)))...
+              -2.*(2.*Cw+w).*(v.^2+w.^2).*log(u+s)+8.*Cu.*w.*s);
+
+            Ez=(1/36).*(-u.^3-18.*v.*u.^2-6.*u.*(w.^2+6.*Cu...
+              .*v-3.*v.*(2.*Cv+v)+3.*Cv.*s)+v.*(v.^2+6.*(w.^2+...
+              3.*Cu.*s))+6.*w.*(w.^2-3.*v.*(2.*Cv+v)).*atan(u./w)...
+              -6.*w.*(w.^2-3.*u.*(2.*Cu+u)).*atan(v./w)-9.*...
+              (2.*(v.^2+2.*Cv.*v-u.*(2.*Cu+u)).*w.*atan(u.*v./(w.*s))...
+              -2.*u.*(2.*Cu+u).*v.*log(s-u)-(2.*Cv+v).*(v.^2-w.^2)...
+              .*log(u+s)+2.*u.*v.*(2.*Cv+v).*log(s-v)+(2.*Cu+...
+              u).*(u.^2-w.^2).*log(v+s)));
+
+            Tx=Tx+(-1)^(ii+jj+kk+ll+mm+nn)*Ex;
+            Ty=Ty+(-1)^(ii+jj+kk+ll+mm+nn)*Ey;
+            Tz=Tz+(-1)^(ii+jj+kk+ll+mm+nn)*Ez;
+            
+          end
+        end
+      end
+    end
+  end
+end
+
+calc_out = real([Tx; Ty; Tz].*br1*br2/(16*pi^2*1e-7));
+                        
+end
+
+function calc_out = torques_calc_z_y(size1,size2,offset,lever,J1,J2)
+
+if J1(3)~=0 && J2(2)~=0
+  error('Torques cannot be calculated for orthogonal magnets yet.')
+end
+
+calc_out = 0*offset;
+
+end
+
+function calc_out = torques_calc_z_x(size1,size2,offset,lever,J1,J2)
+
+if J1(3)~=0 && J2(1)~=0
+  error('Torques cannot be calculated for orthogonal magnets yet.')
+end
+
+calc_out = 0*offset;
+
+end
 
 @ Stiffness calculations are simply differentiated (in Mathematica) from the forces.
 
@@ -1108,7 +1369,7 @@ debug_disp(calc_out')
 end
 
 
-@ Setup code.
+@ \subsubsection{Setup code}
 
 @ Magnetisation directions are specified in either cartesian or spherical
 coordinates. Since this is shared code, it's sent to the end to belong in a
@@ -1183,6 +1444,11 @@ end
 d_x  = rotate_x_to_z(displ);
 d_y  = rotate_y_to_z(displ);
 
+if calc_torque_bool
+  l_x = rotate_x_to_z(lever);
+  l_y = rotate_y_to_z(lever);
+end
+
 @ The equations contain two singularities. Specifically, the equations
   contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
   and $y$ are zero since $\log(0)$ is negative infinity.
@@ -1237,7 +1503,7 @@ debug_disp(J2')
 
 
 
-@ Test files.
+@ \subsection{Test files for magnet forces}
    The chunks that follow are designed to be saved into
    individual files and executed automatically to check for (a) correctness
    and (b) regression problems as the code evolves.
@@ -1252,8 +1518,8 @@ debug_disp(J2')
    low-tech method. In time this test suite should be (somehow) useable for
    all implementations of \texttt{magnetocode}, not just Matlab. But I haven't
    thought about doing anything like that, yet.
-
-@  Because I'm lazy, just run the tests manually for now.
+ 
+   Because I'm lazy, just run the tests manually for now.
    This script must be run twice if it updates itself.
 
 << testall.m >>=
@@ -1266,6 +1532,8 @@ test001c
 test001d
 
 testcyl01
+
+testcuboidtorque01
 
 
 @ Force testing.
@@ -1751,6 +2019,57 @@ fprintf('passed\n')
 disp('=================')
 
 
+@ Cuboid torques tests.
+
+<< testcuboidtorque01.m >>=
+
+
+disp('=================')
+fprintf('TEST cuboid torques: ')
+
+magnet_fixed.dim = [0.04 0.04 0.02];
+magnet_float.dim = magnet_fixed.dim;
+
+magnet_fixed.magn = 1.3;
+magnet_float.magn = 1.3;
+
+magnet_fixed.magdir  = [0 0 1];
+magnet_float.magdir  = [0 0 1]; % must be (anti-)parallel
+
+T = magnetforces(magnet_fixed,magnet_float,[0.02 0 0.03],'torque');
+
+assert( all( round(1e6*T) == [0 33877 0] ), 'incorrect reference torques between parallel magnets' )
+
+
+magnet_fixed.dim = [0.04 0.02 0.04];
+magnet_float.dim = magnet_fixed.dim;
+
+magnet_fixed.magn = 1.3;
+magnet_float.magn = 1.3;
+
+magnet_fixed.magdir  = [0 1 0];
+magnet_float.magdir  = [0 1 0]; % must be (anti-)parallel
+
+T2 = magnetforces(magnet_fixed,magnet_float,[0 0.03 0.02],'torque');
+
+assert( all( round(1e6*T2) == [33877 0 0] ), 'incorrect reference torques between parallel magnets' )
+
+
+magnet_fixed.dim = [0.02 0.04 0.04];
+magnet_float.dim = magnet_fixed.dim;
+
+magnet_fixed.magn = 1.3;
+magnet_float.magn = 1.3;
+
+magnet_fixed.magdir  = [1 0 0];
+magnet_float.magdir  = [1 0 0]; % must be (anti-)parallel
+
+T3 = magnetforces(magnet_fixed,magnet_float,[0.03 0.02 0],'torque');
+
+assert( all( round(1e6*T3) == [0 0 33877] ), 'incorrect reference torques between parallel magnets' )
+
+fprintf('passed\n')
+disp('=================')
 
 
 
@@ -1758,7 +2077,11 @@ disp('=================')
 
 
 
-@ Forces between (multipole) magnet arrays.
+
+
+
+
+@ \subsection{Forces between (multipole) magnet arrays}
   This function uses \texttt{magnetforces.m} to compute the forces between
   two multipole magnet arrays. As before, we can calculate either force and/or
   stiffness in all three directions.
@@ -1859,7 +2182,7 @@ patchwork & `Patchwork' planar array \\
 \end{tabular}
 \end{table}
 
-@  Actual calculation of the forces.
+@ \subsubsection{Actual calculation of the forces}
   To calculate these forces, let's assume that we have
   two large arrays enumerating the positions and magnetisations of each
   individual magnet in each magnet array.
@@ -1948,7 +2271,7 @@ displ_from_array_corners = displ ...
   + repmat(fixed_array.size/2,[1 Ndispl]) ...
   - repmat(float_array.size/2,[1 Ndispl]);
 
-@ From user input to array generation.
+@ \subsubsection{From user input to array generation}
   We separate the force calculation from transforming the inputs into an
   intermediate form used for that purpose. This will hopefully allow us a
   little more flexibility.
@@ -2516,7 +2839,7 @@ end
 
 
 
-@ Sub-functions.
+@ \subsubsection{Sub-functions}
 
 << Extrapolate variables from input >>=
 
@@ -2584,7 +2907,8 @@ end
 % Finish this off later. Please read the PDF documentation instead for now.
 %
 
-@ Test files for multipole arrays.  Not much here yet.
+@ \subsection{Test files for multipole arrays}
+  Not much here yet.
 
 << testall.m >>=
 	
@@ -2912,8 +3236,10 @@ disp('=================')
 @
 \section{Chunks}
 \nowebchunks
+
 \twocolumn[\section{Index}]
 \nowebindex*
-@
+
+\onecolumn
 \printbibliography
 \end{document}
