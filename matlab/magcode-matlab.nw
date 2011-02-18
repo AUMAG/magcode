@@ -1065,11 +1065,12 @@ nn = 0;
 
 p0 = sqrt(1-a);
 Q0 = 1;
+Q1 = 1;
 QQ = Q0;
 
 w1 = ones(size(m));
 
-while max(w1(:)) > eps % assume ellip2 converges slower than ellip3
+while max(Q1(:)) > eps
 
   % for Elliptic I
   a1 = (a0+g0)/2;
