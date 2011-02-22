@@ -15,7 +15,7 @@ calc_stiffness_bool = false;
 calc_torque_bool = false;
 
 % Undefined calculation flags for the three directions:
-calc_xyz = [-1 -1 -1];
+calc_xyz = [-1; -1; -1];
 
 for ii = 1:length(varargin)
   switch varargin{ii}
@@ -33,7 +33,7 @@ end
 
 % If none of |'x'|, |'y'|, |'z'| are specified, calculate all.
 if all( calc_xyz == -1 )
-  calc_xyz = [1 1 1];
+  calc_xyz = [1; 1; 1];
 end
 
 calc_xyz( calc_xyz == -1 ) = 0;

@@ -17,7 +17,7 @@ calc_stiffness_bool = false;
 calc_torque_bool = false;
 
 % Undefined calculation flags for the three directions:
-calc_xyz = [-1 -1 -1];
+calc_xyz = [-1; -1; -1];
 
 for ii = 1:length(varargin)
   switch varargin{ii}
@@ -35,7 +35,7 @@ end
 
 % If none of |'x'|, |'y'|, |'z'| are specified, calculate all.
 if all( calc_xyz == -1 )
-  calc_xyz = [1 1 1];
+  calc_xyz = [1; 1; 1];
 end
 
 calc_xyz( calc_xyz == -1 ) = 0;
@@ -101,7 +101,12 @@ if strcmp(magtype,'cuboid')
 
   if calc_torque_bool
     if ~isfield(magnet_float,'lever')
-      magnet_float.lever = [0 0 0];
+      magnet_float.lever = [0; 0; 0];
+    else
+      ss = size(magnet_float.lever);
+      if (ss(1)~=3) && (ss(2)==3)
+        magnet_float.lever = magnet_float.lever'; % attempt [3 M] shape
+      end
     end
   end
 
@@ -167,18 +172,18 @@ index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
 
 if strcmp(magtype,'cuboid')
 
-swap_x_y = @(vec) vec([2 1 3]);
-swap_x_z = @(vec) vec([3 2 1]);
-swap_y_z = @(vec) vec([1 3 2]);
+swap_x_y = @(vec) vec([2 1 3],:);
+swap_x_z = @(vec) vec([3 2 1],:);
+swap_y_z = @(vec) vec([1 3 2],:);
 
-rotate_z_to_x = @(vec) [  vec(3);  vec(2); -vec(1) ] ; % Ry( 90)
-rotate_x_to_z = @(vec) [ -vec(3);  vec(2);  vec(1) ] ; % Ry(-90)
+rotate_z_to_x = @(vec) [  vec(3,:);  vec(2,:); -vec(1,:) ] ; % Ry( 90)
+rotate_x_to_z = @(vec) [ -vec(3,:);  vec(2,:);  vec(1,:) ] ; % Ry(-90)
 
-rotate_y_to_z = @(vec) [  vec(1); -vec(3);  vec(2) ] ; % Rx( 90)
-rotate_z_to_y = @(vec) [  vec(1);  vec(3); -vec(2) ] ; % Rx(-90)
+rotate_y_to_z = @(vec) [  vec(1,:); -vec(3,:);  vec(2,:) ] ; % Rx( 90)
+rotate_z_to_y = @(vec) [  vec(1,:);  vec(3,:); -vec(2,:) ] ; % Rx(-90)
 
-rotate_x_to_y = @(vec) [ -vec(2);  vec(1);  vec(3) ] ; % Rz( 90)
-rotate_y_to_x = @(vec) [  vec(2); -vec(1);  vec(3) ] ; % Rz(-90)
+rotate_x_to_y = @(vec) [ -vec(2,:);  vec(1,:);  vec(3,:) ] ; % Rz( 90)
+rotate_y_to_x = @(vec) [  vec(2,:); -vec(1,:);  vec(3,:) ] ; % Rz(-90)
 
 size1_x = swap_x_z(size1);
 size2_x = swap_x_z(size2);
@@ -286,11 +291,6 @@ force_components = repmat(NaN,[9 3]);
 d_x  = rotate_x_to_z(displ);
 d_y  = rotate_y_to_z(displ);
 
-if calc_torque_bool
-  l_x = rotate_x_to_z(lever);
-  l_y = rotate_y_to_z(lever);
-end
-
 
 debug_disp('  ')
 debug_disp('CALCULATING THINGS')
@@ -352,16 +352,14 @@ end
 
 function torques_out = single_magnet_torque(displ,lever)
 
-force_components = repmat(NaN,[9 3]);
+torque_components = nan([size(displ) 9]);
 
 
 d_x  = rotate_x_to_z(displ);
 d_y  = rotate_y_to_z(displ);
 
-if calc_torque_bool
-  l_x = rotate_x_to_z(lever);
-  l_y = rotate_y_to_z(lever);
-end
+l_x = rotate_x_to_z(lever);
+l_y = rotate_y_to_z(lever);
 
 
 debug_disp('  ')
@@ -375,26 +373,26 @@ debug_disp(J2')
 
 
 debug_disp('Torque: z-z:')
-torque_components(9,:) = torques_calc_z_z( size1,size2,displ,lever,J1,J2 );
+torque_components(:,:,9) = torques_calc_z_z( size1,size2,displ,lever,J1,J2 );
 
 debug_disp('Torque z-y:')
-torque_components(8,:) = torques_calc_z_y( size1,size2,displ,lever,J1,J2 );
+torque_components(:,:,8) = torques_calc_z_y( size1,size2,displ,lever,J1,J2 );
 
 debug_disp('Torque z-x:')
-torque_components(7,:) = torques_calc_z_x( size1,size2,displ,lever,J1,J2 );
+torque_components(:,:,7) = torques_calc_z_x( size1,size2,displ,lever,J1,J2 );
 
 calc_xyz = swap_x_z(calc_xyz);
 
 debug_disp('Torques x-x:')
-torque_components(1,:) = ...
+torque_components(:,:,1) = ...
   rotate_z_to_x( torques_calc_z_z(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
 
 debug_disp('Torques x-y:')
-torque_components(2,:) = ...
+torque_components(:,:,2) = ...
   rotate_z_to_x( torques_calc_z_y(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
 
 debug_disp('Torques x-z:')
-torque_components(3,:) = ...
+torque_components(:,:,3) = ...
   rotate_z_to_x( torques_calc_z_x(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
 
 calc_xyz = swap_x_z(calc_xyz);
@@ -402,22 +400,21 @@ calc_xyz = swap_x_z(calc_xyz);
 calc_xyz = swap_y_z(calc_xyz);
 
 debug_disp('Torques y-x:')
-torque_components(4,:) = ...
+torque_components(:,:,4) = ...
   rotate_z_to_y( torques_calc_z_x(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
 debug_disp('Torques y-y:')
-torque_components(5,:) = ...
+torque_components(:,:,5) = ...
   rotate_z_to_y( torques_calc_z_z(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
 debug_disp('Torques y-z:')
-torque_components(6,:) = ...
+torque_components(:,:,6) = ...
   rotate_z_to_y( torques_calc_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
 calc_xyz = swap_y_z(calc_xyz);
 
 
-
-torques_out = sum(torque_components);
+torques_out = sum(torque_components,3);
 end
 
 
@@ -430,11 +427,6 @@ stiffness_components = repmat(NaN,[9 3]);
 
 d_x  = rotate_x_to_z(displ);
 d_y  = rotate_y_to_z(displ);
-
-if calc_torque_bool
-  l_x = rotate_x_to_z(lever);
-  l_y = rotate_y_to_z(lever);
-end
 
 
 debug_disp('  ')
@@ -823,25 +815,25 @@ if br1==0 || br2==0
   return
 end
 
-a1 = size1(1)/2;
-b1 = size1(2)/2;
-c1 = size1(3)/2;
+a1 = size1(1);
+b1 = size1(2);
+c1 = size1(3);
 
-a2 = size2(1)/2;
-b2 = size2(2)/2;
-c2 = size2(3)/2;
+a2 = size2(1);
+b2 = size2(2);
+c2 = size2(3);
 
-a = offset(1);
-b = offset(2);
-c = offset(3);
+a = offset(1,:);
+b = offset(2,:);
+c = offset(3,:);
 
-d = a+lever(1);
-e = b+lever(2);
-f = c+lever(3);
+d = a+lever(1,:);
+e = b+lever(2,:);
+f = c+lever(3,:);
 
-Tx=0;
-Ty=0;
-Tz=0;
+Tx=zeros([1 length(offset)]);
+Ty=Tx;
+Tz=Tx;
 
 for ii=[0,1]
   for jj=[0,1]
@@ -850,24 +842,33 @@ for ii=[0,1]
         for mm=[0,1]
           for nn=[0,1]
                         
-            Cw=(-1)^mm.*c1-f;
-            Cv=(-1)^kk.*b1-e;
             Cu=(-1)^ii.*a1-d;
+            Cv=(-1)^kk.*b1-e;
+            Cw=(-1)^mm.*c1-f;
             
-            w=c-(-1)^mm.*c1+(-1)^nn.*c2;
-            v=b-(-1)^kk.*b1+(-1)^ll.*b2;
             u=a-(-1)^ii.*a1+(-1)^jj.*a2;
+            v=b-(-1)^kk.*b1+(-1)^ll.*b2;
+            w=c-(-1)^mm.*c1+(-1)^nn.*c2;
             
             s=sqrt(u.^2+v.^2+w.^2);
 
-            Ex=(1/8).*(-2.*Cw.*(-4.*v.*u+s.^2+2.*v.*s)-w.*...
-              (-8.*v.*u+s.^2+8.*Cv.*s+6.*v.*s)+4.*(2.*Cv.*u.*...
-              w.*acoth(u./s)+w.*(v.^2+2.*Cv.*v-w.*(2.*Cw+w))...
-              *acoth(v./s)-u.*(2.*w.*(Cw+w).*atan(v./w)+2*v.*...
-              (Cw+w).*log(s-u)+(w.^2+2.*Cw.*w-v.*(2.*Cv+v)).*...
-              atan(u.*v./(w.*s))))+2.*(2.*Cw+w).*(u.^2+w.^2).*log(v+s));
+            Ex=(1/8).*(...
+              -2.*Cw.*(-4.*v.*u+s.^2+2.*v.*s)-...
+              w.*(-8.*v.*u+s.^2+8.*Cv.*s+6.*v.*s)+...
+              2.*(2.*Cw+w).*(u.^2+w.^2).*log(v+s)+...
+              4.*(...
+                2.*Cv.*u.*w.*acoth(u./s) + ...
+                w.*(v.^2+2.*Cv.*v-w.*(2.*Cw+w)).*acoth(v./s) - ...
+                u.*(...
+                  2*w.*(Cw+w).*atan(v./w) + ...
+                  2*v.*(Cw+w).*log(s-u) + ...
+                  (w.^2+2.*Cw.*w-v.*(2.*Cv+v)).*atan( u.*v./(w.*s) ) ...
+                )...
+              )...
+            );
 
-            Ey=1/8*((2.*Cw+w).*u.^2-8.*u.*v.*(Cw+w)+8.*u.*v.*(Cw+w).*log(s-v)...
+            Ey=(1/8)*...
+              ((2.*Cw+w).*u.^2-8.*u.*v.*(Cw+w)+8.*u.*v.*(Cw+w).*log(s-v)...
               +4.*Cw.*u.*s+6.*w.*s.*u+(2.*Cw+w).*(v.^2+w.^2)+...
               4.*w.*(w.^2+2.*Cw.*w-u.*(2.*Cu+u)).*acoth(u./s)+...
               4.*v.*(-2.*Cu.*w.*acoth(v./s)+2.*w.*(Cw+w).*atan(u./w)...
@@ -949,8 +950,7 @@ for ii = [1 2]
     [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
     
     a2_ind = a2 == 1;
-    if any(a2_ind)
-      % singularity at a2=1 (i.e., equal radii)
+    if any(a2_ind) % singularity at a2=1 (i.e., equal radii)
       PI_term(a2_ind) = 0;
       PI_term(~a2_ind) = (1-a1.^2/a3.^2).*PI;
     else
