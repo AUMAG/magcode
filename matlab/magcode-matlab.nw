@@ -62,6 +62,8 @@ Similarly, when calculating all three of force/stiffness/torque, write
   [F S T] = magnetforces(magnet_fixed, magnet_float, displ,...
 	         'force','stiffness','torque');
 \end{verbatim}
+The ordering of `force`, `stiffness`, `torque` affects the order of the output
+arguments.
 As shown in the original example, if no calculation type is requested then
 the forces only are calculated.
 
@@ -104,7 +106,12 @@ Only the force between coaxial cylinders can be calculated at present; this is s
 `\textsf{x}' or `\textsf{y}' or `\textsf{z}' (default).
 E.g., for an alignment direction of `\textsf{z}', the faces of the cylinder will be oriented in the $x$--$y$ plane.
 \end{description}
-
+A magnetic coil can be modelled in the same way as a magnet, above; instead of
+specifying a magnetisation, however, use the following:
+\begin{description}[noitemsep,font=\ttfamily]
+\item[coil.turns] A scalar representing the number of axial turns of the coil.
+\item[coil.current] Scalar coil current flowing CCW-from-top.
+\end{description}
 
 \paragraph{Displacement inputs}
 
@@ -534,28 +541,29 @@ end
 calc_xyz( calc_xyz == -1 ) = 0;
 
 if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
+  varargin{end+1} = 'force';
   calc_force_bool = true;
 end
 
 @ After all of the calculations have occured, they're placed back into
   |varargout|. (This happens at the very end, obviously.)
+  Outputs are ordered in the same order as the inputs are specified.
 
 << Return all results >>=
 
-ii = 0;
-if calc_force_bool
-  ii = ii + 1;
-  varargout{ii} = forces_out;
-end
+varargout = {};
 
-if calc_stiffness_bool
-  ii = ii + 1;
-  varargout{ii} = stiffnesses_out;
-end
+for ii = 1:length(varargin)
+  switch varargin{ii}
+    case 'force'
+      varargout{end+1} = forces_out;
 
-if calc_torque_bool
-  ii = ii + 1;
-  varargout{ii} = torques_out;
+    case 'stiffness'
+      varargout{end+1} = stiffnesses_out;
+
+    case 'torque'
+      varargout{end+1} = torques_out;
+  end
 end
 
 

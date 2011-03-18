@@ -32,26 +32,29 @@ magnet_float.magn = 1.23;
 magnet_fixed.magdir = [0 0  1]; %  z
 magnet_float.magdir = [0 0 -1]; % -z
 
-magnet_float.lever = [0 0 -0.047]-[alpha beta gamma];
-
 N = 51;
 offset = repmat([alpha; beta; gamma],[1 N]);
+lever  = repmat([0; 0; -0.047],[1 N]);
 displ = linspace(0, 0.035, N);
 displ_range = offset+[1; 0; 0]*displ;
+lever_range = lever-displ_range;
+
+magnet_float.lever = lever_range;
 
 torque_xyz = magnetforces(magnet_fixed,magnet_float,displ_range,'torque');
 
 willfig('janssen'); clf; hold on
-plot(displ,torque_xyz(1,:),'Tag','x')
-plot(displ,torque_xyz(2,:),'Tag','y')
-plot(displ,torque_xyz(3,:),'Tag','z')
+plot(displ,torque_xyz(1,:))
+plot(displ,torque_xyz(2,:))
+plot(displ,torque_xyz(3,:))
 xlabel('Horizontal $x$ displacement, m')
 ylabel('Torques, Nm')
+
+legend('x','y','z')
 
 if ~simple_graph
   draworigin([0 0],'h','--')
   colourplot
-  labelplot
   % matlabfrag('fig/akoun-repro','dpi',3200);
 end
 

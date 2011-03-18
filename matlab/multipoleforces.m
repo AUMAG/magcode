@@ -39,6 +39,7 @@ end
 calc_xyz( calc_xyz == -1 ) = 0;
 
 if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
+  varargin{end+1} = 'force';
   calc_force_bool = true;
 end
 
@@ -128,20 +129,19 @@ if calc_stiffness_bool
 end
 
 
-ii = 0;
-if calc_force_bool
-  ii = ii + 1;
-  varargout{ii} = forces_out;
-end
+varargout = {};
 
-if calc_stiffness_bool
-  ii = ii + 1;
-  varargout{ii} = stiffnesses_out;
-end
+for ii = 1:length(varargin)
+  switch varargin{ii}
+    case 'force'
+      varargout{end+1} = forces_out;
 
-if calc_torque_bool
-  ii = ii + 1;
-  varargout{ii} = torques_out;
+    case 'stiffness'
+      varargout{end+1} = stiffnesses_out;
+
+    case 'torque'
+      varargout{end+1} = torques_out;
+  end
 end
 
 
