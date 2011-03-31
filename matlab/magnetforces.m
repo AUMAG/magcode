@@ -949,12 +949,14 @@ for ii = [1 2]
     
     [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
     
-    a2_ind = a2 == 1;
-    if any(a2_ind) % singularity at a2=1 (i.e., equal radii)
+    a2_ind = ( a2 == 1 | isnan(a2) );
+    if all(a2_ind)% singularity at a2=1 (i.e., equal radii)
       PI_term(a2_ind) = 0;
-      PI_term(~a2_ind) = (1-a1.^2/a3.^2).*PI;
-    else
+    elseif all(~a2_ind)
       PI_term = (1-a1.^2./a3.^2).*PI;
+    else % this branch just for completeness
+      PI_term = zeros(size(a2));
+      PI_term(~a2_ind) = (1-a1.^2/a3.^2).*PI;
     end
     
     f_z = a1.*a2.*a3.*( K - E./a2 - PI_term );
