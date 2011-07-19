@@ -831,7 +831,7 @@ d = a+lever(1,:);
 e = b+lever(2,:);
 f = c+lever(3,:);
 
-Tx=zeros([1 length(offset)]);
+Tx=zeros([1 size(offset,2)]);
 Ty=Tx;
 Tz=Tx;
 
