@@ -130,8 +130,6 @@ rotate_x_to_z = @(vec) [ -vec(3,:);  vec(2,:);  vec(1,:) ] ; % Ry(-90)
 
 forces_calc_x_x = @(a,b,c,A,B,C,d,J1,J2) ...
   rotate_z_to_x( forces_calc_z_z(c,b,a,C,B,A, rotate_x_to_z(d), J1,J2) );
-torques_calc_x_x = @(a,b,c,A,B,C,d,l,J1,J2) ...
-  rotate_z_to_x( torques_calc_z_z(c,b,a,C,B,A, rotate_x_to_z(d), rotate_x_to_z(l), J1,J2) );
 
 f1 = @(Dxyz,T,a,b,d,l,r) ...
   forces_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,D1(Dxyz,T,a,d,l,r),magn,-magn);
@@ -142,11 +140,13 @@ f2 = @(Dxyz,T,a,b,d,l,r) ...
 % t2 = @(Dxyz,T,a,b,d,l,r)  magnetforces(mag(a,b,1),magl(a,b,-1,L2(T,l,r)),D2(Dxyz,T,a,d,l,r),'torque');
 
 t1 = @(Dxyz,T,a,b,d,l,r) ...
-  torques_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
+...%  torques_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
+  ztorque_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
     D1(Dxyz,T,a,d,l,r),L1(T,l,r),magn,-magn);
 
 t2 = @(Dxyz,T,a,b,d,l,r) ...
-  torques_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
+...%  torques_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
+  ztorque_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
     D2(Dxyz,T,a,d,l,r),L2(T,l,r),magn,-magn);
 
 %% Setup
@@ -404,16 +404,19 @@ force = [Fx; Fy; Fz];
 end
 
 
-function calc_out = torques_calc_z_z(a1,b1,c1,a2,b2,c2,offset,lever,J1,J2)
+
+function torques = ztorque_calc_x_x(a1,b1,c1,a2,b2,c2,offset,lever,J1,J2)
 %% forces between cuboid magnets with parallel z-direction magnetisation
+%
+% coordinates are transformed from x-magnetisation to z and then back again
 
-a = offset(1,:);
-b = offset(2,:);
-c = offset(3,:);
+a = -offset(3,:);
+b =  offset(2,:);
+c =  offset(1,:);
 
-d = a+lever(1,:);
+d = a-lever(3,:);
 e = b+lever(2,:);
-f = c+lever(3,:);
+f = c+lever(1,:);
 
 Tx=zeros([1 size(offset,2)]);
 Ty=Tx;
@@ -426,13 +429,13 @@ for ii=[0,1]
         for mm=[0,1]
           for nn=[0,1]
                         
-            Cu=(-1)^ii.*a1-d;
+            Cu=(-1)^ii.*c1-d;
             Cv=(-1)^kk.*b1-e;
-            Cw=(-1)^mm.*c1-f;
+            Cw=(-1)^mm.*a1-f;
             
-            u=a-(-1)^ii.*a1+(-1)^jj.*a2;
+            u=a-(-1)^ii.*c1+(-1)^jj.*c2;
             v=b-(-1)^kk.*b1+(-1)^ll.*b2;
-            w=c-(-1)^mm.*c1+(-1)^nn.*c2;
+            w=c-(-1)^mm.*a1+(-1)^nn.*a2;
             
             s=sqrt(u.^2+v.^2+w.^2);
 
@@ -451,26 +454,7 @@ for ii=[0,1]
               )...
             );
 
-            Ey=(1/8)*...
-              ((2.*Cw+w).*u.^2-8.*u.*v.*(Cw+w)+8.*u.*v.*(Cw+w).*log(s-v)...
-              +4.*Cw.*u.*s+6.*w.*s.*u+(2.*Cw+w).*(v.^2+w.^2)+...
-              4.*w.*(w.^2+2.*Cw.*w-u.*(2.*Cu+u)).*acoth(u./s)+...
-              4.*v.*(-2.*Cu.*w.*acoth(v./s)+2.*w.*(Cw+w).*atan(u./w)...
-              +(w.^2+2.*Cw.*w-u.*(2.*Cu+u)).*atan(u.*v./(w.*s)))...
-              -2.*(2.*Cw+w).*(v.^2+w.^2).*log(u+s)+8.*Cu.*w.*s);
-
-            Ez=(1/36).*(-u.^3-18.*v.*u.^2-6.*u.*(w.^2+6.*Cu...
-              .*v-3.*v.*(2.*Cv+v)+3.*Cv.*s)+v.*(v.^2+6.*(w.^2+...
-              3.*Cu.*s))+6.*w.*(w.^2-3.*v.*(2.*Cv+v)).*atan(u./w)...
-              -6.*w.*(w.^2-3.*u.*(2.*Cu+u)).*atan(v./w)-9.*...
-              (2.*(v.^2+2.*Cv.*v-u.*(2.*Cu+u)).*w.*atan(u.*v./(w.*s))...
-              -2.*u.*(2.*Cu+u).*v.*log(s-u)-(2.*Cv+v).*(v.^2-w.^2)...
-              .*log(u+s)+2.*u.*v.*(2.*Cv+v).*log(s-v)+(2.*Cu+...
-              u).*(u.^2-w.^2).*log(v+s)));
-
             Tx=Tx+(-1)^(ii+jj+kk+ll+mm+nn)*Ex;
-            Ty=Ty+(-1)^(ii+jj+kk+ll+mm+nn)*Ey;
-            Tz=Tz+(-1)^(ii+jj+kk+ll+mm+nn)*Ez;
             
           end
         end
@@ -479,6 +463,6 @@ for ii=[0,1]
   end
 end
 
-calc_out = real([Tx; Ty; Tz].*J1*J2/(16*pi^2*1e-7));
+torques = real([0; 0; -Tx].*J1*J2/(16*pi^2*1e-7));
                         
 end
