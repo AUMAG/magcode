@@ -20,11 +20,16 @@ function [ displ, forces ] = oblique_forces( varargin )
 %
 % OUTPUTS:
 %
-%  DISPL    max size:  [  <lengths> <magangles> <gaps> <mag ratios> <points>]
-%  FORCES   max size:  [3 <lengths> <magangles> <gaps> <mag ratios> <points>]
+%  DISPL   max size: [  <lengths> <magangles> <gaps> <mag ratios> <points>]
+%  FORCES  max size: [3 <lengths> <magangles> <gaps> <mag ratios> <points>]
 %
 % Outputs are SQUEEZEd, so non-vector input will reduce the number
 % of dimensions in the output arrays.
+%
+% Coordinate system:
+%    X - "horizontal" in the plane of the magnet rotations
+%    Y - "vertical"
+%    Z - "out of plane"
 %
 
 %% Inputs and initial setup
@@ -42,17 +47,25 @@ p.addParamValue('dispoffset',[0; 0; 0]);
 p.parse(varargin{:});
 
 unitlength = p.Results.unitlength;
-magratio = p.Results.magratio;
-magn     = p.Results.magn;
-dispratio= p.Results.dispratio;
-magangle = p.Results.magangle;
-gapratio = p.Results.gapratio;
-points   = p.Results.points;
+magratio   = p.Results.magratio;
+magn       = p.Results.magn;
+dispratio  = p.Results.dispratio;
+magangle   = p.Results.magangle;
+gapratio   = p.Results.gapratio;
+points     = p.Results.points;
 dispoffset = p.Results.dispoffset;
 
 %% Theory
 
 % Rotation matrices
+%
+% R21 rotates a vector in frame 1 into frame 2.
+% (Consider it a CCW rotation.) E.g., if frame 2 is +45° from frame 1,
+% a vector at 60° in frame 1 is at 15° in frame 2.
+%
+% R12 is obviously the opposite, but it can also be considered to be simply
+% a regular rotation matrix; a vector at 15° applied to R12(45°) will then
+% be at 60°.
 
 R21 = @(T) [cosd(T) sind(T) 0;-sind(T) cosd(T) 0; 0 0 1];
 R12 = @(T) R21(-T);
@@ -66,22 +79,14 @@ mag = @(a,b,magdir) ...
 
 % Displacements between magnets in the magnets' coordinate system
 
-D1 = @(dy,T,a,d) ...
-     [ a; 0; 0 ] + R21(T)*([d; dy; 0]+dispoffset);
-
-D2 = @(dy,T,a,d) ...
-     [ a; 0; 0 ] + R31(T)*([-d; dy; 0]+dispoffset);
+D1 = @(dy,T,a,d)  [ a; 0; 0 ] + R21(T)*([ d; dy; 0]+dispoffset);
+D2 = @(dy,T,a,d)  [ a; 0; 0 ] + R31(T)*([-d; dy; 0]+dispoffset);
 
 % Forces
 
-f1 = @(dy,T,a,b,d) ...
-   magnetforces(mag(a,b,1),mag(a,b,-1),D1(dy,T,a,d));
-
-f2 = @(dy,T,a,b,d) ...
-   magnetforces(mag(a,b,1),mag(a,b,-1),D2(dy,T,a,d));
-
-F = @(dy,T,a,b,d) ...
-  R12(T)*f1(dy,T,a,b,d) + R13(T)*f2(dy,T,a,b,d);
+f1 = @(dy,T,a,b,d)  magnetforces(mag(a,b,1),mag(a,b,-1),D1(dy,T,a,d));
+f2 = @(dy,T,a,b,d)  magnetforces(mag(a,b,1),mag(a,b,-1),D2(dy,T,a,d));
+F  = @(dy,T,a,b,d)  R12(T)*f1(dy,T,a,b,d) + R13(T)*f2(dy,T,a,b,d);
 
 %% Setup
 
@@ -104,9 +109,11 @@ for uu = 1:Ns
     for gg = 1:Ng
       d = gapratio(gg)*unitlength(uu);
       for tt = 1:NT
-        displ(uu,tt,gg,mm,:) = linspace(eps,dispratio*unitlength(uu),points);
+        displ(uu,tt,gg,mm,:) = ...
+          linspace(eps,dispratio*unitlength(uu),points);
         for yy = 1:points
-          forces(:,uu,tt,gg,mm,yy) = F(displ(uu,tt,gg,mm,yy),magangle(tt),a,b,d);
+          forces(:,uu,tt,gg,mm,yy) = ...
+            F(displ(uu,tt,gg,mm,yy),magangle(tt),a,b,d);
         end
       end
     end
