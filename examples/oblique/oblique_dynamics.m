@@ -13,7 +13,7 @@ function [ T, X, param ] = oblique_dynamics( varargin )
 %   dampingratio         [0.1 0.1 0.1]
 %   maxdispl             0.2
 %   tmax                 10
-%   perturb              [0.001 0.001 1]
+%   perturb              [0.001 0.001 1] % units of [m m °]
 %   RelTol & AbsTol      1e-4
 %
 % If the moment of inertia is not given, it will be automatically
@@ -99,10 +99,11 @@ y0 = interp1(f_m(2,:),displ,m*9.8);
 param.y0 = y0;
 
 x0 = 0;
-r0 = 0;
-X0 = [x0 y0 r0];
+r0 = 0; % degrees
+X0 = [x0 y0 r0*pi/180];
 
-dX = p.Results.perturb;
+% rotation input in degrees must be converted to radians for the dynamics!
+dX = p.Results.perturb.*[1 1 pi/180];
 
 incr = 1e-6;
 
@@ -140,7 +141,7 @@ if(kr<0)
   warning('oblique:unstablerot','Torques are not stable.')
 end
 
-c = 2.*zeta.*sqrt(m*[kx ky 10]);
+c = 2.*zeta.*sqrt([m*kx m*ky J*kr]);
 
 param.stiffness = [kx ky kr];
 param.damping = c;
@@ -171,7 +172,7 @@ end
     %
     % So our states will be $[x; x'; y; y'; r; r']$
     
-    [f_m t_m] = oblique_forces3('displ',[X(1); X(3); 0],'rotation',X(5),magopt{:});
+    [f_m t_m] = oblique_forces3('displ',[X(1); X(3); 0],'rotation',X(5)*180/pi,magopt{:});
     
     dX = zeros(6,1);
     dX(1) = X(2);
@@ -210,7 +211,7 @@ end
   function dX = oblique_solve_yr(~,X)
     % constrain horizontal displacement
         
-    [f_m t_m] = oblique_forces3('displ',[0; X(1); 0],'rotation',X(3),magopt{:});
+    [f_m t_m] = oblique_forces3('displ',[0; X(1); 0],'rotation',X(3)*180/pi,magopt{:});
     
     dX = zeros(4,1);
     dX(1) = X(2);
