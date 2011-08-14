@@ -42,7 +42,7 @@ else
     'unitlength',m,...
     'magratio',0.4,...
     'dispratio',1,...
-    'points',200,...
+    'points',1000,...
     'magangle',45,...
     'gapratio',gaps ...
     );
@@ -109,7 +109,7 @@ set(gca,'xtick',0:2.5:10)
 H = annotation('textarrow',[0.8 0.75],[0.52 0.25]);
 set(H,'String',{'Increasing','gap'},arrowsetup{:})
 
-matlabfrag('fig/mbq-kvx-gaps')
+matlabfrag('fig/mbq-kvx-gaps-notused')
 
 
 %% stiffness v force
@@ -123,7 +123,6 @@ for tt = 1:N_gaps
   kk = -gradient(ff,yy(2)-yy(1));
   
   plot(ff,kk/1000)
-  
 end
 
 ylim([0 6])
@@ -153,7 +152,16 @@ for tt = 1:N_gaps
   
   ww = sqrt(kk./(ff/9.81)); % resonance frequency
   
-  plot(ff,ww/(2*pi))
+  ww_nan = isnan(ww);
+  if true % any(ww_nan)
+    ff_plot = ff;
+    ww_plot = ww;
+    ff_plot(ww_nan) = [];
+    ww_plot(ww_nan) = [];
+    plot(ff_plot([1,1:end]),[0;ww_plot]/2/pi)
+  else
+    plot(ff,ww/(2*pi))
+  end
   
   if tt == find(best_gap)
     text(ff(1)+1,ww(1)/(2*pi),['\num{',num2str(gaps(tt)),'}'],'interpreter','none')

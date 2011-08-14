@@ -172,7 +172,16 @@ for tt = 1:N_ngl
   
   ww = sqrt(kk./(ff/9.81)); % resonance frequency
   
-  plot(ff,ww/(2*pi))
+  ww_nan = isnan(ww);
+  if any(ww_nan)
+    ff_plot = ff;
+    ww_plot = ww;
+    ff_plot(ww_nan) = [];
+    ww_plot(ww_nan) = [];
+    plot(ff_plot([1,1:end]),[0;ww_plot]/2/pi)
+  else
+    plot(ff,ww/(2*pi))
+  end
   
   if tt == find(best_angle)
     text(ff(1)+1,ww(1)/(2*pi),['\SI{',num2str(angles(tt)),'}{\degree}'])
@@ -205,7 +214,7 @@ m = 0.01;
 angles = 0:5:90;
 N_ngl = length(angles);
 
-datafile = [mfilename,'2.mat'];
+datafile = ['data/',mfilename,'2.mat'];
 if exist(datafile,'file')
   load(datafile)
 else
@@ -241,7 +250,16 @@ for tt = 1:N_ngl
   
   ww = sqrt(kk./(ff/9.81)); % resonance frequency
   
-  plot(ff,ww/(2*pi))
+  ww_nan = isnan(ww);
+  if any(ww_nan)
+    ff_plot = ff;
+    ww_plot = ww;
+    ff_plot(ww_nan) = [];
+    ww_plot(ww_nan) = [];
+    plot(ff_plot([1,1:end]),[0;ww_plot]/2/pi)
+  else
+    plot(ff,ww/(2*pi))
+  end
   
   if tt == find(best_angle)
     text(ff(1)+1,ww(1)/(2*pi),['\SI{',num2str(angles(tt)),'}{\degree}'])

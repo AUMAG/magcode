@@ -218,7 +218,12 @@ for mm = 1:N_gaps
   ww_nice = ww;
   ww_nice(~nicek(nn,mm,:)) = NaN;
   
-  plot(ff,ww_nice/(2*pi))
+  ff_plot = ff;
+  ff_plot(isnan(ww_nice)) = [];
+  ww_plot = ww_nice;
+  ww_plot(isnan(ww_nice)) = [];
+  
+  plot(ff_plot([1,1:end]),[0;ww_plot/(2*pi)])
   
   pp = find(~isnan(ww),1,'first');
   ff_unstabl(mm) = ff(pp);

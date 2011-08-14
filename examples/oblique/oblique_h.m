@@ -6,7 +6,7 @@
 % forces in each direction.
 %
 % Many graphs are produced; few are used for publication. A graph is
-% produced demonstrating the positive stiffness can be achieved in two
+% produced demonstrating that positive stiffness can be achieved in two
 % orthogonal directions simultaneously.
 
 %% setup
@@ -135,56 +135,82 @@ colourplot;
 
 %%
 
-willfig('compare stiffness');
-figuresize(14,6,'centimeters')
+willfig('compare stiffness Z','square'); clf; hold on
+willfig('compare stiffness Y','square'); clf; hold on
+willfig('compare stiffness X','square'); clf; hold on
 
 % for colours only:
 for mm = 1:N_ngl
   plot(1000*yys,1000\hk_stiffness_X(mm,:))
 end
 colours = colourplot;
+clf; hold on
 
-subplot(1,2,1); clf; hold on
-subplot(1,2,2); clf; hold on
+ll = 0.7;
 
+willfig('compare stiffness X');
 for mm = 1:N_ngl
   
   pospos = hk_stiffness_Y(mm,:)>0 & hk_stiffness_X(mm,:)>0;
   
-  subplot(1,2,1); hold on
-  plot(1000*yys(pospos),1000\hk_stiffness_X(mm,pospos),'color',colours(mm,:))
+  plot(1000*yys(pospos),1000\hk_stiffness_X(mm,pospos),'color',colours(mm,:),'linewidth',ll)
   hkXneg = hk_stiffness_X(mm,:);
   hkXneg(pospos) = NaN;
-  plot(1000*yys,1000\hkXneg,'-','color',0.85*[1 1 1],'userdata','colourplot:ignore')
+  plot(1000*yys,1000\hkXneg,'-','color',0.85*[1 1 1],'userdata','colourplot:ignore','linewidth',ll)
+    
+end
+
+willfig('compare stiffness Y');
+for mm = 1:N_ngl
   
-  subplot(1,2,2); hold on
-  plot(1000*yys(pospos),1000\hk_stiffness_Y(mm,pospos),'color',colours(mm,:))
+  pospos = hk_stiffness_Y(mm,:)>0 & hk_stiffness_X(mm,:)>0;
+    
+  plot(1000*yys(pospos),1000\hk_stiffness_Y(mm,pospos),'color',colours(mm,:),'linewidth',ll)
   hkYneg = hk_stiffness_Y(mm,:);
   hkYneg(pospos) = NaN;
-  plot(1000*yys,1000\hkYneg,'-','color',0.85*[1 1 1],'userdata','colourplot:ignore')
+  plot(1000*yys,1000\hkYneg,'-','color',0.85*[1 1 1],'userdata','colourplot:ignore','linewidth',ll)
   
 end
 
-subplot(1,2,1);
+willfig('compare stiffness Z');
+for mm = 1:N_ngl
+  plot(1000*yys,1000\hk_stiffness_Z(mm,:),'linewidth',ll)
+end
+
+xl = 'Displacement $\mbqvdisp$, mm';
+yl = 'Stiffness, kN/m';
+
+willfig('compare stiffness X');
 xlim([0 9.9])
 ylim([-1 7.9])
-xlabel('Displ.\ $\mbqvdisp$, mm')
+xlabel('~')
 set(gca,'xtick',0:2:10)
-ylabel('Stiffness, kN/m')
+xlabel(xl), ylabel(yl)
 draworigin;
-annotation('arrow',[0.2 0.3],[0.7 0.7],arrowsetup{:});
-text(6,7,'Vertical')
+annotation('arrow',[0.3 0.5],[0.7 0.75],arrowsetup{:});
 
-subplot(1,2,2);
+matlabfrag('fig/mbq-kvx-gaps')
+
+willfig('compare stiffness Y');
 xlim([0 9.9])
 ylim([-1 7.9])
-xlabel('Displ.\ $\mbqvdisp$, mm')
+xlabel(xl), ylabel(yl)
 set(gca,'xtick',0:2:10)
 draworigin;
-annotation('arrow',[0.65 0.8],[0.22 0.22],arrowsetup{:})
-text(5,7,'Horizontal')
+annotation('arrow',[0.45 0.3],[0.65 0.5],arrowsetup{:})
 
-matlabfrag('fig/mbq-kvxy-gaps')
+matlabfrag('fig/mbq-kvy-gaps')
+
+willfig('compare stiffness Z');
+colourplot;
+xlim([0 9.9])
+ylim([-8.4 0.5])
+xlabel(xl), ylabel(yl)
+set(gca,'xtick',0:2:10)
+draworigin;
+annotation('arrow',[0.63 0.53],[0.57 0.78],arrowsetup{:})
+
+matlabfrag('fig/mbq-kvz-gaps')
 
 %%
 
