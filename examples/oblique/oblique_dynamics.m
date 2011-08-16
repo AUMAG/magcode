@@ -12,7 +12,7 @@ function [ T, X, param ] = oblique_dynamics( varargin )
 %   momentofinertia*
 %   dampingratio         [0.1 0.1 0.1]
 %   maxdispl             0.2
-%   tmax                 10
+%   time                 [0 10]
 %   perturb              [0.001 0.001 1] % units of [m m °]
 %   RelTol & AbsTol      1e-4
 %
@@ -22,6 +22,10 @@ function [ T, X, param ] = oblique_dynamics( varargin )
 % The 'maxdispl' parameter is used when constructing the curve for
 % finding the equilibrium position. For very light masses you may wish to
 % increase it.
+%
+% The time vector can either be of length two, in which case the time
+% steps are calculated automatically, or can be an entire time vector
+% over which the outputs are calculated.
 %
 % The actual dynamics that are solved depend on the initial perturbation!
 % If the horiz or rotational state is not perturbed, it is assumed to be
@@ -53,7 +57,7 @@ p.addParamValue('momentofinertia',NaN);
 p.addParamValue('dampingratio',[0.1 0.1 0.1]);
 p.addParamValue('maxdispl',0.2);
 
-p.addParamValue('tmax',10);
+p.addParamValue('time',[0 10]);
 p.addParamValue('perturb',[1/1000 1/1000 1]);
 
 p.addParamValue('RelTol',1e-4);
@@ -70,15 +74,17 @@ p.parse(varargin{:});
 
 %%
 
+fprintf('\n')
+
 m = p.Results.mass;
-tmax = p.Results.tmax;
+time = p.Results.time;
 
 J = p.Results.momentofinertia;
 if(isnan(J))
   % assume the system is a uniformly distributed mass
   % pretty approximate but that's okay
   J = 1/3*m*(p.Results.leverratio*p.Results.unitlength)^2;
-  fprintf('Calculated moment of inertia: %2.2g kg m^2\n',J)
+  fprintf('Calculated moment of inertia: %3.3f g m^2\n',1000*J)
 end
 param.momentofinertia = J;
 
@@ -148,19 +154,21 @@ param.damping = c;
 
 options = odeset('RelTol',p.Results.RelTol,'AbsTol',p.Results.AbsTol);
 
+tic
 if dX(1)==0 && dX(3)==0
-  disp('Constrain horiz and rotation')
-  [T,X] = ode45(@oblique_solve_y,linspace(0,tmax),[y0+dX(2) 0]);
+  disp('Constraining horiz. displacement and rotation')
+  [T,X] = ode45(@oblique_solve_y,time,[y0+dX(2) 0],options);
 elseif dX(3)==0  
-  disp('Constrain rotation')
-  [T,X] = ode45(@oblique_solve_xy,[0 tmax],[x0+dX(1) 0 y0+dX(2) 0],options);
+  disp('Constraining rotation')
+  [T,X] = ode45(@oblique_solve_xy,time,[x0+dX(1) 0 y0+dX(2) 0],options);
 elseif dX(1)==0
-  disp('Constrain horiz')
-  [T,X] = ode45(@oblique_solve_yr,linspace(0,tmax),[y0+dX(2) 0 r0+dX(3) 0],options);
+  disp('Constraining horizontal displacement')
+  [T,X] = ode45(@oblique_solve_yr,time,[y0+dX(2) 0 r0+dX(3) 0],options);
 else
   disp('Unconstrained')
-  [T,X] = ode45(@oblique_solve,linspace(0,tmax),[x0+dX(1) 0 y0+dX(2) 0 r0+dX(3) 0],options);
+  [T,X] = ode45(@oblique_solve,time,[x0+dX(1) 0 y0+dX(2) 0 r0+dX(3) 0],options);
 end
+toc
 
 %% Dynamic functions
 
