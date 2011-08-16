@@ -2,6 +2,17 @@
 %
 % For now a hodge-podge of examples.
 
+clc
+close all
+
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  colourplot = @(varargin) disp('');
+  draworigin = @(varargin) disp('');
+  matlabfrag = @(varargin) disp('');
+  moreticks = @(varargin) disp('');
+end
 
 %% Schematic for paper
 %
@@ -46,6 +57,7 @@ willfig('y displ; y force')
 plot(1000*displ_range,squeeze(f(2,:)))
 xlabel('Vertical displacement, mm');
 ylabel('Vertical force, N')
+
 
 %% Effect of magnet offset on torques
 %
@@ -99,9 +111,9 @@ for gg = 1
   plot(rot,squeeze(tz(gg,1,:)))
   ltext(rot(ind(gg)),tz(gg,1,ind(gg)),['\mbqoffset/\mbqunit=',num2str(gaps(gg))])
 end
-colourplot
-draworigin
-moreticks
+colourplot;
+draworigin;
+moreticks;
 
 xlabel('$z$ rotation $\mbqrotz$, deg.')
 ylabel('$z$ torque $\mbqptorque$, \si{mN.m}')

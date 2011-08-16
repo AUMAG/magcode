@@ -1,7 +1,21 @@
 %% Stability in 3DOF for the oblique magnet spring
 %
-% For now a hodge-podge of examples.
+%
 
+clc
+close all
+
+if ~exist('willfig','file')
+  close all
+  willfig = @(str) figure;
+  colourplot = @(varargin) disp('');
+  draworigin = @(varargin) disp('');
+  matlabfrag = @(varargin) disp('');
+  moreticks  = @(varargin) disp('');
+  axistight  = @(varargin) disp('');
+end
+
+%% Constant parameters for the dynamics
 
 mass = 3;
 zeta = [0.2 0.2 0.2];
@@ -20,7 +34,9 @@ zeta = [0.2 0.2 0.2];
 
 willfig('dyn-y'); clf; hold on
 plot(T1,1000*X1(:,1))
-xlabel('Time, s'); ylabel('Vertical displ., mm')
+xlabel('Time, s');
+ylabel('Vertical displ., mm')
+
 
 %% Dynamic analysis (vertical & horizontal)
 %
@@ -44,7 +60,6 @@ legendshrink
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
 axis tight
-matlabfrag(['fig/mbq-',figname])
 
 
 %% Dynamic analysis (vertical & horizontal)
@@ -68,9 +83,9 @@ legend boxoff
 legendshrink
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
-axis tight
+axistight;
 yl = ylim;
-colourplot
+colourplot;
 matlabfrag(['fig/mbq-',figname])
 
 figname = 'dyn-xy-map';
@@ -80,7 +95,7 @@ xlabel('Horizontal, mm')
 ylabel('Vertical, mm')
 axis equal
 ylim(yl);
-draworigin
+draworigin;
 matlabfrag(['fig/mbq-',figname])
 
 
@@ -106,8 +121,7 @@ legendshrink
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
 axis tight
-colourplot
-%matlabfrag(['fig/mbq-',figname])
+colourplot;
 
 figname = 'dyn-xy-map';
 willfig(figname,'small'); clf; hold on
@@ -115,7 +129,6 @@ cplot(1000*X2(:,1),1000*(X2(:,3)-param2.y0))
 xlabel('Horizontal, mm')
 ylabel('Vertical, mm')
 axis equal
-%matlabfrag(['fig/mbq-',figname])
 
 
 %% Vertical and rotational
@@ -131,9 +144,9 @@ axis equal
 figname = 'dyn-yr-y';
 willfig(figname,'small'); clf; hold on
 plot(T3,1000*(X3(:,1)-param.y0))
-moreticks
-axis tight
-colourplot
+moreticks;
+axistight;
+colourplot;
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
 matlabfrag(['fig/mbq-',figname])
@@ -141,9 +154,9 @@ matlabfrag(['fig/mbq-',figname])
 figname = 'dyn-yr-r';
 willfig(figname,'small'); clf; hold on
 plot(T3,180/pi*X3(:,3))
-moreticks
-axis tight
-colourplot
+moreticks;
+axistight;
+colourplot;
 xlabel('Time, s')
 ylabel('Rotation, deg.')
 matlabfrag(['fig/mbq-',figname])
@@ -164,9 +177,9 @@ matlabfrag(['fig/mbq-',figname])
 figname = 'dyn-yr-y';
 willfig(figname,'small'); clf; hold on
 plot(T3,1000*(X3(:,1)-param.y0))
-moreticks
+moreticks;
 axis tight
-colourplot
+colourplot;
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
 %matlabfrag(['fig/mbq-',figname])
@@ -174,9 +187,9 @@ ylabel('Relative displacement, mm')
 figname = 'dyn-yr-r';
 willfig(figname,'small'); clf; hold on
 plot(T3,180/pi*X3(:,3))
-moreticks
+moreticks;
 axis tight
-colourplot
+colourplot;
 xlabel('Time, s')
 ylabel('Rotation, deg.')
 %matlabfrag(['fig/mbq-',figname])
@@ -188,9 +201,9 @@ fprintf('\n\n')
 [T4, X4, param4] = oblique_dynamics(...
   'mass',mass,...
   'dampingratio',zeta,...
-  'time',[0 1.1],...
+  'time',[0 0.6],...
   'RelTol',1e-5,'AbsTol',1e-5,...
-  'perturb',[eps -0.001 eps]...
+  'perturb',[1e-9 -0.001 1e-9]...
   );
 
 %%
@@ -200,7 +213,8 @@ willfig(figname,'tiny'); clf; hold on
 plot(T4,1000*X4(:,1))
 xlabel('Time, s')
 ylabel('Displacement, mm')
-colourplot
+colourplot;
+axistight([],[],'y','+x');
 matlabfrag(['fig/mbq-',figname])
 
 figname = 'dyn-xyr-y';
@@ -208,7 +222,8 @@ willfig(figname,'tiny'); clf; hold on
 plot(T4,1000*(X4(:,3)-param4.y0))
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
-colourplot
+colourplot;
+axistight([],[],'y','+x');
 matlabfrag(['fig/mbq-',figname])
 
 figname = 'dyn-xyr-r';
@@ -216,7 +231,8 @@ willfig(figname,'tiny'); clf; hold on
 plot(T4,180/pi*X4(:,5))
 xlabel('Time, s')
 ylabel('Rotation, deg.')
-colourplot
+colourplot;
+axistight([],[],'y','+x');
 matlabfrag(['fig/mbq-',figname])
 
 
