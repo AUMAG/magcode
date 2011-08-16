@@ -225,12 +225,15 @@ for mm = 1:N_gaps
   
   plot(ff_plot([1,1:end]),[0;ww_plot/(2*pi)])
   
+  lsize = '\footnotesize';
+  msize = 10;
+  
   pp = find(~isnan(ww),1,'first');
   ff_unstabl(mm) = ff(pp);
   ww_unstabl(mm) = ww(pp);
   if any(taggap==mm)
-    plot(ff(pp),ww(pp)/2/pi,'k.','userdata','colourplot:ignore')
-    text(ff(pp),ww(pp)/2/pi,[num2str(gaps(mm)),'\,'],'horizontalalignment','right')
+    plot(ff(pp),ww(pp)/2/pi,'k.','markersize',msize,'userdata','colourplot:ignore')
+    text(ff(pp),ww(pp)/2/pi,[lsize,num2str(gaps(mm)),'~'],'horizontalalignment','right')
   end
   
   kk = squeeze(ga_stiffness_Y(nn,mm,:));
@@ -263,8 +266,8 @@ for dd = d_first:displ_step:N_displ
   
   if any(lbl==incr)
     if incr == 3, halign = 'center'; else halign = 'left'; end
-    plot(ff(1),ww(1)/2/pi,'k.','userdata','colourplot:ignore')
-    text(ff(1),ww(1)/2/pi,[' ', num2str(round(1000*ga_yrange(1,1,dd))),'\,mm'],...
+    plot(ff(1),ww(1)/2/pi,'k.','markersize',msize,'userdata','colourplot:ignore')
+    text(ff(1),ww(1)/2/pi,[' ',lsize, num2str(round(1000*ga_yrange(1,1,dd))),'\,mm'],...
       'Interpreter','none',...
       'HorizontalAlignment',halign,...
       'VerticalAlignment','baseline')

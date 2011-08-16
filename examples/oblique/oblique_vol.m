@@ -108,8 +108,9 @@ ylabel('Force, N')
 
 willfig('frequency v force, by volume'); clf; hold on
 
+msize = 10;
 
-for tt = 1:2:N_msz
+for tt = N_msz:-2:1
   
   ff = squeeze(vol_forces(2,tt,2:end-1));
   
@@ -120,23 +121,27 @@ for tt = 1:2:N_msz
   ww_nice(~nicek(tt,:)) = NaN;
   
   last_stable = find(~isnan(ww_nice),1,'last');
-  
-  plot(1000\ff,ww_nice/(2*pi))
-  plot(1000\ff(last_stable),ww_nice(last_stable)/(2*pi),'k.','userdata','colourplot:ignore')
-  
-  text(1000\ff(last_stable),ww_nice(last_stable)/(2*pi),...
-    [' $(\SI{', num2str(round(1000*msizes(tt))),'}{mm})^3$'],...
-      'Interpreter','none',...
-      'HorizontalAlignment','left',...
-      'VerticalAlignment','baseline')
-  
+    
   kk_not_nice = kk;
   kk_not_nice(nicek(tt,:)) = NaN;
   ww_not_nice = sqrt(kk_not_nice./(ff/9.81)); % resonance frequency
   
+  ff_plot = ff;
+  ff_plot(isnan(ww_nice)) = [];
+  ww_plot = ww_nice;
+  ww_plot(isnan(ww_nice)) = [];
+  
+  plot(1000\ff_plot([1,1:end]),[0;ww_plot/(2*pi)])
   plot(1000\ff,ww_not_nice/(2*pi),'-','color',0.85*[1 1 1],'userdata','colourplot:ignore')
+
+  plot(1000\ff(last_stable),ww_nice(last_stable)/(2*pi),'k.','markersize',10,'userdata','colourplot:ignore')
   
-  
+  text(1000\ff(last_stable),ww_nice(last_stable)/(2*pi),...
+    [' \small$(\SI{', num2str(round(1000*msizes(tt))),'}{mm})^3$'],...
+      'Interpreter','none',...
+      'HorizontalAlignment','left',...
+      'VerticalAlignment','baseline')
+
 end
 
 colourplot;
