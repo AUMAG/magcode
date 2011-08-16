@@ -125,27 +125,20 @@ L2  = @(T,l,r) R31(T)*( -R12(r)*[ l; 0; 0] );
 % f1 = @(Dxyz,T,a,b,d,l,r)  magnetforces(mag(a,b,1),mag(a,b,-1),D1(Dxyz,T,a,d,l,r));
 % f2 = @(Dxyz,T,a,b,d,l,r)  magnetforces(mag(a,b,1),mag(a,b,-1),D2(Dxyz,T,a,d,l,r));
 
-rotate_z_to_x = @(vec) [  vec(3,:);  vec(2,:); -vec(1,:) ] ; % Ry( 90)
-rotate_x_to_z = @(vec) [ -vec(3,:);  vec(2,:);  vec(1,:) ] ; % Ry(-90)
-
-forces_calc_x_x = @(a,b,c,A,B,C,d,J1,J2) ...
-  rotate_z_to_x( forces_calc_z_z(c,b,a,C,B,A, rotate_x_to_z(d), J1,J2) );
-
 f1 = @(Dxyz,T,a,b,d,l,r) ...
-  forces_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,D1(Dxyz,T,a,d,l,r),magn,-magn);
+  xyforces_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,D1(Dxyz,T,a,d,l,r),magn,-magn);
+
 f2 = @(Dxyz,T,a,b,d,l,r) ...
-  forces_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,D2(Dxyz,T,a,d,l,r),magn,-magn);
+  xyforces_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,D2(Dxyz,T,a,d,l,r),magn,-magn);
 
 % t1 = @(Dxyz,T,a,b,d,l,r)  magnetforces(mag(a,b,1),magl(a,b,-1,L1(T,l,r)),D1(Dxyz,T,a,d,l,r),'torque');
 % t2 = @(Dxyz,T,a,b,d,l,r)  magnetforces(mag(a,b,1),magl(a,b,-1,L2(T,l,r)),D2(Dxyz,T,a,d,l,r),'torque');
 
 t1 = @(Dxyz,T,a,b,d,l,r) ...
-...%  torques_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
   ztorque_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
     D1(Dxyz,T,a,d,l,r),L1(T,l,r),magn,-magn);
 
 t2 = @(Dxyz,T,a,b,d,l,r) ...
-...%  torques_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
   ztorque_calc_x_x(a/2,b/2,b/2,a/2,b/2,b/2,...
     D2(Dxyz,T,a,d,l,r),L2(T,l,r),magn,-magn);
 
@@ -338,8 +331,10 @@ end
 
 
 
-function [force] = forces_calc_z_z(a,b,c,A,B,C,displ,J1,J2)
-%% forces between cuboid magnets with parallel z-direction magnetisation
+function [force] = xyforces_calc_x_x(a,b,c,A,B,C,displ,J1,J2)
+%% xyforces_calc_x_x
+% x & y forces between cuboid magnets with x-direction magnetisations
+% (transformed from the usual forces_calc_z_z)
 %
 % The theory of Akoun & Yonnet (1984)
 %
@@ -349,66 +344,64 @@ function [force] = forces_calc_z_z(a,b,c,A,B,C,displ,J1,J2)
 %                       floating magnet
 %  (alpha,beta,gamma) - distance between magnet centres
 %              J[,J2] - magnetisations of the
-%                       magnet(s) in the z-direction
+%                       magnet(s) in the x-direction
 %
 % Outputs: (Fx,Fy,Fz) - Forces on the second magnet
 %
-%
-% You probably want to call
+% You might want to call
 %   warning off MATLAB:divideByZero
 %   warning off MATLAB:log:logOfZero
 
-alpha = displ(1);
-beta = displ(2);
-gamma = displ(3);
+alpha = -displ(3,:);
+beta  =  displ(2,:);
+gamma =  displ(1,:);
 
-[index_h, index_j, index_k, index_l, index_p, index_q] = ndgrid([0 1]);
-index_sum = (-1).^(index_h+index_j+index_k+index_l+index_p+index_q);
+Fx=zeros([1 size(displ,2)]);
+Fy=Fx;
+Fz=Fx;
 
-% (Using this method is actually LESS efficient than using six for
-% loops for h..q over [0 1], but it looks a bit nicer, huh?)
+for ii=[0,1]
+  for jj=[0,1]
+    for kk=[0,1]
+      for ll=[0,1]
+        for mm=[0,1]
+          for nn=[0,1]
+            
+            u = alpha + C*(-1).^jj - c*(-1).^ii;
+            v = beta  + B*(-1).^ll - b*(-1).^kk;
+            w = gamma + A*(-1).^nn - a*(-1).^mm;
+            r = sqrt(u.^2+v.^2+w.^2);
+            
+            f_y = ...
+              + 0.5*(u.^2-w.^2).*log(r-v) ...
+              + u.*v.*log(r-u) ...
+              + u.*w.*atan(u.*v./r./w)...
+              + 0.5*r.*v;
+            f_z = ...
+              - u.*w.*log(r-u) ...
+              - v.*w.*log(r-v) ...
+              + u.*v.*atan(u.*v./r./w) ...
+              - r.*w;
 
-u = alpha + A*(-1).^index_j - a*(-1).^index_h;
-v = beta  + B*(-1).^index_l - b*(-1).^index_k;
-w = gamma + C*(-1).^index_q - c*(-1).^index_p;
-r = sqrt(u.^2+v.^2+w.^2);
-
-magconst = J1*J2/(4*pi*(4*pi*1e-7));
-
-f_x = ...
-  + 0.5*(v.^2-w.^2).*log(r-u) ...
-  + u.*v.*log(r-v) ...
-  + v.*w.*atan(u.*v./r./w) ...
-  + 0.5*r.*u;
-f_y = ...
-  + 0.5*(u.^2-w.^2).*log(r-v) ...
-  + u.*v.*log(r-u) ...
-  + u.*w.*atan(u.*v./r./w)...
-  + 0.5*r.*v;
-f_z = ...
-  - u.*w.*log(r-u) ...
-  - v.*w.*log(r-v) ...
-  + u.*v.*atan(u.*v./r./w) ...
-  - r.*w;
-
-fx = index_sum.*f_x;
-fy = index_sum.*f_y;
-fz = index_sum.*f_z;
-
-Fx = magconst*sum(fx(:));
-Fy = magconst*sum(fy(:));
-Fz = magconst*sum(fz(:));
-
-force = [Fx; Fy; Fz];
-
+            Fy=Fy+(-1)^(ii+jj+kk+ll+mm+nn)*f_y;
+            Fz=Fz+(-1)^(ii+jj+kk+ll+mm+nn)*f_z;
+            
+          end
+        end
+      end
+    end
+  end
 end
 
+force = J1*J2/(16*pi*pi*1e-7)*[Fz; Fy; -Fx];
+
+end
 
 
 function torques = ztorque_calc_x_x(a1,b1,c1,a2,b2,c2,offset,lever,J1,J2)
 %% forces between cuboid magnets with parallel z-direction magnetisation
 %
-% coordinates are transformed from x-magnetisation to z and then back again
+% coordinates are transformed from the code in magnetforces.m
 
 a = -offset(3,:);
 b =  offset(2,:);
@@ -463,6 +456,6 @@ for ii=[0,1]
   end
 end
 
-torques = real([0; 0; -Tx].*J1*J2/(16*pi^2*1e-7));
+torques = real([Tz; Ty; -Tx].*J1*J2/(16*pi^2*1e-7));
                         
 end
