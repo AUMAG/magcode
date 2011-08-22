@@ -129,7 +129,14 @@ for nn = 1:Ntotal
   
 end
 
-loglog(Ndisp,Ttime)
+
+try
+  willfig('cylmag-bench','large'); clf; hold on
+catch
+  figure
+end
+plot(Ndisp,Ttime)
+set(gca,'xscale','log','yscale','log')
 xlabel('Number of calculations')
 ylabel('Execution time per number of calculations, ms')
 
