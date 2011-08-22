@@ -1,4 +1,4 @@
-function [ forces, torques ] = oblique_forces3( varargin )
+function [ forces, torques, fake_torques ] = oblique_forces3( varargin )
 %OBLIQUE_FORCES
 %
 % This function calculates the forces generated on a magnetic spring
@@ -156,6 +156,7 @@ points = size(displ,2);
 % initialise variables
 forces  = repmat(NaN,[3 Ns NT Ng Nm NL NR points]);
 torques = repmat(NaN,[3 Ns NT Ng Nm NL NR points]);
+torques_error = repmat(NaN,[3 Ns NT Ng Nm NL NR points]);
 
 %% Forces calc
 
@@ -182,121 +183,29 @@ for uu = 1:Ns
               
               f11 = R12(t)*f1(displ(:,yy),t,a,b,d,l,r);
               f21 = R13(t)*f2(displ(:,yy),t,a,b,d,l,r);
+
               forces(:,uu,tt,gg,mm,ll,rr,yy)  = f11 + f21;
               
-              if nargout == 2
+              if nargout >= 2
                 t11 = t1(displ(:,yy),t,a,b,d,l,r);
                 t21 = t2(displ(:,yy),t,a,b,d,l,r);
                 torques(:,uu,tt,gg,mm,ll,rr,yy) = t11 + t21;
               end
+              
+              if nargout >= 3
+                % this is the unit vector in the direction perpendicular to
+                % the lever arms; then calculate the component of force in
+                % that direction for calculating the 'fake torque':
+                unit_lever_vector = [cosd(90+r); sind(90+r)];
+                fr11 = dot(f11(1:2),unit_lever_vector);
+                fr21 = dot(f21(1:2),unit_lever_vector);
+                % fprintf('Individual magnet forces:\n %2.1f N and %2.1f N at a lever arm of %2.2f m.\n',...
+                %   fr11,fr21,l);
+                fake_torques(:,uu,tt,gg,mm,ll,rr,yy) = (-fr11+fr21)*l;
+              end
 
               if plot_bool
-                
-                cla
-                hold on
-
-                rotdisp = repmat(r11(l,r),[1 5]);
-                rotdisp(3,:) = [];
-                
-                rot = @(t) [cosd(t) -sind(t);sind(t) cosd(t)];
-                mag1 = rot(t)*[[-a;-b] [a;-b] [a;b] [-a;b] [-a;-b]]/2;
-                mag2 = pvec(2*[d+l;0]+[2*a*cosd(t);0]) + ...
-                       rot(-t)*([[-a;-b] [a;-b] [a;b] [-a;b] [-a;-b]]/2);
-                     
-                mag3u = mag1 + pvec(displ([1 2],yy)+[ d;0]+[ a*cosd(t);a*sind(t)]);
-                mag3 = mag3u + rotdisp;
-                mag3c = mean(mag3(:,1:4),2);
-                mag3r = rot(r)*(mag3 - pvec(mag3c)) + pvec(mag3c);
-                
-                mag4u = mag2 + pvec(displ([1 2],yy)+[-d;0]+[-a*cosd(t);a*sind(t)]);
-                mag4 = mag4u - rotdisp;
-                mag4c = mean(mag4(:,1:4),2);
-                mag4r = rot(r)*(mag4 - pvec(mag4c)) + pvec(mag4c);
-                
-                rotc = [mean([mag3c(1), mag4c(1)]),mean([mag3c(2), mag4c(2)])]';
-
-                plot([mag3c(1) mag4c(1)],[mag3c(2) mag4c(2)],'k')
-
-                plot(mag1(1,:),mag1(2,:),'k')
-                plot(mag2(1,:),mag2(2,:),'k')
-                
-                if plot_extras_bool
-                  plot([mag1(1,4) mag2(1,3)],[mag1(2,1) mag2(2,2)],'k--')
-
-                  plot(mag3(1,:),mag3(2,:),'k')
-                  plot(mag4(1,:),mag4(2,:),'k')
-                  if r ~= 0
-                    grey = 0.7*[1 1 1];
-                    plot(mag3r(1,:),mag3r(2,:),'--','color',grey)
-                    plot(mag4r(1,:),mag4r(2,:),'--','color',grey)
-                  end
-                else
-                  plot(mag3r(1,:),mag3r(2,:),'k')
-                  plot(mag4r(1,:),mag4r(2,:),'k')
-                end
-                
-                if plot_extras_bool
-                  
-                  text(mag3c(1)+[0.25 0.75]*(mag4c(1)-mag3c(1)),mag3c(2)+[0.25 0.75]*(mag4c(2)-mag3c(2)),...
-                    '$\mbqlever$',...
-                    'VerticalAlignment','bottom')
-                  
-                  plot_angle_label( rotc, r, a, '$\mbqrotz$')
-                  plot_angle_label( mag1(:,1), t, a, '$\theta$')
-                end
-                
-                axis tight
-                set(gca,'xtick',[],'ytick',[])
-                if plotsize ~= 0
-                  xl = xlim;
-                  xlim(mean(xl)+[-plotsize(1) plotsize(1)]/2)
-                  axis equal
-                  yl = ylim;
-                  ylim([-0.1*plotsize(1) yl(2)-yl(1)]);
-                else
-                  axis equal
-                end
-                axis off
-                
-                plot_vec(mag3c,f11,'facecolor',[0 0 1],'edgecolor',[0 0 1])
-                plot_vec(mag4c,f21,'facecolor',[0 0 1],'edgecolor',[0 0 1])
-                plot_vec(rotc,f11+f21,'facecolor',[1 0 0],'edgecolor',[1 0 0],'linewidth',1.4)
-                
-                plot(rotc(1),rotc(2),'k.','markersize',12)
-                
-                this_torque = t11(3,:)+t21(3,:);
-                if abs(this_torque) > 1e-6
-                  
-                  torque_scale = 10;
-                  if plot_torque_scale == 0
-                    torque_rot = plot_torque_arc;
-                    disp(['Torque scale of ',num2str(abs(pi/4/this_torque))])
-                  else
-                    torque_rot = abs(this_torque)*plot_torque_scale;
-                  end
-                  
-                  torque_radius = l*plot_torque_radius_ratio;
-                  
-                  torque_points = 50;
-                  if this_torque > 0
-                    torque_angles = linspace(-torque_rot+r*pi/180,torque_rot+r*pi/180,torque_points);
-                  else
-                    torque_angles = fliplr(linspace(pi-torque_rot+r*pi/180,pi+torque_rot+r*pi/180,torque_points));                    
-                  end
-                  
-                  torque_arc = [rotc(1)+torque_radius*cos(torque_angles);
-                                rotc(2)+torque_radius*sin(torque_angles)];
-                  
-                  torque_arrow_colour = [0 0.8 0.2];
-                  plot(torque_arc(1,:),torque_arc(2,:),...
-                    'color',torque_arrow_colour,'linewidth',1.4)
-                  
-                  arrow(torque_arc(:,end-1),torque_arc(:,end),'Length',12,'facecolor',torque_arrow_colour,'edgecolor',torque_arrow_colour)
-                  
-                end
-
-                drawnow
-                
+                plot_schematic();
               end
               
             end
@@ -308,23 +217,138 @@ for uu = 1:Ns
 end
 
 forces = squeeze(forces);
-if nargout == 2
+if nargout >= 2
   torques = squeeze(torques);
+  fake_torques = squeeze(fake_torques);
 end
 
-  function plot_vec(r,v,varargin)
+  function plot_schematic()
     
-    arrow(r(:),r(:)+plotvecscale*v(1:2),'length',10,varargin{:})
+    cla; hold on
     
-  end
-
-  function plot_angle_label(cp,t,l,s)
-    plot(cp(1)+[0,l],cp(2)+[0,0],'k--')
-    ap = cp+rot(t/2)*[2*l/3; 0];
-    lp = ap+[0; -l/2];
-    plot([ap(1) lp(1)],[ap(2) lp(2)],'color',0.6*[1 1 1])
-    % plot(ap(1),ap(2),'k.')
-    text(lp(1),lp(2),['\,',s])
+    rotdisp = repmat(r11(l,r),[1 5]);
+    rotdisp(3,:) = [];
+    
+    rot = @(t) [cosd(t) -sind(t);sind(t) cosd(t)];
+    mag1 = rot(t)*[[-a;-b] [a;-b] [a;b] [-a;b] [-a;-b]]/2;
+    mag2 = pvec(2*[d+l;0]+[2*a*cosd(t);0]) + ...
+      rot(-t)*([[-a;-b] [a;-b] [a;b] [-a;b] [-a;-b]]/2);
+    
+    mag3u = mag1 + pvec(displ([1 2],yy)+[ d;0]+[ a*cosd(t);a*sind(t)]);
+    mag3 = mag3u + rotdisp;
+    mag3c = mean(mag3(:,1:4),2);
+    mag3r = rot(r)*(mag3 - pvec(mag3c)) + pvec(mag3c);
+    
+    mag4u = mag2 + pvec(displ([1 2],yy)+[-d;0]+[-a*cosd(t);a*sind(t)]);
+    mag4 = mag4u - rotdisp;
+    mag4c = mean(mag4(:,1:4),2);
+    mag4r = rot(r)*(mag4 - pvec(mag4c)) + pvec(mag4c);
+    
+    rotc = [mean([mag3c(1), mag4c(1)]),mean([mag3c(2), mag4c(2)])]';
+    
+    plot([mag3c(1) mag4c(1)],[mag3c(2) mag4c(2)],'k')
+    
+    plot(mag1(1,:),mag1(2,:),'k')
+    plot(mag2(1,:),mag2(2,:),'k')
+    
+    if plot_extras_bool
+      plot([mag1(1,4) mag2(1,3)],[mag1(2,1) mag2(2,2)],'k--')
+      
+      plot(mag3(1,:),mag3(2,:),'k')
+      plot(mag4(1,:),mag4(2,:),'k')
+      if r ~= 0
+        grey = 0.7*[1 1 1];
+        plot(mag3r(1,:),mag3r(2,:),'--','color',grey)
+        plot(mag4r(1,:),mag4r(2,:),'--','color',grey)
+      end
+    else
+      plot(mag3r(1,:),mag3r(2,:),'k')
+      plot(mag4r(1,:),mag4r(2,:),'k')
+    end
+    
+    axis tight
+    set(gca,'xtick',[],'ytick',[])
+    if plotsize ~= 0
+      xl = xlim;
+      xlim(mean(xl)+[-plotsize(1) plotsize(1)]/2)
+      axis equal
+      yl = ylim;
+      ylim([-0.1*plotsize(1) yl(2)-yl(1)]);
+    else
+      axis equal
+    end
+    axis off
+    
+    if plot_extras_bool
+      
+      text(mag3c(1)+[0.25 0.75]*(mag4c(1)-mag3c(1)),mag3c(2)+[0.25 0.75]*(mag4c(2)-mag3c(2)),...
+        '$\mbqlever$',...
+        'VerticalAlignment','bottom')
+      
+      plot_angle_label( rotc, r, 1.5*a, '$\mbqrotz$')
+      text(mag1(1,1)+0.005,mag1(2,1),'$\theta$','userdata','matlabfrag:$\theta$',...
+        'VerticalAlignment','bottom','interpreter','latex')
+    end
+    
+    plot_vec(mag3c,f11,'color',[0 0 1],'linewidth',1)
+    plot_vec(mag4c,f21,'color',[0 0 1],'linewidth',1)
+    plot_vec(rotc,f11+f21,'color',[1 0 0],'linewidth',1.5)
+    
+    plot(rotc(1),rotc(2),'k.','markersize',12)
+    
+    this_torque = t11(3,:)+t21(3,:);
+    
+    if abs(this_torque) > 1e-6
+      
+      torque_scale = 10;
+      if plot_torque_scale == 0
+        torque_rot = plot_torque_arc;
+        disp(['Torque scale of ',num2str(abs(pi/4/this_torque))])
+      else
+        torque_rot = abs(this_torque)*plot_torque_scale;
+      end
+      
+      torque_radius = l*plot_torque_radius_ratio;
+      
+      torque_points = 50;
+      if this_torque > 0
+        torque_angles = linspace(-torque_rot+r*pi/180,torque_rot+r*pi/180,torque_points);
+      else
+        torque_angles = fliplr(linspace(pi-torque_rot+r*pi/180,pi+torque_rot+r*pi/180,torque_points));
+      end
+      
+      torque_arc = [rotc(1)+torque_radius*cos(torque_angles);
+        rotc(2)+torque_radius*sin(torque_angles)];
+      
+      torque_arrow_colour = [0 0.8 0.2];
+      h = plot(torque_arc(1,:),torque_arc(2,:),...
+        'color',torque_arrow_colour,'linewidth',1.4);
+      addArrowhead(h,'end','angle',15,'style','lines')
+      
+      % arrow(torque_arc(:,end-1),torque_arc(:,end),...
+      % 'Length',12,'facecolor',torque_arrow_colour,...
+      % 'edgecolor',torque_arrow_colour);
+      
+    end
+    
+    drawnow
+    
+    function plot_vec(r,v,varargin)
+      
+      h = plot([r(1),r(1)+plotvecscale*v(1)],[r(2),r(2)+plotvecscale*v(2)],varargin{:});
+      addArrowhead(h,'end','angle',15,'length',10);
+      
+    end
+    
+    function plot_angle_label(cp,t,l,s)
+      plot(cp(1)+[0,l],cp(2)+[0,0],'k--')
+      ap = cp+rot(t/2)*[2*l/3; 0];
+      lp = ap+[0; -l/2];
+      plot([ap(1) lp(1)],[ap(2) lp(2)],'color',0.6*[1 1 1])
+      % plot(ap(1),ap(2),'k.')
+      text(lp(1),lp(2),['\,',s])
+    end
+    
   end
 
 end
