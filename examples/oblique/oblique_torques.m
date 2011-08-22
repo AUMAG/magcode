@@ -28,6 +28,7 @@ willfig('angle-schem','huge'); clf
   'plottorquerratio',0.3,...
   'magangle',30,...
   'gapratio',0.5,...
+  'magratio',0.4,...
   'rotation',15 ...
 );
 
@@ -67,10 +68,10 @@ ylabel('Vertical force, N')
 clc
 rot = 0:0.5:10;
 vert = 0.01;
-lever = [2 3];
+lever = 2;
 gaps = [0.25 0.5 1];
 
-[f t] = oblique_forces3(...
+[f t ft] = oblique_forces3(...
   'displ',[0;1;0]*vert,...
   'magangle',30,...
   'leverratio',lever,...
@@ -78,14 +79,17 @@ gaps = [0.25 0.5 1];
   'rotation',rot...
 );
 
-% Schematics of the three magnet offsets
+tz = 1000*squeeze(t(3,:,:));
+
+
+%% Schematics of the three magnet offsets
 
 ta = [pi/2 pi/4 pi/4];
 for ii = 1:3
 willfig(['show-rot-',num2str(ii)]); clf; hold on
 [f t] = oblique_forces3(...
   'displ',[0;vert;0],...
-  'leverratio',lever(1),...
+  'leverratio',lever,...
   'plot',true,...
   'plotsize',0.1,...
   'plottorquearc',ta(ii),...
@@ -96,22 +100,27 @@ willfig(['show-rot-',num2str(ii)]); clf; hold on
 matlabfrag(['fig/mbq-rot-ex-diag-',num2str(ii)])
 end
 
-% Graphs of torque vs rotation
+
+%% Graphs of torque vs rotation
 
 ltext = @(x,y,s) text(x,y,num2str(s),'horizontalalignment','c','userdata',...
-  ['matlabfrag:\fboxsep=1pt\colorbox{white}{$',num2str(s),'$}']);
+  ['matlabfrag:\fboxsep=2pt\colorbox{white}{$',num2str(s),'$}']);
 
-willfig('rotation; z torque 2','small'); clf; hold on
+willfig('rotation; z torque','small'); clf; hold on
 ind = 17*ones(size(gaps));
 for gg = 2:length(gaps)
-  plot(rot,squeeze(tz(gg,1,:)))
-  ltext(rot(ind(gg)),tz(gg,1,ind(gg)),num2str(gaps(gg)))
+  plot(rot,squeeze(tz(gg,:)))
+  ltext(rot(ind(gg)),tz(gg,ind(gg))-0.5,num2str(gaps(gg)))
 end
 for gg = 1
-  plot(rot,squeeze(tz(gg,1,:)))
-  ltext(rot(ind(gg)),tz(gg,1,ind(gg)),['\mbqoffset/\mbqunit=',num2str(gaps(gg))])
+  plot(rot,squeeze(tz(gg,:)))
+  ltext(rot(ind(gg)),tz(gg,ind(gg)),['\mbqoffset/\mbqunit=',num2str(gaps(gg))])
 end
-colourplot;
+for gg = [2 3 1]
+  % these are the "fake" torques calculated from the direct forces
+  plot(rot,1000*ft(gg,:),'--')
+end
+colourplot(2);
 draworigin;
 moreticks;
 
@@ -119,6 +128,4 @@ xlabel('$z$ rotation $\mbqrotz$, deg.')
 ylabel('$z$ torque $\mbqptorque$, \si{mN.m}')
 
 matlabfrag('fig/mbq-rot-ex')
-
-
 
