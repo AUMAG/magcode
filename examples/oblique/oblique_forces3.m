@@ -219,6 +219,8 @@ end
 forces = squeeze(forces);
 if nargout >= 2
   torques = squeeze(torques);
+end
+if nargout >= 3
   fake_torques = squeeze(fake_torques);
 end
 
@@ -279,22 +281,33 @@ end
     end
     axis off
     
+    plot_vec(mag3c,f11,'f11',{'color',[0 0 1],'linewidth',1},...
+      {'verticalalignment','bottom',...
+       'userdata','matlabfrag:$\mbqforce_1$'} ...
+    )
+    plot_vec(mag4c,f21,'f21',{'color',[0 0 1],'linewidth',1},...
+      {'verticalalignment','bottom','horizontalalignment','right',...
+       'userdata','matlabfrag:$\mbqforce_2$'} ...
+    )
+    plot_vec(rotc,f11+f21,'ft',{'color',[1 0 0],'linewidth',1.5},...
+      {'verticalalignment','bottom','horizontalalignment','left',...
+       'userdata','matlabfrag:$\mbqforce$'} ...
+    )
+    
+    plot(rotc(1),rotc(2),'k.','markersize',12)
+    
     if plot_extras_bool
       
       text(mag3c(1)+[0.25 0.75]*(mag4c(1)-mag3c(1)),mag3c(2)+[0.25 0.75]*(mag4c(2)-mag3c(2)),...
-        '$\mbqlever$',...
-        'VerticalAlignment','bottom')
+        '$l$','userdata','$\mbqlever$',...
+        'VerticalAlignment','bottom','interpreter','latex')
       
       plot_angle_label( rotc, r, 1.5*a, '$\mbqrotz$')
+      
       text(mag1(1,1)+0.005,mag1(2,1),'$\theta$','userdata','matlabfrag:$\theta$',...
         'VerticalAlignment','bottom','interpreter','latex')
+            
     end
-    
-    plot_vec(mag3c,f11,'color',[0 0 1],'linewidth',1)
-    plot_vec(mag4c,f21,'color',[0 0 1],'linewidth',1)
-    plot_vec(rotc,f11+f21,'color',[1 0 0],'linewidth',1.5)
-    
-    plot(rotc(1),rotc(2),'k.','markersize',12)
     
     this_torque = t11(3,:)+t21(3,:);
     
@@ -325,18 +338,29 @@ end
         'color',torque_arrow_colour,'linewidth',1.4);
       addArrowhead(h,'end','angle',15,'style','lines')
       
-      % arrow(torque_arc(:,end-1),torque_arc(:,end),...
-      % 'Length',12,'facecolor',torque_arrow_colour,...
-      % 'edgecolor',torque_arrow_colour);
+      if plot_extras_bool
+        if this_torque > 0
+          text(torque_arc(1,end),torque_arc(2,end),'$T_z$\,','horizontalalignment','right')
+        else
+          text(torque_arc(1,end),torque_arc(2,end),'\,$T_z$')
+        end
+      end
       
     end
     
     drawnow
     
-    function plot_vec(r,v,varargin)
+    function plot_vec(r,v,s,plotargs,textargs)
       
-      h = plot([r(1),r(1)+plotvecscale*v(1)],[r(2),r(2)+plotvecscale*v(2)],varargin{:});
+      xt = r(1)+plotvecscale*v(1);
+      yt = r(2)+plotvecscale*v(2);
+      
+      h = plot([r(1),xt],[r(2),yt],plotargs{:});
       addArrowhead(h,'end','angle',15,'length',10);
+      
+      if plot_extras_bool
+        text(xt,yt,s,'verticalalignment','bottom',textargs{:});
+      end
       
     end
     

@@ -124,8 +124,8 @@ colourplot(2);
 draworigin;
 moreticks;
 
-xlabel('$z$ rotation $\mbqrotz$, deg.')
-ylabel('$z$ torque $\mbqptorque$, \si{mN.m}')
+xlabel('Rotation $\mbqrotz$, deg.')
+ylabel('Torque $\mbqptorque$, \si{mN.m}')
 
 matlabfrag('fig/mbq-rot-ex')
 
