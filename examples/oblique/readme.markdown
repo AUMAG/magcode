@@ -11,8 +11,8 @@ The figures in the manuscript are generated with the following files:
 * Figure 5: `oblique h.m`
 * Figure 6: `oblique gaps angles.m`
 * Figure 7: `oblique vol.m`
-* Figure 8–10: `oblique_torques.m`
-* Figures 11–13: `oblique_stability.m`
+* Figures  8–11: `oblique_torques.m`
+* Figures 12–14: `oblique_stability.m`
 
 
 Usage and explanatory comments
