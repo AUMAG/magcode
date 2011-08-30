@@ -42,6 +42,8 @@ ylabel('Vertical displ., mm')
 %
 % Specifically choose parameters such that the horizontal stiffness is
 % negative.
+%
+% The results are unstable.
 
 [T2, X2, param2] = oblique_dynamics(...
   'mass',0.5*mass,...
@@ -66,6 +68,8 @@ axis tight
 %
 % Specifically choose parameters such that the horizontal stiffness is
 % positive.
+%
+% This produces Figure 12.
 
 [T2, X2, param2] = oblique_dynamics(...
   'mass',mass,...
@@ -132,6 +136,8 @@ axis equal
 
 
 %% Vertical and rotational
+%
+% This produces Figure 13.
 
 [T3, X3, param] = oblique_dynamics(...
   'mass',mass,...
@@ -164,7 +170,7 @@ matlabfrag(['fig/mbq-',figname])
 
 %% Vertical and rotational
 %
-% This time unstable
+% This time unstable.
 
 [T3, X3, param] = oblique_dynamics(...
   'mass',mass,...
@@ -196,6 +202,8 @@ ylabel('Rotation, deg.')
 
 
 %% All three: Unconstrained is unstable!
+%
+% This produces Figure 14.
 
 fprintf('\n\n')
 [T4, X4, param4] = oblique_dynamics(...
@@ -205,8 +213,6 @@ fprintf('\n\n')
   'RelTol',1e-5,'AbsTol',1e-5,...
   'perturb',[1e-9 -0.001 1e-9]...
   );
-
-%%
 
 figname = 'dyn-xyr-x';
 willfig(figname,'tiny'); clf; hold on

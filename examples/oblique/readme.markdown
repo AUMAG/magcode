@@ -14,6 +14,7 @@ The figures in the manuscript are generated with the following files:
 * Figures  8–11: `oblique_torques.m`
 * Figures 12–14: `oblique_stability.m`
 
+Schematics drawn in `oblique_torques.m` require the [fletcher](https://github.com/zprime/fletcher) Matlab package to be installed.
 
 Usage and explanatory comments
 ------------------------------
