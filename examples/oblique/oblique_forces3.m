@@ -53,6 +53,11 @@ p.addParamValue('rotation',0);
 p.addParamValue('plot',false);
 p.addParamValue('plotsize',0);
 p.addParamValue('plotextras',false);
+p.addParamValue('plotforces',true);
+p.addParamValue('plotlabels',false);
+p.addParamValue('plotmagnetrotation',true);
+p.addParamValue('plotmagnetapprox',false);
+p.addParamValue('plotunrotated',false);
 p.addParamValue('plotvecscale',0.01);
 p.addParamValue('plottorquescale',0);
 p.addParamValue('plottorquearc',pi/4);
@@ -71,6 +76,11 @@ rotation   = p.Results.rotation;
 plot_bool  = p.Results.plot;
 plotsize   = p.Results.plotsize;
 plot_extras_bool  = p.Results.plotextras;
+plot_rotmag_bool  = p.Results.plotmagnetrotation;
+plot_forces_bool  = p.Results.plotforces;
+plot_labels_bool  = p.Results.plotlabels;
+plot_magapprox_bool  = p.Results.plotmagnetapprox;
+plot_unrotated_bool  = p.Results.plotunrotated;
 plotvecscale      = p.Results.plotvecscale;
 plot_torque_scale      = p.Results.plottorquescale;
 plot_torque_arc      = p.Results.plottorquearc;
@@ -196,7 +206,7 @@ for uu = 1:Ns
                 % this is the unit vector in the direction perpendicular to
                 % the lever arms; then calculate the component of force in
                 % that direction for calculating the 'fake torque':
-                unit_lever_vector = [cosd(90+r); sind(90+r)];
+                unit_lever_vector = [-sind(r); cosd(r)];
                 fr11 = dot(f11(1:2),unit_lever_vector);
                 fr21 = dot(f21(1:2),unit_lever_vector);
                 % fprintf('Individual magnet forces:\n %2.1f N and %2.1f N at a lever arm of %2.2f m.\n',...
@@ -228,6 +238,10 @@ end
     
     cla; hold on
     
+    grey_color = 0.7*[1 1 1];
+    red_color  = [1 0 0];
+    blue_color = [0 0 1];
+        
     rotdisp = repmat(r11(l,r),[1 5]);
     rotdisp(3,:) = [];
     
@@ -239,11 +253,13 @@ end
     mag3u = mag1 + pvec(displ([1 2],yy)+[ d;0]+[ a*cosd(t);a*sind(t)]);
     mag3 = mag3u + rotdisp;
     mag3c = mean(mag3(:,1:4),2);
+    mag3uc = mean(mag3u(:,1:4),2);
     mag3r = rot(r)*(mag3 - pvec(mag3c)) + pvec(mag3c);
     
     mag4u = mag2 + pvec(displ([1 2],yy)+[-d;0]+[-a*cosd(t);a*sind(t)]);
     mag4 = mag4u - rotdisp;
     mag4c = mean(mag4(:,1:4),2);
+    mag4uc = mean(mag4u(:,1:4),2);
     mag4r = rot(r)*(mag4 - pvec(mag4c)) + pvec(mag4c);
     
     rotc = [mean([mag3c(1), mag4c(1)]),mean([mag3c(2), mag4c(2)])]';
@@ -254,18 +270,38 @@ end
     plot(mag2(1,:),mag2(2,:),'k')
     
     if plot_extras_bool
+      plot_forces_bool = true;
+      plot_labels_bool = true;
       plot([mag1(1,4) mag2(1,3)],[mag1(2,1) mag2(2,2)],'k--')
-      
-      plot(mag3(1,:),mag3(2,:),'k')
-      plot(mag4(1,:),mag4(2,:),'k')
-      if r ~= 0
-        grey = 0.7*[1 1 1];
-        plot(mag3r(1,:),mag3r(2,:),'--','color',grey)
-        plot(mag4r(1,:),mag4r(2,:),'--','color',grey)
-      end
+    end
+    
+    if plot_unrotated_bool && r == 0
+      plot([mag3uc(1) mag4uc(1)],[mag3uc(2) mag4uc(2)],'color',grey_color)
+      plot(mag3u(1,:),mag3u(2,:),'color',grey_color)
+      plot(mag4u(1,:),mag4u(2,:),'color',grey_color)
     else
-      plot(mag3r(1,:),mag3r(2,:),'k')
-      plot(mag4r(1,:),mag4r(2,:),'k')
+      
+      if plot_unrotated_bool
+        plot([mag3uc(1) mag4uc(1)],[mag3uc(2) mag4uc(2)],'color',grey_color)
+        plot(mag3u(1,:),mag3u(2,:),'color',grey_color)
+        plot(mag4u(1,:),mag4u(2,:),'color',grey_color)
+      end
+          
+      if plot_rotmag_bool && ~plot_magapprox_bool
+        plot(mag3r(1,:),mag3r(2,:),'k')
+        plot(mag4r(1,:),mag4r(2,:),'k')
+      else
+        plot(mag3(1,:),mag3(2,:),'k')
+        plot(mag4(1,:),mag4(2,:),'k')
+      end
+      
+      if r ~= 0 && plot_magapprox_bool
+        plot(mag3r(1,:),mag3r(2,:),'k')
+        plot(mag4r(1,:),mag4r(2,:),'k')
+        plot(mag3(1,:),mag3(2,:),'color',red_color)
+        plot(mag4(1,:),mag4(2,:),'color',red_color)
+      end
+      
     end
     
     axis tight
@@ -281,30 +317,32 @@ end
     end
     axis off
     
-    plot_vec(mag3c,f11,'f11',{'color',[0 0 1],'linewidth',1},...
-      {'verticalalignment','bottom',...
-       'userdata','matlabfrag:$\mbqforce_1$'} ...
-    )
-    plot_vec(mag4c,f21,'f21',{'color',[0 0 1],'linewidth',1},...
-      {'verticalalignment','bottom','horizontalalignment','right',...
-       'userdata','matlabfrag:$\mbqforce_2$'} ...
-    )
-    plot_vec(rotc,f11+f21,'ft',{'color',[1 0 0],'linewidth',1.5},...
-      {'verticalalignment','bottom','horizontalalignment','left',...
-       'userdata','matlabfrag:$\mbqforce$'} ...
-    )
+    if plot_forces_bool
+      plot_vec(mag3c,f11,'f11',{'color',[0 0 1],'linewidth',1},...
+        {'verticalalignment','bottom',...
+        'userdata','matlabfrag:$\mbqforce_1$'} ...
+        )
+      plot_vec(mag4c,f21,'f21',{'color',[0 0 1],'linewidth',1},...
+        {'verticalalignment','bottom','horizontalalignment','right',...
+        'userdata','matlabfrag:$\mbqforce_2$'} ...
+        )
+      plot_vec(rotc,f11+f21,'ft',{'color',[1 0 0],'linewidth',1.5},...
+        {'verticalalignment','bottom','horizontalalignment','left',...
+        'userdata','matlabfrag:$\mbqforce$'} ...
+        )
+    end
     
     plot(rotc(1),rotc(2),'k.','markersize',12)
     
-    if plot_extras_bool
+    if plot_labels_bool
       
       text(mag3c(1)+[0.25 0.75]*(mag4c(1)-mag3c(1)),mag3c(2)+[0.25 0.75]*(mag4c(2)-mag3c(2)),...
         '$l$','userdata','$\mbqlever$',...
         'VerticalAlignment','bottom','interpreter','latex')
       
-      plot_angle_label( rotc, r, 1.5*a, '$\mbqrotz$')
+      plot_angle_label( rotc, r, 2*a, '$\mbqrotz$')
       
-      text(mag1(1,1)+0.005,mag1(2,1),'$\theta$','userdata','matlabfrag:$\theta$',...
+      text(mag1(1,1)+0.005,mag1(2,1),'$\theta$','userdata','matlabfrag:$\mbqmagangle$',...
         'VerticalAlignment','bottom','interpreter','latex')
             
     end
@@ -312,6 +350,44 @@ end
     this_torque = t11(3,:)+t21(3,:);
     
     if abs(this_torque) > 1e-6
+      
+      if plot_forces_bool
+        plot_torque_arrow();
+      end
+      
+      if plot_labels_bool
+        if this_torque > 0
+          text(torque_arc(1,end),torque_arc(2,end),'$T_z$\,','horizontalalignment','right')
+        else
+          text(torque_arc(1,end),torque_arc(2,end),'\,$T_z$')
+        end
+      end
+      
+    end
+    
+    drawnow
+    
+    function plot_vec(r,v,s,plotargs,textargs)
+      
+      xt = r(1)+plotvecscale*v(1);
+      yt = r(2)+plotvecscale*v(2);
+      
+      h = plot([r(1),xt],[r(2),yt],plotargs{:});
+      addArrowhead(h,'end','angle',15,'length',10);
+      
+      if plot_labels_bool
+        text(xt,yt,s,'verticalalignment','bottom',textargs{:});
+      end
+      
+    end
+    
+    function plot_angle_label(cp,t,l,s)
+      plot(cp(1)+[0,l],cp(2)+[0,0],'k--')
+      ap = cp+rot(t/2)*[l*0.75; 0];
+      text(ap(1),ap(2),s)
+    end
+    
+    function plot_torque_arrow()
       
       torque_scale = 10;
       if plot_torque_scale == 0
@@ -338,39 +414,6 @@ end
         'color',torque_arrow_colour,'linewidth',1.4);
       addArrowhead(h,'end','angle',15,'style','lines')
       
-      if plot_extras_bool
-        if this_torque > 0
-          text(torque_arc(1,end),torque_arc(2,end),'$T_z$\,','horizontalalignment','right')
-        else
-          text(torque_arc(1,end),torque_arc(2,end),'\,$T_z$')
-        end
-      end
-      
-    end
-    
-    drawnow
-    
-    function plot_vec(r,v,s,plotargs,textargs)
-      
-      xt = r(1)+plotvecscale*v(1);
-      yt = r(2)+plotvecscale*v(2);
-      
-      h = plot([r(1),xt],[r(2),yt],plotargs{:});
-      addArrowhead(h,'end','angle',15,'length',10);
-      
-      if plot_extras_bool
-        text(xt,yt,s,'verticalalignment','bottom',textargs{:});
-      end
-      
-    end
-    
-    function plot_angle_label(cp,t,l,s)
-      plot(cp(1)+[0,l],cp(2)+[0,0],'k--')
-      ap = cp+rot(t/2)*[2*l/3; 0];
-      lp = ap+[0; -l/2];
-      plot([ap(1) lp(1)],[ap(2) lp(2)],'color',0.6*[1 1 1])
-      % plot(ap(1),ap(2),'k.')
-      text(lp(1),lp(2),['\,',s])
     end
     
   end
