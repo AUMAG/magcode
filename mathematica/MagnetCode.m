@@ -1,6 +1,6 @@
 (* ::Package:: *)
 
-(* ::Section:: *)
+(* ::Title:: *)
 (*MagnetCode.m*)
 
 
@@ -10,7 +10,7 @@
 (*Please report problems and suggestions at the GitHub issue tracker:  *)
 (*	http://github.com/wspr/magcode/issues*)
 (**)
-(*Copyright 2010*)
+(*Copyright 2010-2011*)
 (*Will Robertson*)
 
 
@@ -38,7 +38,7 @@ Begin["`Private`"]
 
 
 (* ::Section:: *)
-(*Package*)
+(*Options and main function*)
 
 
 Options[MagnetCoilForce]={
@@ -59,7 +59,9 @@ Options[MagnetCoilForce]={
   Displacement->0.0,
   Eccentricity->0,
 
-  IntegrationPrecision->2
+  IntegrationPrecision->2,
+  Babic->True,
+  Verbose->False
 };
 
 
@@ -81,39 +83,41 @@ MagnetCoilForce[OptionsPattern[]] := Module[
    eccen = OptionValue[Eccentricity],
    prec  = OptionValue[IntegrationPrecision]
   },
-  
-  coilarea=coill (coilR-coilr);
 
-  If[ turns==0 , turns=turnsR*turnsZ ];
+  If [OptionValue[Verbose], Diagnostic[x_] := Print[x], Diagnostic[x_] := Null];
   
-  If[ displ==0.0 ,
+  If[ turns == 0 , turns = turnsR*turnsZ; ];
+  
+  If[ displ == 0.0 ,
     force = 0 , 
-    If[ eccen==0.0 ,
+    If[ eccen == 0.0 ,
       If[ OptionValue[CoilThickness] == 0.0 ,
-        force =  magn turns curr / ( 2 coill ) MagnetThinCoilForceKernel[
-          coilr,magr,-coill/2,coill/2,displ-magl/2,displ+magl/2]
+        Diagnostic["Coaxial thin coil:"];
+        force = MagnetThinCoilForce[curr turns,magn,magr,magl,coilr,coill,displ];
       ,
-        force = curr turns magn / coilarea NIntegrate[
-          MagnetThickCoilForceKernel[
-            magr, magl, R, Z, displ
-          ],
-          {R,coilr,coilR}, {Z,-coill/2,coill/2},
-          PrecisionGoal->prec
+        If[ OptionValue[Babic],
+          Diagnostic["Coaxial thick coil (Babic):"];
+          force = ThinThickCoilAxialForce[
+            curr turns,magn*magl/(4 \[Pi] 10^-7),magr,coilr,coilR,coill,magl,displ,PrecisionGoal->prec];
+          ,
+          Diagnostic["Coaxial thick coil (plain integral):"];
+          force = MagnetThickCoilForce[
+            curr turns,magn,magr,magl,coilr,coilR,coill,displ,PrecisionGoal->prec];
         ]
       ]
     ,
-      force = curr turns magn / ( 2 \[Pi] coilarea ) NIntegrate[
-        MagnetCoilForceEccentricKernel[
-            magr, R, magl, Z, displ, eccen
-        ],
-        {\[Phi]2,0,2\[Pi]},{R,coilr,coilR},{Z,-coill/2,coill/2},
-        PrecisionGoal->prec
-      ]
+      Diagnostic["Eccentric thick coil:"];
+      force = MagnetCoilEccentricAxialForce[
+        curr turns, magn, magr, magl, coilr, coilR, coill, displ, eccen, PrecisionGoal->prec];
     ]
   ];
 
   force
 ]
+
+
+(* ::Section:: *)
+(*Filament models*)
 
 
 CoilCoilFilamentForce[r_,R_,z_] = With[
@@ -126,10 +130,21 @@ CoilCoilFilamentForce[r_,R_,z_] = With[
 ];
 
 
+(* ::Section:: *)
+(*Thin coil models*)
+
+
+MagnetThinCoilForce[currturns_,magn_,magr_,magl_,coilr_,coill_,displ_] :=
+  - magn currturns / ( 2 coill ) MagnetThinCoilForceKernel[
+    coilr,magr,-coill/2,coill/2,displ-magl/2,displ+magl/2
+   ]
+
 MagnetThinCoilForceKernel[r1_,r2_,z1_,z2_,z3_,z4_] :=
   fff2[r1,r2,z2,z3,z4]-fff2[r1,r2,z1,z3,z4]
+
 fff2[r1_,r2_,zt_,z3_,z4_] :=
   fff3[r1,r2,zt-z4]-fff3[r1,r2,zt-z3]
+
 fff3[r1_,r2_,z_] :=
   If[z==0,0,
     fff4[z,(r1-r2)^2/z^2+1,
@@ -137,6 +152,7 @@ fff3[r1_,r2_,z_] :=
       (4 r1 r2)/((r1+r2)^2+z^2)
     ]
   ]
+
 fff4[m1_,m2_,m3_,m4_]:=
   m1 m3 ( m2 EllipticK[m4] - EllipticE[m4] +
     If[m2==1,0,
@@ -144,6 +160,16 @@ fff4[m1_,m2_,m3_,m4_]:=
     ]
   )
 
+
+(* ::Section:: *)
+(*Thick coil models*)
+
+
+MagnetThickCoilForce[currturns_,magn_,magr_,magl_,coilr_,coilR_,coill_,displ_,param_] :=
+  - currturns magn / ( coill (coilR-coilr) ) NIntegrate[
+    MagnetThickCoilForceKernel[ magr, magl, R, Z, displ ],
+    {R,coilr,coilR}, {Z,-coill/2,coill/2}, param
+   ]
 
 MagnetThickCoilForceKernel[r_,maglength_,R_,Z_,d_]:=
    MagnetThickCoilForceKernel2[r,d+maglength/2,R,Z]-
@@ -156,18 +182,66 @@ MagnetThickCoilForceKernel2[r_,z_,R_,Z_]:=
  ]
 
 
-MagnetCoilForceEccentricKernel[r_,R_,z_,Z_,d_,e_] :=
-  MagnetCoilForceEccentricKernel2[r,R,d+z/2,Z,e]-
-  MagnetCoilForceEccentricKernel2[r,R,d-z/2,Z,e]
+ThinThickCoilAxialForce[NI1_,NI2_,R_,R1_,R2_,Z1_,Z2_,D_] :=
+  (2 \[Pi] 10^-7 NI1 NI2 R^3)/(3 Z1 Z2(R2-R1))*
+  Sum[ ii jj kk ThinThickCoilAxialForceKernel[ii,jj,kk,R1,R2,R,Z1,Z2,D] ,
+      {ii,{1,-1}}, {jj,{1,-1}}, {kk,{1,-1}}]
 
-MagnetCoilForceEccentricKernel2[r2_,R_,z_,Z_,e_] =
-  With[{m1 = -(4r R)/((r-R)^2+(z-Z)^2)},
-  Sqrt[(r-R)^2+(z-Z)^2] (
-    (1-m1/2) (EllipticF[\[Phi]/2,m1]-EllipticK[m1])+EllipticE[m1]
-   ) //.
-    {r-> Sqrt[x1^2+y1^2], \[Phi]->ArcTan[y1,x1]} //.
-       {x1->x2+e,y1->y2}//.{x2->r2 Cos[\[Phi]2],y2->r2 Sin[\[Phi]2]}
+ThinThickCoilAxialForceKernel[ii_,jj_,kk_,R1_,R2_,R_,Z1_,Z2_,D_] :=
+  Block[{\[Rho],t,m,m2,result},
+  \[Rho] = 1/(2R) (R1+R2+kk (R2-R1));
+  t = (D+ii Z1/2+jj Z2/2)/R;
+
+  If[t==0,result=0,
+    m = (4 \[Rho])/((\[Rho]+1)^2+t^2);
+    m2 = Sqrt[t^2+1];
+    result = Sqrt[m \[Rho]] (-EllipticK[m] ( (m2+2)/(m2+1) (t^2-2)+(\[Rho]^2+\[Rho]+2)-2/(\[Rho]+1))+EllipticE[m] (4\[Rho])/m)+
+      (\[Pi]/2)/Abs[t] (\[Rho] (\[Rho]^2-3)Sign[\[Rho]-1]( 1 - HeumanLambda[Abs[ArcSin[(\[Rho]-1)/(\[Rho]+1) Sqrt[1/(1-m)]]],m] ) +
+        (t^2-2)Sqrt[t^2+1] ( 1-HeumanLambda[Abs[ArcSin[t/(1+m2)]],m] +
+          Sign[\[Rho]-Sqrt[t^2+1]](1-HeumanLambda[Abs[ArcSin[t/(1+m2) Sqrt[1/(1-m)]]],m]) ) )+
+      -6 NIntegrate[ArcSinh[(\[Rho]+Cos[2\[CurlyPhi]])/Sqrt[Sin[2\[CurlyPhi]]^2+t^2]],{\[CurlyPhi],0,\[Pi]/2}];
   ]
+  t * result
+]
+
+HeumanLambda[\[Phi]_,m_] := EllipticF[\[Phi],1-m]/EllipticK[1-m] + 2/\[Pi] EllipticK[m]JacobiZeta[\[Phi],1-m]
+
+
+(* ::Section:: *)
+(*Eccentric forces*)
+
+
+MagnetCoilEccentricAxialForce[currturns_, magn_, magr_, magl_, coilr_, coilR_, coill_, displ_, eccen_, param_] :=
+  force = currturns magn / ( 2 \[Pi] coill (coilR-coilr) ) NIntegrate[
+    MagnetCoilForceEccentricKernel[
+        magr, R, magl, Z, displ, eccen
+    ],
+    {\[Phi]2,0,2\[Pi]},{R,coilr,coilR},{Z,-coill/2,coill/2},
+    param
+  ]
+
+MagnetCoilForceEccentricKernel[r_, R_, z_, Z_, d_, e_] :=
+   MagnetCoilForceEccentricKernel2[r, R, d + z/2, Z, e] -
+    MagnetCoilForceEccentricKernel2[r, R, d - z/2, Z, e]
+
+MagnetCoilForceEccentricKernel2[r2_, R_, z_, Z_, e_] :=
+   With[{m1 = -(4 r R)/((r - R)^2 + (z - Z)^2)},
+    Sqrt[(r - R)^2 + (z - Z)^2] (
+           (1 - m1/2) (EllipticF[\[Phi]/2, m1] - EllipticK[m1]) + EllipticE[m1]
+          ) //.
+         {r -> Sqrt[x1^2 + y1^2], \[Phi] -> ArcTan[y1, x1]} //.
+           {x1 -> x2 + e, y1 -> y2} //. {x2 -> r2 Cos[\[Phi]2], y2 -> r2 Sin[\[Phi]2]}
+    ]
+
+
+CoilCoilEccentricFilamentRestore[I1_, I2_, R1_, R2_, x_, z_] :=
+   2*10^-7 I1 I2 R2 NIntegrate[
+       EccentricRestoreKernel[R1, R2, x, z] - EccentricRestoreKernel[R1, R2, -x, z, \[Phi]_], {\[Phi], -\[Pi]/2, \[Pi]/2}]
+
+EccentricRestoreKernel[R1_, R2_, x_, z_, \[Phi]_] :=
+   With[ {r = Sqrt[(R2 Cos[\[Phi]] + x)^2 + (Sin[\[Phi]])^2], m = (4 R1 r)/((R1 + r)^2 + z^2) },
+      Cos[\[Phi]]/Sqrt[(R1 + r)^2 + z^2] (EllipticK[m] + EllipticE[m] (R1^2 - r^2 - z^2)/((R1 - r)^2 + z^2))
+    ]
 
 
 (* ::Section:: *)
