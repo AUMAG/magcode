@@ -31,6 +31,7 @@ BeginPackage["MagnetCode`"];
 
 
 MagnetCoilForce::usage = "";
+CoilCoilForce::usage = "";
 CalculateCoilParams::usage = "";
 
 
@@ -120,14 +121,37 @@ MagnetCoilForce[OptionsPattern[]] := Module[
 (*Filament models*)
 
 
-CoilCoilFilamentForce[r_,R_,z_] = With[
+CoilCoilForce[I1_,I2_,r_,R_,z_] = With[
   { m = 4 r R/((r+R)^2+z^2) },
-  Sqrt[m] z (* needs (mu0 I1 I2) factor as well *)
+  I1 I2 4 \[Pi] 10^-7 Sqrt[m] z
   ( 
     2 EllipticK[m]-
     (2-m)/(1-m) EllipticE[m]
   ) / (4 Sqrt[r R])
 ];
+
+CoilCoilForce[I1_,I2_,r_,R_,z_,e_] := Module[
+{xs,ys,V,A,m,KK,EE},
+
+  xs = e - R Sin[t];
+  ys =   + R Cos[t];
+
+  V = Sqrt[xs^2+ys^2];
+  A = r^2 + z^2 + xs^2 + ys^2;
+
+  m = 2/(A/(2r V) + 1 );
+  KK = EllipticK[m];
+  EE = EllipticE[m];
+
+  0.5 10^-7  r R I1 I2 NIntegrate[
+    Sqrt[m/(r^3 V)]{
+      z /(xs^2+ys^2) ( ys Cos[t] - xs Sin[t] )( 2 KK - EE (2-m)/(1-m) ),
+      Sin[t] ( -2 KK + EE (2 - m( r/V + 1 ) )/(1-m) )
+    },
+    {t,0,2\[Pi]}
+  ]
+
+]
 
 
 (* ::Section:: *)
@@ -182,12 +206,12 @@ MagnetThickCoilForceKernel2[r_,z_,R_,Z_]:=
  ]
 
 
-ThinThickCoilAxialForce[NI1_,NI2_,R_,R1_,R2_,Z1_,Z2_,D_] :=
+ThinThickCoilAxialForce[NI1_,NI2_,R_,R1_,R2_,Z1_,Z2_,D_,opt_] :=
   (2 \[Pi] 10^-7 NI1 NI2 R^3)/(3 Z1 Z2(R2-R1))*
-  Sum[ ii jj kk ThinThickCoilAxialForceKernel[ii,jj,kk,R1,R2,R,Z1,Z2,D] ,
+  Sum[ ii jj kk ThinThickCoilAxialForceKernel[ii,jj,kk,R1,R2,R,Z1,Z2,D,opt] ,
       {ii,{1,-1}}, {jj,{1,-1}}, {kk,{1,-1}}]
 
-ThinThickCoilAxialForceKernel[ii_,jj_,kk_,R1_,R2_,R_,Z1_,Z2_,D_] :=
+ThinThickCoilAxialForceKernel[ii_,jj_,kk_,R1_,R2_,R_,Z1_,Z2_,D_,opt_] :=
   Block[{\[Rho],t,m,m2,result},
   \[Rho] = 1/(2R) (R1+R2+kk (R2-R1));
   t = (D+ii Z1/2+jj Z2/2)/R;
@@ -199,8 +223,8 @@ ThinThickCoilAxialForceKernel[ii_,jj_,kk_,R1_,R2_,R_,Z1_,Z2_,D_] :=
       (\[Pi]/2)/Abs[t] (\[Rho] (\[Rho]^2-3)Sign[\[Rho]-1]( 1 - HeumanLambda[Abs[ArcSin[(\[Rho]-1)/(\[Rho]+1) Sqrt[1/(1-m)]]],m] ) +
         (t^2-2)Sqrt[t^2+1] ( 1-HeumanLambda[Abs[ArcSin[t/(1+m2)]],m] +
           Sign[\[Rho]-Sqrt[t^2+1]](1-HeumanLambda[Abs[ArcSin[t/(1+m2) Sqrt[1/(1-m)]]],m]) ) )+
-      -6 NIntegrate[ArcSinh[(\[Rho]+Cos[2\[CurlyPhi]])/Sqrt[Sin[2\[CurlyPhi]]^2+t^2]],{\[CurlyPhi],0,\[Pi]/2}];
-  ]
+      -6 NIntegrate[ArcSinh[(\[Rho]+Cos[2\[CurlyPhi]])/Sqrt[Sin[2\[CurlyPhi]]^2+t^2]],{\[CurlyPhi],0,\[Pi]/2},opt];
+  ];
   t * result
 ]
 
