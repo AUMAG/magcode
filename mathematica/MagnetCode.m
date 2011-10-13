@@ -207,7 +207,8 @@ CoilCoilForce[I1_,I2_,r_,R_,z_,e_,rtf_,param__] := Module[
   ,
     force = 0.5 10^-7 R I1 I2 fz;
   ]
-  ]
+  ];
+
   force
 ]
 
@@ -345,26 +346,26 @@ Module[{fr},
 
 
 MagnetCoilEccentricAxialForce[currturns_, magn_, magr_, magl_, coilr_, coilR_, coill_, displ_, eccen_, param_] :=
-  force = - currturns magn / ( 2 \[Pi] coill (coilR-coilr) ) NIntegrate[
-    MagnetCoilForceEccentricKernel[
-        magr, R, magl, Z, displ, eccen
-    ],
-    {\[Phi]2,0,2\[Pi]},{R,coilr,coilR},{Z,-coill/2,coill/2},
-    param
-  ]
-
-MagnetCoilForceEccentricKernel[r_, R_, z_, Z_, d_, e_] :=
-   MagnetCoilForceEccentricKernel2[r, R, d + z/2, Z, e] -
-    MagnetCoilForceEccentricKernel2[r, R, d - z/2, Z, e]
-
-MagnetCoilForceEccentricKernel2[r2_, R_, z_, Z_, e_] :=
-   With[{m1 = -(4 r R)/((r - R)^2 + (z - Z)^2)},
-    Sqrt[(r - R)^2 + (z - Z)^2] (
-           (1 - m1/2) (EllipticF[\[Phi]/2, m1] - EllipticK[m1]) + EllipticE[m1]
-          ) //.
-         {r -> Sqrt[x1^2 + y1^2], \[Phi] -> ArcTan[y1, x1]} //.
-           {x1 -> x2 + e, y1 -> y2} //. {x2 -> r2 Cos[\[Phi]2], y2 -> r2 Sin[\[Phi]2]}
+  force = - currturns magn / ( 4 \[Pi] coill (coilR-coilr) ) *
+    NIntegrate[
+     MagnetCoilForceEccentricKernel[coilr,  coill/2, eccen, magr] -
+     MagnetCoilForceEccentricKernel[coilr, -coill/2, eccen, magr] -
+     MagnetCoilForceEccentricKernel[coilR,  coill/2, eccen, magr] +
+     MagnetCoilForceEccentricKernel[coilR, -coill/2, eccen, magr]
+    ,
+      {\[Phi]2,0,2\[Pi]},{\[CapitalPhi],0,2\[Pi]},{z,displ-magl/2,displ+magl/2},
+      param
     ]
+
+MagnetCoilForceEccentricKernel[R_, Z_, e_, r2_] :=
+  Module[{x2,y2,x1,y1,r,\[Phi]},
+    x1 = e+r2 Cos[\[Phi]2];
+    y1 = r2 Sin[\[Phi]2];
+    r = Sqrt[x1^2 + y1^2];
+    \[Phi] = ArcTan[y1, x1];
+   -r Cos[\[Phi]-\[CapitalPhi]] (Sqrt[r^2+R^2+(z-Z)^2-2 r R Cos[\[Phi]-\[CapitalPhi]]]+
+    r Cos[\[Phi]-\[CapitalPhi]] Log[R-r Cos[\[Phi]-\[CapitalPhi]]+Sqrt[r^2+R^2+(z-Z)^2-2 r R Cos[\[Phi]-\[CapitalPhi]]]])
+  ]
 
 
 (* ::Section:: *)
