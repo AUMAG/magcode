@@ -32,7 +32,6 @@ BeginPackage["MagnetCode`"];
 
 MagnetCoilForce::usage = "";
 CoilCoilForce::usage = "";
-CalculateCoilParams::usage = "";
 MagnetCode::unknownMethod="The method `1` is unknown.";
 
 

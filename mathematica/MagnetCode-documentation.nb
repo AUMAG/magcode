@@ -1,0 +1,230 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      6995,        221]
+NotebookOptionsPosition[      6519,        200]
+NotebookOutlinePosition[      6876,        216]
+CellTagsIndexPosition[      6833,        213]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Documentation for MagnetCode", "Title",
+ CellChangeTimes->{{3.5327688325566883`*^9, 3.532768853569262*^9}}],
+
+Cell[TextData[{
+ "This code ",
+ StyleBox["currently",
+  FontSlant->"Italic"],
+ " can be used to calculate forces between electromagnetic coils and \
+permanent magnets. Only cylindrical geometries are currently available, \
+unlike the Matlab code in the same code repository.\n\nThe idea is to provide \
+a high-level interface for verification purposes. Optimised code can be \
+written by extracting the relevant portions."
+}], "Text",
+ CellChangeTimes->{{3.532769070894141*^9, 3.532769099187111*^9}, {
+  3.5327691719588833`*^9, 3.532769233256487*^9}}],
+
+Cell[TextData[{
+ "Two functions are currently offered: ",
+ StyleBox["CoilCoilForce", "Input"],
+ " and ",
+ StyleBox["MagnetCoilForce", "Input"],
+ ". The former is used to calculate the filamentary force between two \
+single-loop coils, and it is not offered with any nice interface; four \
+possibilities are available:"
+}], "Text",
+ CellChangeTimes->{{3.5327692677201977`*^9, 3.53276929211696*^9}, {
+  3.532769491753497*^9, 3.532769508839138*^9}, {3.532769547691921*^9, 
+  3.532769554849231*^9}, {3.532769751692646*^9, 3.532769751970174*^9}, {
+  3.532769876012126*^9, 3.532769898667797*^9}}],
+
+Cell[TextData[{
+ "\t",
+ StyleBox["CoilCoilForce[ ", "Input"],
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["I", "1"], ",", " ", 
+    SubscriptBox["I", "2"], ",", " ", "r", ",", " ", "R", ",", " ", "z"}], 
+   TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ StyleBox[" ]\n", "Input"],
+ "\t",
+ StyleBox["CoilCoilForce[ ", "Input"],
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["I", "1"], ",", " ", 
+    SubscriptBox["I", "2"], ",", " ", "r", ",", " ", "R", ",", " ", "z", ",", 
+    " ", "e"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ StyleBox[" ]\n", "Input"],
+ "\t",
+ StyleBox["CoilCoilForce[ ", "Input"],
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["I", "1"], ",", " ", 
+    SubscriptBox["I", "2"], ",", " ", "r", ",", " ", "R", ",", " ", "z", ",", 
+    " ", "e"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ ", ",
+ StyleBox["flag ]\n", "Input"],
+ "\t",
+ StyleBox["CoilCoilForce[ ", "Input"],
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["I", "1"], ",", " ", 
+    SubscriptBox["I", "2"], ",", " ", "r", ",", " ", "R", ",", " ", "z", ",", 
+    " ", "e"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ ", ",
+ StyleBox["flag, <options> ]", "Input"]
+}], "Text",
+ CellChangeTimes->{{3.532769560616997*^9, 3.5327696154496326`*^9}, {
+  3.532769703580274*^9, 3.532769740746344*^9}}],
+
+Cell[TextData[{
+ "where:\n\t",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["I", "1"], ":", " ", "current"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " in coil 1\n\t",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["I", "1"], ":", " ", "current"}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " in coil 2\n\t",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"r", ":", " ", 
+    RowBox[{"radius", " ", "of", " ", "coil", " ", "1"}]}], TraditionalForm]],
+  
+  FormatType->"TraditionalForm"],
+ "\n\t",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"R", ":", " ", 
+    RowBox[{"radius", " ", "of", " ", "coil", " ", "2"}]}], TraditionalForm]],
+  
+  FormatType->"TraditionalForm"],
+ "\n\t",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"z", ":", " ", 
+    RowBox[{
+    "axial", " ", "displacement", " ", "between", " ", "the", " ", 
+     "coils"}]}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ "\n\t",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"e", ":", " ", 
+    RowBox[{"radial", " ", 
+     RowBox[{"(", "eccentric", ")"}], " ", "displacement", " ", "between", 
+     " ", "the", " ", "coils"}]}], TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ "\n\t",
+ StyleBox["flag", "Input"],
+ ":\n\t\tif set to ",
+ StyleBox["True", "Input"],
+ " (default), calculates both the axial and radial components of force\n\t\t\
+if set to ",
+ StyleBox["False", "Input"],
+ ", calculates only the axial components of force\n\t",
+ StyleBox["<options>", "Input"],
+ ": options passed through to ",
+ StyleBox["NIntegrate", "Input"],
+ " in the case of eccentric force calculation\n\t\t(coaxial force requires no \
+numerical integration)"
+}], "Text",
+ CellChangeTimes->{{3.532769757842009*^9, 3.532769789658605*^9}, {
+  3.53276982377535*^9, 3.532769868817577*^9}, {3.532769957203381*^9, 
+  3.532770111142228*^9}}],
+
+Cell[TextData[{
+ "The main function offered is ",
+ StyleBox["MagnetCoilForce", "Input"],
+ " for calculating the force between a thick coil and a permanent magnet. It \
+accepts the following mostly self-evident keyval options:\n\n",
+ StyleBox["  MagnetRadius\n  MagnetLength\n  Magnetisation", "Input"],
+ "\t\t\t(i.e., remanence, in Tesla)",
+ StyleBox["\n\n  CoilRadius\n  CoilThickness\n  CoilLength\n  CoilTurns", 
+  "Input"],
+ "\t\t\t(for \[OpenCurlyDoubleQuote]thin\[CloseCurlyDoubleQuote] coils)",
+ StyleBox["\n  CoilTurnsR\n  CoilTurnsZ\n  Current\n\n  Displacement\n  \
+Eccentricity", "Input"],
+ "\t\t\t(default = 0.0)",
+ StyleBox["\n\n  IntegrationPrecision", "Input"],
+ "\t(passed through to ",
+ StyleBox["NIntegrate", "Input"],
+ "\[CloseCurlyQuote]s ",
+ StyleBox["PrecisionGoal", "Input"],
+ " option, default = 2)",
+ StyleBox["\n  Method -> Automatic", "Input"],
+ "\t(any of ",
+ StyleBox["Filament", "Input"],
+ ", ",
+ StyleBox["Shell", "Input"],
+ ", ",
+ StyleBox["Babic", "Input"],
+ ", ",
+ StyleBox["Automatic", "Input"],
+ ". The latter is the \[OpenCurlyDoubleQuote]Integral\[CloseCurlyDoubleQuote] \
+method.)",
+ StyleBox["\n  RadialForce -> True", "Input"],
+ "\t(for eccentric displacements whether to calculate the eccentric force as \
+well)",
+ StyleBox["\n  Verbose -> False", "Input"],
+ "\t\t(whether to print diagnostic/informational messages)"
+}], "Text",
+ CellChangeTimes->{{3.5327701577368183`*^9, 3.5327702524475946`*^9}, {
+  3.5327702909319563`*^9, 3.532770664723894*^9}}]
+}, Open  ]]
+},
+WindowSize->{740, 867},
+WindowMargins->{{24, Automatic}, {Automatic, 61}},
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (November 13, \
+2010)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 113, 1, 76, "Title"],
+Cell[695, 25, 551, 11, 86, "Text"],
+Cell[1249, 38, 590, 12, 41, "Text"],
+Cell[1842, 52, 1354, 45, 71, "Text"],
+Cell[3199, 99, 1809, 59, 191, "Text"],
+Cell[5011, 160, 1492, 37, 341, "Text"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
