@@ -286,4 +286,96 @@ if ~simple_graph
 end
 
 
+%% Tangentially, forces between parallel cube magnets
+%
+% Yonnet (1978) showed that ring magnets experience the same
+% whether radially or axially aligned. This isn't true of cubes.
 
+m = 0.01;
+
+cubemag = @(b,magdir) ...
+  struct('dim',[b b b],'magn',1,'magdir',[0 0 magdir]);
+
+% displacement range
+displ_max = 1*m;
+displ_min = 0;
+displ_range = m+linspace(displ_min,displ_max);
+  
+forces_z = magnetforces(cubemag(m,1),cubemag(m,-1), [0;0;1]*displ_range ,'z');
+forces_x = magnetforces(cubemag(m,1),cubemag(m,+1), [1;0;0]*displ_range ,'x');
+
+forces_z(3,1) = NaN;
+forces_x(1,1) = NaN; % hack so the axes come out nice
+
+figname = 'xz-magforce';
+willfig(figname,'tiny'); clf; hold on
+plot(displ_range*1000,forces_z(3,:),displ_range*1000,forces_x(1,:))
+
+xlabel('Displacement, mm')
+ylabel('Force, N')
+
+ii = 30;
+plot(displ_range(ii)*1000,forces_z(3,ii),'.','MarkerSize',10)
+text(displ_range(ii)*1000,forces_z(3,ii),'$F_z(z)$','VerticalAlignment','bottom')
+
+ii = 20;
+plot(displ_range(ii)*1000,forces_x(1,ii),'.','MarkerSize',10)
+text(displ_range(ii)*1000,forces_x(1,ii),'$F_x(x)$',...
+  'HorizontalAlignment','right','VerticalAlignment','top')
+
+if ~simple_graph
+  axistight
+  colourplot(2)
+  matlabfrag(['fig/',figname])
+end
+
+%% Comparing ratios between cylindrical and cuboid magnets
+
+
+
+
+m = 0.01;
+volume = m^3;
+
+cubemag = @(a,b,magdir) ...
+  struct('dim',[b b a],'magn',1,'magdir',[0 0 magdir]);
+
+cylmag = @(r,a,magdir) ...
+  struct('dim',[r a],'magn',1,'magdir',[0 0 magdir]);
+
+% magnet ratio range
+magratio = [0.5 1 1.5];
+Nm = length(magratio);
+
+% displacement range
+ymax = 1*m;
+ymin = 0.0001;
+yrange = linspace(ymin,ymax);
+Ny = length(yrange);
+
+% initialise variable
+cubforces = nan([3 Nm Ny]);
+cylforces = nan([3 Nm Ny]);
+  
+for mm = 1:Nm
+  cubea = (magratio(mm)*volume)^1/3;
+  cubeb = cubea/sqrt(magratio(mm));
+ 
+  cyla = (magratio(mm)*volume)^1/3;
+  cylr = cubea/sqrt(pi*magratio(mm));
+    
+  for yy = 1:Ny
+    cubforces(:,mm,yy) = magnetforces(cubemag(cubea,cubeb,1),cubemag(cubea,cubeb,-1), [0;0; cubea+yrange(yy)] );
+    cylforces(:,mm,yy) = magnetforces(cylmag(cylr,cyla,1),cylmag(cylr,cyla,-1), [0;0; cyla+yrange(yy)] );
+  end
+end
+
+figname='cub-cyl-ratios';
+
+willfig(figname); clf; hold on
+
+for mm = 1:Nm
+  
+  plot(yrange*1000,squeeze(cubforces(3,mm,:)))
+  
+end
