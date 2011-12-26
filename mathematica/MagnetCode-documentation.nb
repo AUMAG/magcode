@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[      6995,        221]
-NotebookOptionsPosition[      6519,        200]
-NotebookOutlinePosition[      6876,        216]
-CellTagsIndexPosition[      6833,        213]
+NotebookDataLength[      7097,        223]
+NotebookOptionsPosition[      6621,        202]
+NotebookOutlinePosition[      6978,        218]
+CellTagsIndexPosition[      6935,        215]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -192,10 +192,12 @@ method.)",
  "\t(for eccentric displacements whether to calculate the eccentric force as \
 well)",
  StyleBox["\n  Verbose -> False", "Input"],
- "\t\t(whether to print diagnostic/informational messages)"
+ "\t\t(whether to print diagnostic/informational messages)\n  \n  Radial \
+forces are incomplete at this stage."
 }], "Text",
  CellChangeTimes->{{3.5327701577368183`*^9, 3.5327702524475946`*^9}, {
-  3.5327702909319563`*^9, 3.532770664723894*^9}}]
+  3.5327702909319563`*^9, 3.532770664723894*^9}, {3.533870716327148*^9, 
+  3.533870755827208*^9}}]
 }, Open  ]]
 },
 WindowSize->{740, 867},
@@ -221,7 +223,7 @@ Cell[695, 25, 551, 11, 86, "Text"],
 Cell[1249, 38, 590, 12, 41, "Text"],
 Cell[1842, 52, 1354, 45, 71, "Text"],
 Cell[3199, 99, 1809, 59, 191, "Text"],
-Cell[5011, 160, 1492, 37, 341, "Text"]
+Cell[5011, 160, 1594, 39, 371, "Text"]
 }, Open  ]]
 }
 ]

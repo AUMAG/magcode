@@ -60,7 +60,6 @@ Options[MagnetCoilForce]={
   Eccentricity->0,
 
   IntegrationPrecision->2,
-  Babic->True,
   Method->Automatic,
   RadialForce->True,
   Verbose->False
