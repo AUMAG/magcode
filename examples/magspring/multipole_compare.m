@@ -119,8 +119,8 @@ for nn = 1:length(Nwaves_array)
   
   plot(zdata,one_mag_force(3,:),'--k','UserData','colourplot:ignore');
   
-  xlabel('Normalised vertical displacement')
-  title(['$\mupNwaves=',num2str(Nwaves),'$'])
+  xlabel('Normalised displacement')
+%  title(['$\mupNwaves=',num2str(Nwaves),'$'],'interpreter','none')
     
   if ~simple_graph
     
@@ -131,7 +131,6 @@ for nn = 1:length(Nwaves_array)
     set(gca,'box','on','ticklength',[0.02 0.05])
     
     draworigin([1 0],'v',':')
-    colourplot(1,[3 2 1])
     
     if nn == 3
       H = labelplot('north','vertical','$\mupmagperwave$');
@@ -139,6 +138,8 @@ for nn = 1:length(Nwaves_array)
       set(H,'position',[0.6 0.5 pos(3:4)]);
       legendshrink
     end
+    
+    colourplot(1,[3 2 1])
     
     if nn == 1
       ylabel('Vertical force, N')

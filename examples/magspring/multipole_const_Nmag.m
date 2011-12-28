@@ -120,13 +120,13 @@ if ~simple_graph
   set(gca,'box','on','ticklength',[0.02 0.05])
   
   draworigin([1 0],'v',':')
-  colourplot(1,[3 2 1])
   
   H = labelplot('north','vertical','$\mupmagperwave$');
   pos = get(H,'position');
   set(H,'position',[0.6 0.5 pos(3:4)]);
   legendshrink
   
+  colourplot(1,[3 2 1])
   matlabfrag(['fig/',figname],'dpi',3200);
 
 end
