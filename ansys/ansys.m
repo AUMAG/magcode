@@ -41,9 +41,9 @@ end
 
     b=(magnet_fixed.dim(1,2)+magnet_float.dim(1,2))*10;     % Air gap height, equals total magnet height*10
     a=magnet_float.dim(1,1)*10;                                                  % Air gap width
-    c=magnet_float.dim(1,1);        % Lower magnet radius
+    c=magnet_float.dim(1,1);        % Lower magnet (outer) radius
     d=magnet_float.dim(1,2);        % Lower magnet height
-    u=magnet_fixed.dim(1,1);        % Upper magnet radius
+    u=magnet_fixed.dim(1,1);        % Upper magnet (outer) radius
     e=b/2-(x/2)-d;                  % Distance from bottom of airgap to bottom of lower magnet
     ed=e+d;                         % Distance from bottom of airgap to top of lower magner
     w=magnet_fixed.dim(1,2);        % Upper magnet height
@@ -72,6 +72,10 @@ end
             case 'axiring'
                 fprintf(fid1,'KEYOPT,1,3,1\n');
                 h=magnet_fixed2.dim(1,1); % Distance from left side to inner radius upper magnet
+            case 'rings'
+                fprintf(fid1,'KEYOPT,1,3,1\n');
+                h=magnet_fixed2.dim(1,1); % Distance from left side to inner radius upper magnet
+                j=magnet_float2.dim(1,1); % Distance from left side to inner radius lower magnet
         end
 
     fprintf(fid1,'MP,MURX,1,1\n');
@@ -130,6 +134,25 @@ end
             fprintf(fid1,'\n');  
             case 'axiring'
             fprintf(fid1,'RECTNG,0,');
+            fprintf(fid1,'%f',c);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',e);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',ed);
+            fprintf(fid1,'\n');
+            fprintf(fid1,'RECTNG,');
+            fprintf(fid1,'%f',h);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',u);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',edx);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',edxw);
+            fprintf(fid1,'\n');
+            case 'rings'
+            fprintf(fid1,'RECTNG,');
+            fprintf(fid1,'%f',j);
+            fprintf(fid1,',');
             fprintf(fid1,'%f',c);
             fprintf(fid1,',');
             fprintf(fid1,'%f',e);

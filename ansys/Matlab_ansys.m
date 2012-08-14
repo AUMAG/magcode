@@ -8,11 +8,11 @@ mesh=0.005;                     %meshsize numerical solver
 
 % Dimensions [radius height (thickness)]
 magnet_fixed.dim=[0.06 0.03];  % magnet 1
-magnet_float.dim=[0.04 0.03];  % magnet 2
+magnet_float.dim=[0.06 0.03];  % magnet 2
 
 % Add or remove comment sign in order to use ring magnets
 magnet_fixed2.dim=[.03 .03]; % Used for upper ring magnet
-%magnet_float2.dim=[.03 .03]; % Used for lower ring magnet
+magnet_float2.dim=[.03 .03]; % Used for lower ring magnet
 
 % Check for existence of magnet dimensions
 A=length(magnet_fixed.dim);
@@ -45,11 +45,11 @@ magnet_float2.magn=-magnet_float.magn;  % Lower, inner magnet used for superposi
 
 % Displacement
 displ_max = 0.05;
-N=20;                           % Number of calculation steps
+N=10;                           % Number of calculation steps
             switch magnettype
                 case 'axisymmetric'
                     offset=repmat([0;0;0.03],[1 N*10]);
-                    displ=linspace(0,.3,N*10);
+                    displ=linspace(0,displ_max,N*10);
                     displ_range=offset+[0;0;1]*displ;
                     % Calculate forces
                     forces=magnetforces(magnet_fixed,magnet_float,displ_range);
@@ -84,18 +84,18 @@ N=20;                           % Number of calculation steps
                     title('Force between cylinder and ring magnet');
                     xlabel('Displacement, m');
                     ylabel('Force, N');
-                    ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2);
+                    %ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2);
                 case 'rings'
                     offset=repmat([0;0;0.03],[1 N*10]);
-                    displ=linspace(0,.3,N*10);
+                    displ=linspace(0,displ_max,N*10);
                     displ_range=offset+[0;0;1]*displ; 
                     % Calculate forces
-                    forces=magnetforces(magnet_fixed,magnet_float,displ_range)+magnetforces(magnet_fixed2,magnet_float,displ_range);   
+                    forces=magnetforces(magnet_fixed,magnet_float,displ_range)+magnetforces(magnet_fixed2,magnet_float,displ_range)+magnetforces(magnet_fixed,magnet_float2,displ_range)+magnetforces(magnet_fixed2,magnet_float2,displ_range);
                     plot((displ),forces(3,:))
                     title('Force between ring magnets');
                     xlabel('Displacement, m');
                     ylabel('Force, N');
-                    %ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2,magnet_float2);
+                    ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2,magnet_float2);
                 otherwise
             end
 
