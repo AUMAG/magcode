@@ -1,26 +1,31 @@
-function []=ansys(N,displ,mu,mesh,magnet_fixed,magnet_float)
+function []=ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2,magnet_float2)
 % Numerical solution of two magnets
 !del output.txt
 !del total.txt
 
 %% Determine magnettype
-if (length(magnet_fixed.dim))==2
+A=length(magnet_fixed.dim);
+B=exist('magnet_fixed2','var');
+C=exist('magnet_float2','var');
+
+if A==2 && B==0 && C==0
     magnettype='axisymmetric';
+    disp('Ansys: axisymmetric magnets');
 end
-if (length(magnet_fixed.dim))==3
+if A==2 && B==1 && C==0
+    magnettype='axiring';
+
+    disp('Ansys: cylinder and ring magnet');
+end
+if A==2 && B==1 && C==1
+    magnettype='rings';
+    disp('Ansys: ring magnets');
+end
+if A==3
     magnettype='planar';
+    disp('Ansys: planar magnets');
 end
 
-        switch magnettype
-            case 'axisymmetric'
-                disp('Ansys: axisymmetric magnets');
-
-            case 'planar'
-                disp('Ansys: planar magnets');
-                
-            otherwise
-                disp('Unknown magnet type. Change dimensions');
-        end
         
 %% Write Ansys code
     for i=0:N
@@ -52,7 +57,7 @@ end
     fid1=fopen('total.txt','wt');
     fprintf(fid1,'/PREP7\n');
     fprintf(fid1,'/TITLE,numerical solution\n');
-    fprintf(fid1,'l=ARG1\n');
+    %fprintf(fid1,'l=ARG1\n');
     fprintf(fid1,'KEYW,PR_SET,1\n');
     fprintf(fid1,'KEYW,PR_ELMAG,1\n');
     fprintf(fid1,'KEYW,MAGNOD,1\n');
@@ -62,10 +67,11 @@ end
             case 'axisymmetric'
                 fprintf(fid1,'KEYOPT,1,3,1\n');
             case 'planar'
-                
                 f=a/2-c/2;          % Distance from left side to left side lower magnet
                 h=a/2-u/2;          % Distance from left side to left side upper magnet
-
+            case 'axiring'
+                fprintf(fid1,'KEYOPT,1,3,1\n');
+                h=magnet_fixed2.dim(1,1); % Distance from left side to inner radius upper magnet
         end
 
     fprintf(fid1,'MP,MURX,1,1\n');
@@ -122,6 +128,23 @@ end
             fprintf(fid1,',');
             fprintf(fid1,'%f',edxw);
             fprintf(fid1,'\n');  
+            case 'axiring'
+            fprintf(fid1,'RECTNG,0,');
+            fprintf(fid1,'%f',c);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',e);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',ed);
+            fprintf(fid1,'\n');
+            fprintf(fid1,'RECTNG,');
+            fprintf(fid1,'%f',h);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',u);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',edx);
+            fprintf(fid1,',');
+            fprintf(fid1,'%f',edxw);
+            fprintf(fid1,'\n');
         end
     
     fprintf(fid1,'ASEL,S,AREA,,2\n');
