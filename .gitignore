@@ -1,0 +1,10 @@
+
+*test*.m
+*.mat
+examples/fig/
+examples/magspring/fig/
+*/*/fig/*
+*/fig/*
+fig/*
+
+/examples/data/
