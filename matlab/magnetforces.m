@@ -937,7 +937,7 @@ z(3,:) = h_gap - size2(2)/2;
 z(4,:) = h_gap + size2(2)/2;
 
 C_d = zeros(size(h_gap));
-  
+
 for ii = [1 2]
   
   for jj = [3 4]

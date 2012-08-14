@@ -88,14 +88,14 @@ MagnetCoilForce[OptionsPattern[]] := Module[
   },
 
   If [OptionValue[Verbose], Diagnostic[x_] := Print[x], Diagnostic[x_] := Null];
-  
+
   If[ turns == 0 , turns = turnsR*turnsZ; ];
 
-  If[ turns == 0 , force = 0 ,  
+  If[ turns == 0 , force = 0 ,
 
   If[ eccen == 0.0 ,
   If[ displ == 0.0 ,
-    force = 0 , 
+    force = 0 ,
       If[ OptionValue[CoilThickness] == 0.0,
         Switch[method,
         Automatic,
@@ -131,7 +131,7 @@ MagnetCoilForce[OptionsPattern[]] := Module[
           ,
           _, Message[MagnetCode::unknownMethod,method]
           ]
-          
+
         ]
       ]
     ,
@@ -161,7 +161,7 @@ MagnetCoilForce[OptionsPattern[]] := Module[
 CoilCoilForce[I1_,I2_,r_,R_,z_] = With[
   { m = 4 r R/((r+R)^2+z^2) },
   I1 I2 4 \[Pi] 10^-7 Sqrt[m] z
-  ( 
+  (
     2 EllipticK[m]-
     (2-m)/(1-m) EllipticE[m]
   ) / (4 Sqrt[r R])
@@ -300,13 +300,13 @@ ThinThickCoilAxialForceKernel[ii_,jj_,kk_,R1_,R2_,R_,Z1_,Z2_,D_,opt_] :=
   If[t==0,result=0,
     m = (4 \[Rho])/((\[Rho]+1)^2+t^2);
     m2 = Sqrt[t^2+1];
-    result = Sqrt[m \[Rho]] (-EllipticK[m] ( (m2+2)/(m2+1) (t^2-2)+(\[Rho]^2+\[Rho]+2)-2/(\[Rho]+1))+EllipticE[m] (4\[Rho])/m)+
-      (\[Pi]/2)/Abs[t] (\[Rho] (\[Rho]^2-3)Sign[\[Rho]-1]( 1 - HeumanLambda[Abs[ArcSin[(\[Rho]-1)/(\[Rho]+1) Sqrt[1/(1-m)]]],m] ) +
-        (t^2-2)Sqrt[t^2+1] ( 1-HeumanLambda[Abs[ArcSin[t/(1+m2)]],m] +
-          Sign[\[Rho]-Sqrt[t^2+1]](1-HeumanLambda[Abs[ArcSin[t/(1+m2) Sqrt[1/(1-m)]]],m]) ) )+
-      -6 NIntegrate[ArcSinh[(\[Rho]+Cos[2\[CurlyPhi]])/Sqrt[Sin[2\[CurlyPhi]]^2+t^2]],{\[CurlyPhi],0,\[Pi]/2},opt];
+    result = Sqrt[m \[Rho]] (EllipticK[m] ( (m2+2)/(m2+1) (t^2-2)+(\[Rho]^2+\[Rho]+2)-2/(\[Rho]+1))-EllipticE[m] (4\[Rho])/m)+
+      (\[Pi]/2)/Abs[t] (\[Rho] (\[Rho]^2-3)Sign[\[Rho]-1]( -1 + HeumanLambda[Abs[ArcSin[(\[Rho]-1)/(\[Rho]+1) Sqrt[1/(1-m)]]],m] ) +
+        m2 (t^2-2) ( -1+HeumanLambda[Abs[ArcSin[t/(1+m2)]],m] +
+          Sign[\[Rho]-m2](-1+HeumanLambda[Abs[ArcSin[t/(1+m2) Sqrt[1/(1-m)]]],m]) ) )+
+      +6 NIntegrate[ArcSinh[(\[Rho]+Cos[2\[CurlyPhi]])/Sqrt[Sin[2\[CurlyPhi]]^2+t^2]],{\[CurlyPhi],0,\[Pi]/2},opt];
   ];
-  - t * result
+  t * result
 ]
 
 HeumanLambda[\[Phi]_,m_] := EllipticF[\[Phi],1-m]/EllipticK[1-m] + 2/\[Pi] EllipticK[m]JacobiZeta[\[Phi],1-m]
