@@ -3,7 +3,7 @@ clear all;close all;clc;
 mu = 1.05;
 mu0 = 4*pi*10^-7;
 h1 = 1.2/(mu*mu0);                  % Coercivity inner magnet
-h2 = -1.2/(mu*mu0);                  % Coercivity outer magnet
+h2 = 1.2/(mu*mu0);                  % Coercivity outer magnet
 pi = 4*atan(1);
 N = 8;                              % Number of magnets
 theta = pi/(N/2);                   % Angle of 'cube' rotation
@@ -11,32 +11,23 @@ angle = theta/(2*pi)*360;           % Angle of 'cube' rotation in degrees
 mesh = .005;                        % Mesh size
 semi = '''';
 
-a = .4;                             % Airgap width
-b = .4;                             % Airgap heigth
+a = .6;                             % Airgap width
+b = .6;                             % Airgap heigth
 c = .08;                            % Outer ring inner radius
 d = .1;                             % Outer ring outer radius
-e = .01;                            % Inner ring inner radius
-f = .03;                            % Inner ring outer radius
-g = .04;                            % Outer 'cube' side length
-k = .01;                            % Inner 'cube' side length
+e = .03;                            % Inner ring inner radius
+f = .05;                            % Inner ring outer radius
+g = .035;                            % Outer 'cube' side length
+k = .015;                            % Inner 'cube' side length
 
 fid1 = fopen('halbach2d.txt','wt');
 fprintf(fid1,'/PREP7\n');
-fprintf(fid1,'/TITLE, HALBACH CUBES');
+fprintf(fid1,'/TITLE, HALBACH CUBES\n');
 fprintf(fid1,'KEYW,PR_SET,1\n');    % Needed?
 fprintf(fid1,'KEYW,PR_ELMAG,1\n');  % Needed?
 fprintf(fid1,'KEYW,MAGNOD,1\n');    % Needed?
 fprintf(fid1,'ET,1,PLANE53\n');
 fprintf(fid1,'MP,MURX,1,1\n');
-% fprintf(fid1,'MP,MURX,2,1.05\n');   % Inner
-% fprintf(fid1,'MP,MURX,3,1.05\n');   % Outer
-
-% fprintf(fid1,'MP,MGYY,2,');
-% fprintf(fid1,'%f',h1);
-% fprintf(fid1,'\n');
-% fprintf(fid1,'MP,MGYY,3,');
-% fprintf(fid1,'%f',h2);
-% fprintf(fid1,'\n');
 
 % Draw air
 fprintf(fid1,'RECTNG,');
@@ -50,15 +41,12 @@ fprintf(fid1,'%f',b/2);
 fprintf(fid1,'\n');
 
 % Draw outer 'cubes'
-for i=1:N
-%     fprintf(fid1,'LOCAL,');
-%     fprintf(fid1,'%f',10+i);
-%     fprintf(fid1,',0,');
-    if i==1
+for i = 1:N
+    if i == 1
         fprintf(fid1,'MP,MURX,');
         fprintf(fid1,'%f',i+1);
         fprintf(fid1,',1.05\n');
-        fprintf(fid1,'MP,MGYY,');
+        fprintf(fid1,'MP,MGXX,');
         fprintf(fid1,'%f',i+1);
         fprintf(fid1,',');
         fprintf(fid1,'%f',h1);
@@ -70,17 +58,19 @@ for i=1:N
         fprintf(fid1,'%f',((c+d)/2));
         fprintf(fid1,',0,0\n');
     else 
-        fprintf(fid1,'MP,MGYY,');
+        fprintf(fid1,'MP,MURX,');
         fprintf(fid1,'%f',i+1);
-        fprintf(fid1,',');
-        fprintf(fid1,'%f',h1*cos((i-1)*theta));
-        fprintf(fid1,'\n');
+        fprintf(fid1,',1.05\n');
         fprintf(fid1,'MP,MGXX,');
         fprintf(fid1,'%f',i+1);
         fprintf(fid1,',');
-        fprintf(fid1,'%f',h1*sin((i-1)*theta));
+        fprintf(fid1,'%f',h1*cos((i-1)*3*theta));
         fprintf(fid1,'\n');
-        
+        fprintf(fid1,'MP,MGYY,');
+        fprintf(fid1,'%f',i+1);
+        fprintf(fid1,',');
+        fprintf(fid1,'%f',h1*sin((i-1)*3*theta));
+        fprintf(fid1,'\n');
         fprintf(fid1,'LOCAL,');
         fprintf(fid1,'%f',10+i);
         fprintf(fid1,',0,');
@@ -103,18 +93,19 @@ for i=1:N
     fprintf(fid1,',');
     fprintf(fid1,'%f',g/2);
     fprintf(fid1,'\n');
+    i = i+1;
 end
 
 % Draw inner 'cubes'
-for i=1:N
-    if i==1
+for i = 1:N
+    if i == 1
         fprintf(fid1,'MP,MURX,');
         fprintf(fid1,'%f',i+1+N);
         fprintf(fid1,',1.05\n');
-        fprintf(fid1,'MP,MGYY,');
+        fprintf(fid1,'MP,MGXX,');
         fprintf(fid1,'%f',i+1+N);
         fprintf(fid1,',');
-        fprintf(fid1,'%f',h1);
+        fprintf(fid1,'%f',h2);
         fprintf(fid1,'\n');
         
         fprintf(fid1,'LOCAL,');
@@ -123,15 +114,18 @@ for i=1:N
         fprintf(fid1,'%f',((e+f)/2));
         fprintf(fid1,',0,0\n');
     else
-        fprintf(fid1,'MP,MGYY,');
+        fprintf(fid1,'MP,MURX,');
         fprintf(fid1,'%f',i+1+N);
-        fprintf(fid1,',');
-        fprintf(fid1,'%f',h1*-cos((i-1)*theta));
-        fprintf(fid1,'\n');
+        fprintf(fid1,',1.05\n');
         fprintf(fid1,'MP,MGXX,');
         fprintf(fid1,'%f',i+1+N);
         fprintf(fid1,',');
-        fprintf(fid1,'%f',h1*-sin((i-1)*theta));
+        fprintf(fid1,'%f',h2*cos(-(i-1)*(theta)));
+        fprintf(fid1,'\n');
+        fprintf(fid1,'MP,MGYY,');
+        fprintf(fid1,'%f',i+1+N);
+        fprintf(fid1,',');
+        fprintf(fid1,'%f',h2*sin(-(i-1)*(theta)));
         fprintf(fid1,'\n');
         
         fprintf(fid1,'LOCAL,');
@@ -156,21 +150,40 @@ for i=1:N
     fprintf(fid1,',');
     fprintf(fid1,'%f',k/2);
     fprintf(fid1,'\n');
+    i = i+1;
 end
 
-fprintf(fid1,'WPCSYS,-1,0\n');          % Back to original working plane
+fprintf(fid1,'WPCSYS,1,0\n');          % Back to original working plane
 
-% Assign material properties
-fprintf(fid1,'ASEL,S,AREA,,2,');
-fprintf(fid1,'%f',N+1);
-fprintf(fid1,'\n');
-fprintf(fid1,'AATT,3,,1\n');
-fprintf(fid1,'ASEL,S,AREA,,');
-fprintf(fid1,'%f',N+2);
-fprintf(fid1,',');
-fprintf(fid1,'%f',2*N+1);
-fprintf(fid1,'\n');
-fprintf(fid1,'AATT,2,,1\n');
+% Assign material properties outer ring
+for i = 1:N
+
+    fprintf(fid1,'ASEL,S,AREA,,');
+    fprintf(fid1,'%f',i+1);
+    fprintf(fid1,'\n');
+    fprintf(fid1,'AATT,');
+    fprintf(fid1,'%f',i+1);
+    fprintf(fid1,',,');
+    fprintf(fid1,'%f',1);
+    fprintf(fid1,'\n');
+
+    i=i+1;
+end
+
+% Assign material properties inner ring
+for i = 1:N
+    fprintf(fid1,'ASEL,S,AREA,,');
+    fprintf(fid1,'%f',i+1+N);
+    fprintf(fid1,'\n');
+    fprintf(fid1,'AATT,');
+    fprintf(fid1,'%f',i+1+N);
+    fprintf(fid1,',,');
+    fprintf(fid1,'%f',1);
+    fprintf(fid1,'\n');
+
+    i = i+1;
+end
+
 fprintf(fid1,'ASEL,ALL\n');
 fprintf(fid1,'ASBA,1,ALL,,,KEEP\n');
 fprintf(fid1,'ASEL,U,AREA,,2,');
@@ -190,7 +203,9 @@ fprintf(fid1,'\n');
 fprintf(fid1,'AMESH,ALL\n');
 
 % Apply force flags
-fprintf(fid1,'ESEL,S,MAT,,2\n');
+fprintf(fid1,'ESEL,S,MAT,,2,');
+fprintf(fid1,'%f',N+1);
+fprintf(fid1,'\n');
 fprintf(fid1,'CM,mag1,ELEM\n');
 fprintf(fid1,'FMAGBC,');
 fprintf(fid1,'%s',semi);
