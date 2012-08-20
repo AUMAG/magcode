@@ -64,12 +64,12 @@ for i = 1:N
         fprintf(fid1,'MP,MGXX,');
         fprintf(fid1,'%f',i+1);
         fprintf(fid1,',');
-        fprintf(fid1,'%f',h1*cos((i-1)*3*theta));
+        fprintf(fid1,'%f',h1*cos((i-1)*(N/4+1)*theta));
         fprintf(fid1,'\n');
         fprintf(fid1,'MP,MGYY,');
         fprintf(fid1,'%f',i+1);
         fprintf(fid1,',');
-        fprintf(fid1,'%f',h1*sin((i-1)*3*theta));
+        fprintf(fid1,'%f',h1*sin((i-1)*(N/4+1)*theta));
         fprintf(fid1,'\n');
         fprintf(fid1,'LOCAL,');
         fprintf(fid1,'%f',10+i);
@@ -120,12 +120,12 @@ for i = 1:N
         fprintf(fid1,'MP,MGXX,');
         fprintf(fid1,'%f',i+1+N);
         fprintf(fid1,',');
-        fprintf(fid1,'%f',h2*cos(-(i-1)*(theta)));
+        fprintf(fid1,'%f',h2*cos(-(i-1)*(N/4-1)*(theta)));
         fprintf(fid1,'\n');
         fprintf(fid1,'MP,MGYY,');
         fprintf(fid1,'%f',i+1+N);
         fprintf(fid1,',');
-        fprintf(fid1,'%f',h2*sin(-(i-1)*(theta)));
+        fprintf(fid1,'%f',h2*sin(-(i-1)*(N/4-1)*(theta)));
         fprintf(fid1,'\n');
         
         fprintf(fid1,'LOCAL,');
