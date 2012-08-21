@@ -7,12 +7,12 @@ mu = 1.05;                                  % Permeability (N/A^2)
 mesh = 0.005;                               % Meshsize numerical solver
 
 % Dimensions [radius height (thickness)]
-magnet_fixed.dim = [0.06 0.03];             % Magnet 1
-magnet_float.dim = [0.06 0.03];             % Magnet 2
+magnet_fixed.dim = [0.035 0.03];             % Magnet 1
+magnet_float.dim = [0.035 0.03];             % Magnet 2
 
 % Add or remove comment sign in order to use ring magnets or not
-magnet_fixed2.dim = [.03 .03];              % Used for upper ring magnet
-magnet_float2.dim = [.03 .03];              % Used for lower ring magnet
+magnet_fixed2.dim = [.025 .03];              % Used for upper ring magnet
+magnet_float2.dim = [.025 .03];              % Used for lower ring magnet
 
 % Check for existence of magnet dimensions
 A = length(magnet_fixed.dim);
@@ -46,7 +46,8 @@ magnet_float2.magn = -magnet_float.magn;    % Lower, inner magnet used for super
 % Displacement
 displ_max = 0.05;
 N = 10;                                     % Number of calculation steps
-            switch magnettype
+%% Calculation in Matlab and Ansys
+switch magnettype
                 case 'axisymmetric'
                     offset = repmat([0;0;0.03],[1 N*10]);
                     displ = linspace(0,displ_max,N*10);
@@ -58,7 +59,7 @@ N = 10;                                     % Number of calculation steps
                     title('Force between two cylindrical magnets');
                     xlabel('Displacement, m');
                     ylabel('Force, N');
-                    %ansys(N,displ,mu,mesh,magnet_fixed,magnet_float);
+                    ansys(N,displ,mu,mesh,magnet_fixed,magnet_float);
                 case 'planar'
                     magnet_fixed.magdir = [0 1 0];
                     magnet_float.magdir = [0 1 0];
@@ -72,7 +73,7 @@ N = 10;                                     % Number of calculation steps
                     title('Force between two planar magnets');
                     xlabel('Displacement, m');
                     ylabel('Force, N');
-                    %ansys(N,displ,mu,mesh,magnet_fixed,magnet_float);
+                    ansys(N,displ,mu,mesh,magnet_fixed,magnet_float);
                 case 'axiring'
                     offset = repmat([0;0;0.03],[1 N*10]);
                     displ = linspace(eps,displ_max,N*10);
@@ -84,10 +85,11 @@ N = 10;                                     % Number of calculation steps
                     title('Force between cylinder and ring magnet');
                     xlabel('Displacement, m');
                     ylabel('Force, N');
-                    %ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2);
+                    ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2);
                 case 'rings'
-                    offset = repmat([0;0;0.03],[1 N*10]);
-                    displ = linspace(0,displ_max,N*10);
+                    %offset=0;
+                    offset = repmat([0;0;0.03],[1 N*50]);
+                    displ = linspace(0,displ_max,N*50);
                     displ_range = offset+[0;0;1]*displ; 
                     % Calculate forces
                     forces = magnetforces(magnet_fixed,magnet_float,displ_range)+magnetforces(magnet_fixed2,magnet_float,displ_range)+magnetforces(magnet_fixed,magnet_float2,displ_range)+magnetforces(magnet_fixed2,magnet_float2,displ_range);
@@ -95,21 +97,21 @@ N = 10;                                     % Number of calculation steps
                     title('Force between ring magnets');
                     xlabel('Displacement, m');
                     ylabel('Force, N');
-                    %ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2,magnet_float2);
+                    ansys(N,displ,mu,mesh,magnet_fixed,magnet_float,magnet_fixed2,magnet_float2);
                 otherwise
             end
 
-% Load ANSYS results    
+%% Load ANSYS results    
 load output.txt;
 Q = output;
 clear output;
 
 % Select correct Ansys values
-Qmx = Q(3:4:end);                               % Maxwell force
-Qvw = Q(4:4:end);                               % Virtual work force
-ansys_displ = linspace(0,displ_max,numel(Qvw));
+Qmx = Q(:,(3));                               % Maxwell force
+Qvw = Q(:,(4));                               % Virtual work force
+ansys_displ = Q(:,(5));
 
-% Plot ANSYS results
+%% Plot ANSYS results
 switch magnettype
     case 'axisymmetric'
         plot(ansys_displ,Qmx,'g+:');

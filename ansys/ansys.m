@@ -57,7 +57,6 @@ end
     fid1 = fopen('total.txt','wt');
     fprintf(fid1,'/PREP7\n');
     fprintf(fid1,'/TITLE,numerical solution\n');
-    %fprintf(fid1,'l=ARG1\n');                  % Not needed? Check for all configurations. not needed for: rings,
     fprintf(fid1,'KEYW,PR_SET,1\n');
     fprintf(fid1,'KEYW,PR_ELMAG,1\n');
     fprintf(fid1,'KEYW,MAGNOD,1\n');
@@ -251,8 +250,11 @@ end
     %fprintf(fid1,',,\n');
     fprintf(fid1,',,APPEND\n');                 % Changes with previous line to append to output
 
-    fprintf(fid1,'*VWRITE,ff(1),ff(2),ff(3),ff(4)\n');
-    fprintf(fid1,'(E10.3)\n');
+    fprintf(fid1,'*VWRITE,ff(1),ff(2),ff(3),ff(4)');
+    fprintf(fid1,',');
+    fprintf(fid1,'%f',x);
+    fprintf(fid1,'\n');
+    fprintf(fid1,'(E10.3,X,E10.3,X,E10.3,X,E10.3,X,E10.3)\n');
     fprintf(fid1,'/OUTPUT\n');
     fprintf(fid1,'/EOF');
     fclose(fid1);
