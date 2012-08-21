@@ -240,3 +240,5 @@ fprintf(fid1,'*get,ff(3),ssum,fmx_y\n');
 fprintf(fid1,'*get,ff(4),ssum,fvw_y\n');
     
 fclose(fid1);
+
+
