@@ -8,8 +8,8 @@ pi = 4*atan(1);
 N = 8;                              % Number of magnets
 theta = pi/(N/2);                   % Angle of 'cube' rotation
 angle = theta/(2*pi)*360;           % Angle of 'cube' rotation in degrees
-mesh = .005;                        % Mesh size
-semi = '''';
+mesh = .01;                        % Mesh size
+quote = '''';
 
 a = .6;                             % Airgap width
 b = .6;                             % Airgap heigth
@@ -208,9 +208,9 @@ fprintf(fid1,'%f',N+1);
 fprintf(fid1,'\n');
 fprintf(fid1,'CM,mag1,ELEM\n');
 fprintf(fid1,'FMAGBC,');
-fprintf(fid1,'%s',semi);
+fprintf(fid1,'%s',quote);
 fprintf(fid1,'mag1');
-fprintf(fid1,'%s',semi);
+fprintf(fid1,'%s',quote);
 fprintf(fid1,'\n');
 
 fprintf(fid1,'FINISH\n');
@@ -219,26 +219,88 @@ fprintf(fid1,'/SOL\n');
 fprintf(fid1,'MAGSOLV\n');
 fprintf(fid1,'FINISH\n');
 
+fprintf(fid1,'CSYS,ARG1\n');
+fprintf(fid1,'_NAME=ARG2\n');
+fprintf(fid1,'FINI\n');
+
 fprintf(fid1,'/POST1\n');
-fprintf(fid1,'PLF2D\n');
-fprintf(fid1,'fmagsum,');
-fprintf(fid1,'%s',semi);
-fprintf(fid1,'mag1');
-fprintf(fid1,'%s',semi);
-fprintf(fid1,'\n');
+fprintf(fid1,'CM,CN,NODE\n');
+fprintf(fid1,'NSEL,ALL\n');
+fprintf(fid1,'*GET,NDMX,NODE,,NUM,MAX\n');
+fprintf(fid1,'CMSEL,,CN\n');
 
-fprintf(fid1,'etab,fmgx1,fmag,x\n');
-fprintf(fid1,'etab,fmgy1,fmag,y\n');
-fprintf(fid1,'etab.fmgz1,fmag,z\n');
+fprintf(fid1,'*SET,_MSK\n');
+fprintf(fid1,'*DIM,_MSK,,NDMX\n');
+fprintf(fid1,'*VGET,_MSK(1),NODE,1,NSEL\n');
+fprintf(fid1,'*VOPER,_MSK(1),_MSK(1),GT,0\n');
+fprintf(fid1,'*SET,NODDAT\n');
+fprintf(fid1,'*DIM,NODDAT,,NDMX,4\n');
 
-fprintf(fid1,'SSUM\n');
+fprintf(fid1,'*VMASK,_MSK(1)\n');
+fprintf(fid1,'*VFILL,NODDAT(1,1),RAMP,1,1\n');
+fprintf(fid1,'*VMASK,_MSK(1)\n');
+fprintf(fid1,'*VGET,NODDAT(1,2),NODE,1,LOC,X\n');
+fprintf(fid1,'*VMASK,_MSK(1)\n');
+fprintf(fid1,'*VGET,NODDAT(1,3),NODE,1,LOC,Y\n');
+fprintf(fid1,'*VMASK,_MSK(1)\n');
+fprintf(fid1,'*VGET,NODDAT(1,4),NODE,1,B,SUM\n');
 
-fprintf(fid1,'*dim,ff,ARRAY,4\n');
-fprintf(fid1,'*get,ff(1),ssum,fmx_x\n');
-fprintf(fid1,'*get,ff(2),ssum,fvw_x\n');
-fprintf(fid1,'*get,ff(3),ssum,fmx_y\n');
-fprintf(fid1,'*get,ff(4),ssum,fvw_y\n');
-    
+fprintf(fid1,'/NOPR\n');
+fprintf(fid1,'/OUT,');
+fprintf(fid1,'%s',quote);
+fprintf(fid1,'NodeData');
+fprintf(fid1,'%s',quote);
+fprintf(fid1,',txt\n');
+
+fprintf(fid1,'*VMASK,_MSK(1)\n');
+fprintf(fid1,'*VWRITE,NODDAT(1),NODDAT(1,2),NODDAT(1,3),NODDAT(1,4)\n');
+fprintf(fid1,'(E14.6,2X,E14.8,2X,E14.8,2X,E14.8)\n');
+fprintf(fid1,'/OUT\n');
+fprintf(fid1,'/GOPR\n');
+
+% fprintf(fid1,'*UILI,');
+% fprintf(fid1,'%s',quote);
+% fprintf(fid1,'NodeData');
+% fprintf(fid1,'%s',quote);
+% fprintf(fid1,',txt\n');
+
+fprintf(fid1,'/EOF\n');
+
+% fprintf(fid1,'/POST1\n');
+% fprintf(fid1,'PLF2D\n');
+% fprintf(fid1,'fmagsum,');
+% fprintf(fid1,'%s',semi);
+% fprintf(fid1,'mag1');
+% fprintf(fid1,'%s',semi);
+% fprintf(fid1,'\n');
+% 
+% fprintf(fid1,'etab,fmgx1,fmag,x\n');
+% fprintf(fid1,'etab,fmgy1,fmag,y\n');
+% fprintf(fid1,'etab.fmgz1,fmag,z\n');
+% 
+% fprintf(fid1,'SSUM\n');
+% 
+% fprintf(fid1,'*dim,ff,ARRAY,4\n');
+% fprintf(fid1,'*get,ff(1),ssum,fmx_x\n');
+% fprintf(fid1,'*get,ff(2),ssum,fvw_x\n');
+% fprintf(fid1,'*get,ff(3),ssum,fmx_y\n');
+% fprintf(fid1,'*get,ff(4),ssum,fvw_y\n');
+
+% fprintf(fid1,'NLIST,,,,,NODE,X,Y\n');
+
 fclose(fid1);
 
+% Run the ANSYS batch file, locations must be correct
+!"C:\Program Files\ANSYS Inc\v140\ansys\bin\intel\ANSYS140" -b -i C:\magcode\ansys\halbach2d.txt -o C:\magcode\ansys\halbachresult.out
 
+% Delete 'unnecessary' files
+!del file.BCS
+!del file.emat
+!del file.err
+!del file.esav
+!del file.full
+!del file.rmg
+!del file.stat
+
+% Run results reader and make scatter and contour plot
+readAnsysHalbach();
