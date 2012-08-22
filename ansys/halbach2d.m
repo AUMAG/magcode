@@ -1,3 +1,4 @@
+%% This script creates Ansys input code, runs Ansys in batch mode and reads in results by using readAnsysHalbach.m.
 clear all;close all;clc;
 !del C:\magcode\ansys\halbach2d.txt
 mu = 1.05;
@@ -8,16 +9,16 @@ pi = 4*atan(1);
 N = 8;                              % Number of magnets
 theta = pi/(N/2);                   % Angle of 'cube' rotation
 angle = theta/(2*pi)*360;           % Angle of 'cube' rotation in degrees
-mesh = .01;                        % Mesh size
+mesh = .005;                        % Mesh size
 quote = '''';
 
-a = .6;                             % Airgap width
-b = .6;                             % Airgap heigth
+a = .4;                             % Airgap width
+b = .4;                             % Airgap heigth
 c = .08;                            % Outer ring inner radius
 d = .1;                             % Outer ring outer radius
 e = .03;                            % Inner ring inner radius
 f = .05;                            % Inner ring outer radius
-g = .035;                            % Outer 'cube' side length
+g = .045;                            % Outer 'cube' side length
 k = .015;                            % Inner 'cube' side length
 
 fid1 = fopen('halbach2d.txt','wt');
@@ -229,21 +230,26 @@ fprintf(fid1,'NSEL,ALL\n');
 fprintf(fid1,'*GET,NDMX,NODE,,NUM,MAX\n');
 fprintf(fid1,'CMSEL,,CN\n');
 
+% Define mask vector in case there are missing node numbers
 fprintf(fid1,'*SET,_MSK\n');
 fprintf(fid1,'*DIM,_MSK,,NDMX\n');
 fprintf(fid1,'*VGET,_MSK(1),NODE,1,NSEL\n');
 fprintf(fid1,'*VOPER,_MSK(1),_MSK(1),GT,0\n');
 fprintf(fid1,'*SET,NODDAT\n');
-fprintf(fid1,'*DIM,NODDAT,,NDMX,4\n');
+fprintf(fid1,'*DIM,NODDAT,,NDMX,6\n');
 
 fprintf(fid1,'*VMASK,_MSK(1)\n');
-fprintf(fid1,'*VFILL,NODDAT(1,1),RAMP,1,1\n');
+fprintf(fid1,'*VFILL,NODDAT(1,1),RAMP,1,1\n');      % Node numbers
 fprintf(fid1,'*VMASK,_MSK(1)\n');
-fprintf(fid1,'*VGET,NODDAT(1,2),NODE,1,LOC,X\n');
+fprintf(fid1,'*VGET,NODDAT(1,2),NODE,1,LOC,X\n');   % Node x position
 fprintf(fid1,'*VMASK,_MSK(1)\n');
-fprintf(fid1,'*VGET,NODDAT(1,3),NODE,1,LOC,Y\n');
+fprintf(fid1,'*VGET,NODDAT(1,3),NODE,1,LOC,Y\n');   % Node y position
 fprintf(fid1,'*VMASK,_MSK(1)\n');
-fprintf(fid1,'*VGET,NODDAT(1,4),NODE,1,B,SUM\n');
+fprintf(fid1,'*VGET,NODDAT(1,4),NODE,1,B,SUM\n');   % Node magnetic flux sum
+fprintf(fid1,'*VMASK,_MSK(1)\n');
+fprintf(fid1,'*VGET,NODDAT(1,5),NODE,1,B,X\n');     % Node magnetic flux x direction
+fprintf(fid1,'*VMASK,_MSK(1)\n');
+fprintf(fid1,'*VGET,NODDAT(1,6),NODE,1,B,Y\n');     % Node magnetic flux x direction
 
 fprintf(fid1,'/NOPR\n');
 fprintf(fid1,'/OUT,');
@@ -252,20 +258,23 @@ fprintf(fid1,'NodeData');
 fprintf(fid1,'%s',quote);
 fprintf(fid1,',txt\n');
 
+% Write data
 fprintf(fid1,'*VMASK,_MSK(1)\n');
-fprintf(fid1,'*VWRITE,NODDAT(1),NODDAT(1,2),NODDAT(1,3),NODDAT(1,4)\n');
-fprintf(fid1,'(E14.6,2X,E14.8,2X,E14.8,2X,E14.8)\n');
+fprintf(fid1,'*VWRITE,NODDAT(1),NODDAT(1,2),NODDAT(1,3),NODDAT(1,4),NODDAT(1,5),NODDAT(1,6)\n');
+fprintf(fid1,'(E14.6,2X,E14.8,2X,E14.8,2X,E14.8,2X,E14.8,2X,E14.8)\n');
 fprintf(fid1,'/OUT\n');
 fprintf(fid1,'/GOPR\n');
 
+%% Optional code to display file to screen
 % fprintf(fid1,'*UILI,');
 % fprintf(fid1,'%s',quote);
 % fprintf(fid1,'NodeData');
 % fprintf(fid1,'%s',quote);
 % fprintf(fid1,',txt\n');
+%%
 
 fprintf(fid1,'/EOF\n');
-
+%% Code for calculating forces
 % fprintf(fid1,'/POST1\n');
 % fprintf(fid1,'PLF2D\n');
 % fprintf(fid1,'fmagsum,');
@@ -287,7 +296,7 @@ fprintf(fid1,'/EOF\n');
 % fprintf(fid1,'*get,ff(4),ssum,fvw_y\n');
 
 % fprintf(fid1,'NLIST,,,,,NODE,X,Y\n');
-
+%% 
 fclose(fid1);
 
 % Run the ANSYS batch file, locations must be correct
