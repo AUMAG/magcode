@@ -14,12 +14,10 @@ quote = '''';
 
 a = .4;                             % Airgap width
 b = .4;                             % Airgap heigth
-c = .08;                            % Outer ring inner radius
-d = .1;                             % Outer ring outer radius
-e = .03;                            % Inner ring inner radius
-f = .05;                            % Inner ring outer radius
-g = .045;                            % Outer 'cube' side length
-k = .015;                            % Inner 'cube' side length
+c = .09;                            % Outer ring radius
+d = .04;                            % Inner ring radius
+e = .045;                            % Outer 'cube' side length
+f = .015;                            % Inner 'cube' side length
 
 fid1 = fopen('halbach2d.txt','wt');
 fprintf(fid1,'/PREP7\n');
@@ -56,7 +54,7 @@ for i = 1:N
         fprintf(fid1,'LOCAL,');
         fprintf(fid1,'%f',10+i);
         fprintf(fid1,',0,');
-        fprintf(fid1,'%f',((c+d)/2));
+        fprintf(fid1,'%f',c);
         fprintf(fid1,',0,0\n');
     else 
         fprintf(fid1,'MP,MURX,');
@@ -75,9 +73,9 @@ for i = 1:N
         fprintf(fid1,'LOCAL,');
         fprintf(fid1,'%f',10+i);
         fprintf(fid1,',0,');
-        fprintf(fid1,'%f',((c+d)/2)*cos((i-1)*theta));
+        fprintf(fid1,'%f',c*cos((i-1)*theta));
         fprintf(fid1,',');
-        fprintf(fid1,'%f',((c+d)/2)*sin((i-1)*theta));
+        fprintf(fid1,'%f',c*sin((i-1)*theta));
         fprintf(fid1,',0,');
         fprintf(fid1,'%f',((i-1)*angle));
         fprintf(fid1,'\n');
@@ -86,13 +84,13 @@ for i = 1:N
     fprintf(fid1,'%f',10+i);
     fprintf(fid1,'\n');
     fprintf(fid1,'RECTNG,');
-    fprintf(fid1,'%f',-g/2);
+    fprintf(fid1,'%f',-e/2);
     fprintf(fid1,',');
-    fprintf(fid1,'%f',g/2);
+    fprintf(fid1,'%f',e/2);
     fprintf(fid1,',');
-    fprintf(fid1,'%f',-g/2);
+    fprintf(fid1,'%f',-e/2);
     fprintf(fid1,',');
-    fprintf(fid1,'%f',g/2);
+    fprintf(fid1,'%f',e/2);
     fprintf(fid1,'\n');
     i = i+1;
 end
@@ -112,7 +110,7 @@ for i = 1:N
         fprintf(fid1,'LOCAL,');
         fprintf(fid1,'%f',10+i);
         fprintf(fid1,',0,');
-        fprintf(fid1,'%f',((e+f)/2));
+        fprintf(fid1,'%f',d);
         fprintf(fid1,',0,0\n');
     else
         fprintf(fid1,'MP,MURX,');
@@ -132,9 +130,9 @@ for i = 1:N
         fprintf(fid1,'LOCAL,');
         fprintf(fid1,'%f',10+i);
         fprintf(fid1,',0,');
-        fprintf(fid1,'%f',((e+f)/2)*cos((i-1)*theta));
+        fprintf(fid1,'%f',d*cos((i-1)*theta));
         fprintf(fid1,',');
-        fprintf(fid1,'%f',((e+f)/2)*sin((i-1)*theta));
+        fprintf(fid1,'%f',d*sin((i-1)*theta));
         fprintf(fid1,',0,');
         fprintf(fid1,'%f',((i-1)*angle));
         fprintf(fid1,'\n');
@@ -143,13 +141,13 @@ for i = 1:N
     fprintf(fid1,'%f',10+i);
     fprintf(fid1,'\n');
     fprintf(fid1,'RECTNG,');
-    fprintf(fid1,'%f',-k/2);
+    fprintf(fid1,'%f',-f/2);
     fprintf(fid1,',');
-    fprintf(fid1,'%f',k/2);
+    fprintf(fid1,'%f',f/2);
     fprintf(fid1,',');
-    fprintf(fid1,'%f',-k/2);
+    fprintf(fid1,'%f',-f/2);
     fprintf(fid1,',');
-    fprintf(fid1,'%f',k/2);
+    fprintf(fid1,'%f',f/2);
     fprintf(fid1,'\n');
     i = i+1;
 end
@@ -236,7 +234,7 @@ fprintf(fid1,'*DIM,_MSK,,NDMX\n');
 fprintf(fid1,'*VGET,_MSK(1),NODE,1,NSEL\n');
 fprintf(fid1,'*VOPER,_MSK(1),_MSK(1),GT,0\n');
 fprintf(fid1,'*SET,NODDAT\n');
-fprintf(fid1,'*DIM,NODDAT,,NDMX,6\n');
+fprintf(fid1,'*DIM,NODDAT,,NDMX,7\n');
 
 fprintf(fid1,'*VMASK,_MSK(1)\n');
 fprintf(fid1,'*VFILL,NODDAT(1,1),RAMP,1,1\n');      % Node numbers
@@ -250,6 +248,8 @@ fprintf(fid1,'*VMASK,_MSK(1)\n');
 fprintf(fid1,'*VGET,NODDAT(1,5),NODE,1,B,X\n');     % Node magnetic flux x direction
 fprintf(fid1,'*VMASK,_MSK(1)\n');
 fprintf(fid1,'*VGET,NODDAT(1,6),NODE,1,B,Y\n');     % Node magnetic flux x direction
+fprintf(fid1,'*VMASK,_MSK(1)\n');
+fprintf(fid1,'*VGET,NODDAT(1,7),NODE,1,A,Z\n');     % Magnetic vector potential
 
 fprintf(fid1,'/NOPR\n');
 fprintf(fid1,'/OUT,');
@@ -260,8 +260,8 @@ fprintf(fid1,',txt\n');
 
 % Write data
 fprintf(fid1,'*VMASK,_MSK(1)\n');
-fprintf(fid1,'*VWRITE,NODDAT(1),NODDAT(1,2),NODDAT(1,3),NODDAT(1,4),NODDAT(1,5),NODDAT(1,6)\n');
-fprintf(fid1,'(E14.6,2X,E14.8,2X,E14.8,2X,E14.8,2X,E14.8,2X,E14.8)\n');
+fprintf(fid1,'*VWRITE,NODDAT(1),NODDAT(1,2),NODDAT(1,3),NODDAT(1,4),NODDAT(1,5),NODDAT(1,6),NODDAT(1,7)\n');
+fprintf(fid1,'(E14.6,2X,E14.8,2X,E14.8,2X,E14.8,2X,E14.8,2X,E14.8,2X,E14.8)\n');
 fprintf(fid1,'/OUT\n');
 fprintf(fid1,'/GOPR\n');
 
@@ -312,4 +312,4 @@ fclose(fid1);
 !del file.stat
 
 % Run results reader and make scatter and contour plot
-readAnsysHalbach();
+readAnsysHalbach(c,d,e,f);

@@ -1,7 +1,9 @@
-function []=readAnsysHalbach()
+function []=readAnsysHalbach(c,d,e,f)
 %% This script reads and plots Ansys results from NodeData.txt
-clear all;close all;clc;
+% clear all;
+close all;clc;
 fid=fopen('NodeData.txt');
+
 
 A1 = [];    % Node number
 A2 = [];    % Node x position
@@ -9,14 +11,16 @@ A3 = [];    % Node y position
 A4 = [];    % Node magnetic B sum
 A5 = [];    % Node magnetic B x direction
 A6 = [];    % Node magnetic B y direction
+A7 = [];    % Magnetic vector potential
 
-A_data=textscan(fid,'%f %f %f %f %f %f'); % Read NodeData.txt columns
+A_data=textscan(fid,'%f %f %f %f %f %f %f'); % Read NodeData.txt columns
 A1 = [A1;A_data{1}];
 A2 = [A2;A_data{2}];
 A3 = [A3;A_data{3}];
 A4 = [A4;A_data{4}];
 A5 = [A5;A_data{5}];
 A6 = [A6;A_data{6}];
+A7 = [A7;A_data{7}];
 
 % Remove lines with zero 'B'
 condition=A4(:,1)==0;
@@ -26,9 +30,35 @@ A3(condition,:)=[];
 A4(condition,:)=[];
 A5(condition,:)=[];
 A6(condition,:)=[];
+A7(condition,:)=[];
 
-% Scatter plot
+%% Determine magnetic field B between inner and outer ring
+N = 200;            % Number of iterations
+
+nodes = [A2 A3];
+t = linspace(0,2*pi,N);
+R = ((c-e/2)+(d+f/2))/2;
+p(:,1) = R*cos(t);
+p(:,2) = R*sin(t);
+D = zeros(N,1);
+E = zeros(N,1);
+
+for i=1:N
+    D(i,:) = norm(nodes-repmat(p(i,:),[length(nodes) 1]));
+    displ= nodes-repmat(p(i,:),[length(nodes) 1]);
+    D = sqrt(displ(:,1).^2+displ(:,2).^2);
+    E(i,:) = find(D==min(D));
+end
+i = i+1;
+%% Plot of BSUM exactly between inner and outer ring
 figure(1);
+plot(t,A4(E));
+figure(2);
+l=linspace(1,200,200);
+polar(t,A4(E(l))');
+
+%% Scatter plot
+figure(3);
 caxis([min(A2) max(A2)]);
 scatter(A2,A3,[],A4,'filled');
 title('Magnetic flux B on points');
@@ -36,32 +66,41 @@ xlabel('x,m');
 ylabel('y,m');
 
 
-% Contour plot
-figure(2);
+%% Contour plot of magnetic BSUM
+figure(4);
 x1=linspace(min(A2),max(A2),1000); % Don't make number of steps too big to avoid memory problems
 y1=linspace(min(A3),max(A3),1000);
 [X1 Y1]=meshgrid(x1,y1);
 Z1=griddata(A2,A3,A4,X1,Y1);
-contour(X1,Y1,Z1,30);
+Z2=griddata(A2,A3,A7,X1,Y1);
+contourf(X1,Y1,Z1,30);
 title('Contour plot of magnetic flux B');
 xlabel('x,m');
 ylabel('y,m');
 
+%% Contour plot of magnetic flux potential (2D flux lines)
+figure(5);
+Z2=griddata(A2,A3,A7,X1,Y1);
+contour(X1,Y1,Z2,30);
+title('Contour plot of 2D flux lines (AZ)');
+xlabel('x,m');
+ylabel('y,m');
+
 % Velocity plot
-figure(3);
-figure(3);
+figure(6);
 quiver(A2,A3,A5,A6,3);
 title('Magnetic flux B velocity vectors');
 xlabel('x,m');
 ylabel('y,m');
+axis equal
 
-
-% Velocity plot with colored arrows
-figure(4);
-title('Magnetic flux B velocity vectors');
-xlabel('x,m');
-ylabel('y,m');figure(4);
-quiverc(A2,A3,A5,A6,3);
-colorbar;
+% % Velocity plot with colored arrows
+% figure(7);
+% title('Magnetic flux B velocity vectors');
+% xlabel('x,m');
+% ylabel('y,m');
+% quiverc(A2,A3,A5,A6,3);
+% colorbar;
+% axis equal
 
 end
