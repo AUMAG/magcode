@@ -24,8 +24,7 @@ else
   array_height = 0.01;
   array_length = 0.1;
   
-  forces = repmat(NaN,...
-    [3 displ_steps length(Nwaves_array) length(Nmag_per_wave_array)]);
+  forces = nan([3 displ_steps length(Nwaves_array) length(Nmag_per_wave_array)]);
   
   
   for nn = 1:length(Nwaves_array)
@@ -105,7 +104,7 @@ for nn = 1:length(Nwaves_array)
   Nwaves = Nwaves_array(nn);
   
   figname = ['halbach-waves-Nwaves-',num2str(Nwaves)];
-  willfig(figname,'small'); clf; hold on;
+  willfig(figname,'tiny'); clf; hold on;
   
   for ww = length(Nmag_per_wave_array):-1:1
     
@@ -149,7 +148,7 @@ for nn = 1:length(Nwaves_array)
       set(gca,'position',pos2);
     end
     
-    matlabfrag(['fig/',figname],'dpi',3200);
+    matlabfrag(['fig/',figname]);
     
   end
   
@@ -181,7 +180,6 @@ for ww = 1:length(Nmag_per_wave_array)
   set(gca,'box','on','ticklength',[0.02 0.05])
   
   draworigin([1 0],'v',':')
-  colourplot(1,[3 2 1])
   
   xlabel('Normalised vertical displacement')
   ylabel('Vertical force, N')
@@ -192,8 +190,8 @@ for ww = 1:length(Nmag_per_wave_array)
   set(H,'position',[0.6 0.5 pos(3:4)]);
   legendshrink
   
-  
-  matlabfrag(['fig/',figname],'dpi',3200);
+  colourplot(1,[3 2 1])  
+  matlabfrag(['fig/',figname]);
   
 end
 

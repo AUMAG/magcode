@@ -21,8 +21,8 @@ magnet_float.dim = [0.012 0.02 0.006];
 magnet_fixed.magn = 0.38;
 magnet_float.magn = 0.38;
 
-magnet_fixed.magdir = [0  90]; % z
-magnet_float.magdir = [0  90]; % z
+magnet_fixed.magdir = [0 0 1]; % z
+magnet_float.magdir = [0 0 1]; % z
 
 N = 501;
 offset = repmat([-0.004; -0.004; 0.008],[1 N]);
@@ -58,8 +58,8 @@ magnet_float.dim = [0.014 0.026 0.01 ];
 magnet_fixed.magn = 1.23;
 magnet_float.magn = 1.23;
 
-magnet_fixed.magdir = [0  90]; % z
-magnet_float.magdir = [0  0];  % x
+magnet_fixed.magdir = [0 0 1]; % z
+magnet_float.magdir = [1 0 0];  % x
 
 N = 501;
 offset = repmat([0; -0.008; 0.015],[1 N]);

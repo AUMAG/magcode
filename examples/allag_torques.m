@@ -24,22 +24,23 @@ clc
 % Cube magnets with z-displacement only and both with positive-z
 % magnetisation.
 
-a = 0.01/2;
-b = 0.01/2;
-c = 0.01/2;
-A = 0.01/2;
-B = 0.01/2;
-C = 0.01/2;
+a = 0.015/2;
+b = 0.015/2;
+c = 0.015/2;
+A = 0.015/2;
+B = 0.015/2;
+C = 0.015/2;
 
 J1 = 1;
 J2 = 1;
 
-offset = [0 0 0.02];
+offset = [0.04 0.04 0.04];
 
 %% Now calculate the forces and torques.
 
 % Pre-allocate variables:
 torque_xyz = zeros(3,1);
+torque_xyz2 = zeros(3,1);
 f_comp_x = zeros(2,2,2);
 f_comp_y = zeros(2,2,2);
 f_comp_z = zeros(2,2,2);
@@ -100,12 +101,19 @@ for jj = [0, 1]
               + u*v*atan(u*v/(r*w));
               - r*w
               ]);
+            
+            % These are the corner torques:
+            t_x = f_y*(lz-w/2) - f_z*(ly-v/2);
+            t_y = f_z*(lx-u/2) - f_x*(lz-w/2);
+            t_z = f_x*(ly-v/2) - f_y*(lx-u/2);
+            
 
             index_sum = (-1)^(ii+jj+kk+ll+pp+qq);
 
             % This is the total torque:
             torque_xyz = torque_xyz + cross( [lx; ly; lz] , [f_x; f_y; f_z] )*index_sum;
-
+            torque_xyz2 = torque_xyz2 + [t_x;t_y;t_z]*index_sum
+            
             % These are the total corner forces from the first magnet onto
             % a single corner of the second:
             f_comp_x(jj+1,ll+1,qq+1) = f_comp_x(jj+1,ll+1,qq+1) + f_x*index_sum;
@@ -122,6 +130,7 @@ end
 % The total torque with correct units:
 magconst = 1/(4*pi*(4*pi*1e-7));
 torque_xyz = J1*J2*magconst*torque_xyz;
+torque_xyz2 = J1*J2*magconst*torque_xyz2;
 
 % Calculate and reshape the results into single column vectors:
 f_corner_x = J1*J2*magconst*reshape(f_comp_x,[8 1]);
@@ -157,13 +166,16 @@ tz = sum(tz_corner);
 
 %% Display the results
 
+format short g
+
 fprintf('\nTotal forces:\n')
 disp([fx fy fz])
 disp('These forces are correct for magnets with z-displacement only.')
 
-fprintf('\nTotal torques calculated with two different methods:\n')
+fprintf('\nTotal torques calculated with three different methods:\n')
 disp([tx ty tz])
 disp(torque_xyz')
+disp(torque_xyz2')
 disp('These torques must be wrong; they should all be zero for z-displacement only.')
 
 fprintf('\nBreakdown of y-torque into components of the x-force and z-force for each corner:\n\n')
@@ -180,5 +192,7 @@ disp([corners chop(f_corner_z,3) chop(ty_corner_z,3)])
 fprintf(['\nThese forces are not symmetrical and therefore invalidate the argument\n',...
              'that the corner forces can be used for calculating torques.\n'])
 
-
+           
+disp(torque_xyz2)
+magnetforces(struct('dim',[2*a 2*b 2*c],'magdir',[0 0 1],'magn',1),struct('dim',[2*A 2*B 2*C],'magdir',[0 0 1],'magn',1),offset,'torque')
 
