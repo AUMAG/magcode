@@ -4,15 +4,15 @@ clear all; close all; clc;
 hold on;
     
 mu = 1.05;                                  % Permeability (N/A^2)
-mesh = 0.005;                               % Meshsize numerical solver
+mesh = 0.001;                               % Meshsize numerical solver
 
 % Dimensions [radius height (thickness)]
-magnet_fixed.dim = [0.035 0.03];             % Magnet 1
-magnet_float.dim = [0.035 0.03];             % Magnet 2
+magnet_fixed.dim = [0.04 0.01 0.04];             % Magnet 1
+magnet_float.dim = [0.04 0.01 0.04];             % Magnet 2
 
 % Add or remove comment sign in order to use ring magnets or not
-magnet_fixed2.dim = [.025 .03];              % Used for upper ring magnet
-magnet_float2.dim = [.025 .03];              % Used for lower ring magnet
+%magnet_fixed2.dim = [.025 .03];              % Used for upper ring magnet
+%magnet_float2.dim = [.025 .03];              % Used for lower ring magnet
 
 % Check for existence of magnet dimensions
 A = length(magnet_fixed.dim);
@@ -45,7 +45,8 @@ magnet_float2.magn = -magnet_float.magn;    % Lower, inner magnet used for super
 
 % Displacement
 displ_max = 0.05;
-N = 10;                                     % Number of calculation steps
+N = 10;  
+% Number of calculation steps
 %% Calculation in Matlab and Ansys
 switch magnettype
                 case 'axisymmetric'
