@@ -337,8 +337,8 @@ figname='cub-cyl-ratios';
 
 willfig(figname,'tiny'); clf; hold on
 
-pp = 2*[43 35 30 25 20];
-for mm = 1:Nm
+pp = 2*[43 35 30 25 17];
+for mm = 1:Nm-1
   plot(yrange*1000,squeeze(cubforces(3,mm,:).\cylforces(3,mm,:))) 
   text(...
     yrange(pp(mm))*1000,...
@@ -349,12 +349,23 @@ for mm = 1:Nm
     'UserData',['matlabfrag:\fboxsep=1pt\colorbox{white}{\small \num{',num2str(magratio(mm)),'}}'])
 end
 
+for mm = Nm
+  plot(yrange*1000,squeeze(cubforces(3,mm,:).\cylforces(3,mm,:))) 
+  text(...
+    yrange(pp(mm))*1000,...
+    0.99*squeeze(cubforces(3,mm,pp(mm)).\cylforces(3,mm,pp(mm))),...
+    num2str(magratio(mm)),...
+    'VerticalAlignment','middle',...
+    'HorizontalAlignment','center',...
+    'UserData',['matlabfrag:\fboxsep=1pt\colorbox{white}{\small $\nu=\num{',num2str(magratio(mm)),'}$}'])
+end
+
 for mm = 1:Nm
 %  plot(yrange(pp(mm))*1000,squeeze(cubforces(3,mm,pp(mm)).\cylforces(3,mm,pp(mm))),'.','MarkerSize',10)
 end
 
 xlabel('Displacement, mm')
-ylabel('Force ratio')
+ylabel('Force ratio $F_{\mathrm{cyl}}/F_{\mathrm{cub}}$')
 ylim([1 1.3])
 
 if ~simple_graph

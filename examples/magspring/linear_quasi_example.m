@@ -83,9 +83,9 @@ style = {'.-','-','--'};
 zdata = zrange/array_height;
 
 figname = 'ratios-compare';
-willfig(figname,'small'); clf; hold on;
+willfig(figname,'tiny'); clf; hold on;
   
-for ii = 1:length(some)
+for ii = 1:length(ratios_array)
       
   plot(zdata,squeeze(forces(3,:,ii)),...
       style{ii},...
@@ -100,13 +100,13 @@ ylabel('Vertical force, N')
 if ~simple_graph
   
   set(gca,'box','on','ticklength',[0.02 0.05])
-  colourplot
   
   H = labelplot('north','vertical','$\mupqratio$');
   pos = get(H,'position');
-  set(H,'position',[0.6 0.5 pos(3:4)]);
+  set(H,'position',[0.65 0.5 pos(3:4)]);
   legendshrink(0.5)
-  
+  colourplot
+
   axistight(gca,0.1,'-x')
   set(gca,'ylim',[0 400]);
   
@@ -123,9 +123,9 @@ style = {'.-','-','--'};
 zdata = zrange/array_height;
 
 figname = 'ratios-compare-norm';
-willfig(figname); clf; hold on;
+willfig(figname,'tiny'); clf; hold on;
 
-for ii = 1:length(some)
+for ii = 1:length(ratios_array)
       
   plot(zdata,squeeze(forces(3,:,ii))./squeeze(forces(3,:,3)),...
       style{ii},...

@@ -81,7 +81,7 @@ end
 %% Plot integrals of force vs. displacement
 
 figname = 'ratios-forcesum';
-willfig(figname,'small'); clf; hold on
+willfig(figname,'tiny'); clf; hold on
 
 style = [0.5 1 1.5];
 
@@ -101,9 +101,9 @@ ylabel('Normalised force integral')
 if ~simple_graph
   
   set(gca,'box','on','ticklength',[0.02 0.05])
-  colourplot(1)
   H = labelplot('south','vertical','$\mupNwaves$');
   legendshrink
+  colourplot(1)
   
   axis tight
   axistight
