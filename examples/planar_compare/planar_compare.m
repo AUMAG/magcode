@@ -105,28 +105,30 @@ end
 %% Plot
 
 try
-  willfig('planar-compare'); clf; hold on
+  willfig('planar-compare','tiny'); clf; hold on
 catch
   figure; hold on
 end
 
-plot(zrange,forces.linear(3,:),   '.-', 'Tag','Linear Halbach');
-plot(zrange,forces.halbach(3,:),  '--', 'Tag','Planar Halbach');
-plot(zrange,forces.quasi(3,:),          'Tag','Quasi Halbach' );
-plot(zrange,forces.single(3,:),   '.' , 'Tag','Single magnet' );
-plot(zrange,forces.patchwork(3,:),'.--','Tag','Patchwork'     );
+plot(1000*zrange,1000\forces.linear(3,:),   '.-', 'Tag','Linear Halbach');
+plot(1000*zrange,1000\forces.halbach(3,:),  '--', 'Tag','Planar Halbach');
+plot(1000*zrange,1000\forces.quasi(3,:),          'Tag','Quasi Halbach' );
+plot(1000*zrange,1000\forces.single(3,:),   '.' , 'Tag','Single magnet' );
+plot(1000*zrange,1000\forces.patchwork(3,:),'.--','Tag','Patchwork'     );
 
 set(gca,'box','on','ticklength',[0.02 0.05])
-set(gca,'xlim',[0.0095 0.02]);
+set(gca,'xlim',[9.5 20]);
 
-xlabel('Vertical displacement, m')
-ylabel('Vertical force, N')
+xlabel('Vertical displacement, mm')
+ylabel('Vertical force, kN')
 
 try
-  draworigin([0.01 0],'v','--');
-  colourplot(1,5:-1:1);
-  labelplot('northeast','vertical')
+  draworigin([10 0],'v','--');
+  hl=labelplot('northeast','vertical');
+  set(hl,'FontSize',9);
   legendshrink
-  matlabfrag('fig/planar-compare','dpi',3200);
+  
+  colourplot(1,5:-1:1);
+  matlabfrag('fig/planar-compare');
 end
 
