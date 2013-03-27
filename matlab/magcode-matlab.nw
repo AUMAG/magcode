@@ -75,12 +75,19 @@ the forces only are calculated.
 The first two inputs are structures containing the following fields:
 \begin{description}[noitemsep,font=\ttfamily]
 \item[magnet.dim] A $(3\times1)$ vector of the side-lengths of the magnet.
-\item[magnet.magn] The magnetisation magnitude of the magnet.
+\item[magnet.grade] The `grade' of the magnet as a string such as \texttt{'N42'}.
 \item[magnet.magdir] A vector representing the direction of the magnetisation.
               This may be either a $(3\times1)$ vector in cartesian
               coordinates or a $(2\times1)$ vector in spherical coordidates.
 \end{description}
-In cartesian coordinates, the vector is interpreted as a unit vector; it is only used to calculate the direction of the magnetisation.
+Instead of specifying a magnet grade, you may explicitly input the remanence magnetisation
+of the magnet direction with
+\begin{description}[noitemsep,font=\ttfamily]
+\item[magnet.magn] The remanence magnetisation of the magnet in Tesla.
+\end{description}
+Note that when not specified, the |magn| value $B_r$ is calculated from the magnet grade $N$ using $B_r=2\sqrt{N/100}$.
+
+In cartesian coordinates, the |magdir| vector is interpreted as a unit vector; it is only used to calculate the direction of the magnetisation.
 In other words, writing |[1;0;0]| is the same as |[2;0;0]|, and so on.
 In spherical coordinates $(\theta,\phi)$, $\theta$ is the vertical projection of the angle around the $x$--$y$ plane ($\theta=0$ coincident with the $x$-axis), and $\phi$ is the angle from the $x$--$y$ plane towards the $z$-axis.
 In other words, the following unit vectors are equivalent:
@@ -361,6 +368,7 @@ function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 << Calculate for each displacement >>
 << Return all results >>
 
+<< Function for calculating magnetisation from grade >>
 << Function for resolving magnetisations >>
 << Function for single force calculation >>
 << Function for single torque calculation >>
@@ -414,18 +422,36 @@ if ~isfield(magnet_float,'type')
   end
 end
 
+if isfield(magnet_fixed,'grade')
+  if isfield(magnet_fixed,'magn')
+    error('Cannot specify both ''magn'' and ''grade''.')
+  else
+    magnet_fixed.magn = grade2magn(magnet_fixed.grade);
+  end
+end
+
+if isfield(magnet_float,'grade')
+  if isfield(magnet_float,'magn')
+    error('Cannot specify both ''magn'' and ''grade''.')
+  else
+    magnet_float.magn = grade2magn(magnet_float.grade);
+  end
+end
+
+coil_bool = false;
+
 if strcmp(magnet_fixed.type, 'coil')
 
   if ~strcmp(magnet_float.type, 'cylinder')
     error('Coil/magnet forces can only be calculated for cylindrical magnets.')
   end
-  
+
   coil_bool = true;
   coil = magnet_fixed;
   magnet = magnet_float;
   magtype = 'cylinder';
   coil_sign = +1;
-  
+
 end
 
 if strcmp(magnet_float.type, 'coil')
@@ -1480,6 +1506,36 @@ end
 
 @ \subsubsection{Setup code}
 
+@ Magnet `strength' can be specified using either "magn" or "grade".
+  In the latter case, this should be a string such as "'N42'", from which
+  the |magn| is automatically calculated using the equation
+  \[
+    B_r = 2\sqrt{\mu_0 [BH]_{\mathrm{max}}}
+  \]
+  where $[BH]_{\mathrm{max}}$ is the numeric value given in the grade in \si{MG.Oe}.
+  I.e., an N42 magnet has $[BH]_{\mathrm{max}}=\SI{42}{MG.Oe}$.
+  Since $\SI{1}{MG.Oe}=100/(4\pi)\,\si{kJ/m^3}$, the calculation simplifies to
+  \[
+    B_r = 2\sqrt{ N/100 }
+  \]
+  where $N$ is the numeric grade in \si{MG.Oe}. Easy.
+
+<< Function for calculating magnetisation from grade >>=
+
+function magn = grade2magn(grade)
+
+if isnumeric(grade)
+  magn = 2*sqrt(grade/100);
+else
+  if strcmp(grade(1),'N')
+    magn = 2*sqrt(str2num(grade(2:end))/100);
+  else
+    magn = 2*sqrt(str2num(grade)/100);
+  end
+end
+
+end
+
 @ Magnetisation directions are specified in either cartesian or spherical
 coordinates. Since this is shared code, it's sent to the end to belong in a
 nested function.
@@ -2191,8 +2247,46 @@ disp('=================')
 
 
 
+@ Specifying grades.
 
+<< testgrades01.m >>=
 
+clear all
+disp('=================')
+fprintf('TEST ''grade'' specification: ')
+
+displ = [0.03 0.05 0.07];
+magnet_fixed.dim = [0.01 0.02 0.03];
+magnet_fixed.magn = 2*sqrt(42/100); % = 'N42'
+magnet_fixed.magdir  = [1 0 0];
+magnet_float = magnet_fixed;
+
+magnet_fixed2.dim = [0.01 0.02 0.03];
+magnet_fixed2.grade = 'N42';
+magnet_fixed2.magdir  = [1 0 0];
+magnet_float2 = magnet_fixed2;
+
+magnet_fixed3.dim = [0.01 0.02 0.03];
+magnet_fixed3.grade = '42';
+magnet_fixed3.magdir  = [1 0 0];
+magnet_float3 = magnet_fixed3;
+
+magnet_fixed4.dim = [0.01 0.02 0.03];
+magnet_fixed4.grade = '42';
+magnet_fixed4.magdir  = [1 0 0];
+magnet_float4 = magnet_fixed4;
+
+F1 = magnetforces(magnet_fixed, magnet_float, displ);
+F2 = magnetforces(magnet_fixed2,magnet_float2,displ);
+F3 = magnetforces(magnet_fixed3,magnet_float3,displ);
+F4 = magnetforces(magnet_fixed4,magnet_float4,displ);
+
+assert( all( round(1e6*F1) == round(1e6*F2) ), 'grade spec should be consistent' )
+assert( all( round(1e6*F1) == round(1e6*F3) ), 'grade spec should be consistent' )
+assert( all( round(1e6*F1) == round(1e6*F4) ), 'grade spec should be consistent' )
+
+fprintf('passed\n')
+disp('=================')
 
 
 
@@ -2843,7 +2937,11 @@ end
 << Array magnetisation strengths >>=
 
 if ~isfield(array,'magn')
-  array.magn = 1;
+  if isfield(array,'grade')
+    array.magn = grade2magn(array.grade);
+  else
+    array.magn = 1;
+  end
 end
 
 if length(array.magn) == 1

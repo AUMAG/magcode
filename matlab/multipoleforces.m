@@ -418,7 +418,11 @@ end
 
 
 if ~isfield(array,'magn')
-  array.magn = 1;
+  if isfield(array,'grade')
+    array.magn = grade2magn(array.grade);
+  else
+    array.magn = 1;
+  end
 end
 
 if length(array.magn) == 1

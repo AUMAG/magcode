@@ -86,8 +86,22 @@ if ~isfield(magnet_float,'type')
   end
 end
 
-if ~strcmp(magnet_fixed.type, magnet_float.type)
-  error('Magnets must be of same type')
+if isfield(magnet_fixed,'grade')
+  if isfield(magnet_fixed,'magn')
+    error('Cannot specify both ''magn'' and ''grade''.')
+  else
+    magnet_fixed.magn = grade2magn(magnet_fixed.grade);
+  end
+end
+
+if isfield(magnet_float,'grade')
+  if isfield(magnet_float,'magn')
+    error('Cannot specify both ''magn'' and ''grade''.')
+  else
+    magnet_float.magn = grade2magn(magnet_float.grade);
+  end
+end
+
 coil_bool = false;
 
 if strcmp(magnet_fixed.type, 'coil')
@@ -308,6 +322,21 @@ for ii = 1:length(varargin)
 end
 
 
+
+
+function magn = grade2magn(grade)
+
+if isnumeric(grade)
+  magn = 2*sqrt(grade/100);
+else
+  if strcmp(grade(1),'N')
+    magn = 2*sqrt(str2num(grade(2:end))/100);
+  else
+    magn = 2*sqrt(str2num(grade)/100);
+  end
+end
+
+end
 
 
 function J = resolve_magnetisations(magn,magdir)
