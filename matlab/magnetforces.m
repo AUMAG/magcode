@@ -88,9 +88,47 @@ end
 
 if ~strcmp(magnet_fixed.type, magnet_float.type)
   error('Magnets must be of same type')
+coil_bool = false;
+
+if strcmp(magnet_fixed.type, 'coil')
+
+  if ~strcmp(magnet_float.type, 'cylinder')
+    error('Coil/magnet forces can only be calculated for cylindrical magnets.')
+  end
+
+  coil_bool = true;
+  coil = magnet_fixed;
+  magnet = magnet_float;
+  magtype = 'cylinder';
+  coil_sign = +1;
+
 end
 
-magtype = magnet_fixed.type;
+if strcmp(magnet_float.type, 'coil')
+
+  if ~strcmp(magnet_fixed.type, 'cylinder')
+    error('Coil/magnet forces can only be calculated for cylindrical magnets.')
+  end
+
+  coil_bool = true;
+  coil = magnet_float;
+  magnet = magnet_fixed;
+  magtype = 'cylinder';
+  coil_sign = -1;
+
+end
+
+if coil_bool
+
+  error('to do')
+
+else
+
+  if ~strcmp(magnet_fixed.type, magnet_float.type)
+    error('Magnets must be of same type')
+  end
+  magtype = magnet_fixed.type;
+
 
 if strcmp(magtype,'cuboid')
 
@@ -201,6 +239,13 @@ J2_y    = rotate_y_to_z(J2);
 end
 
 
+
+if coil_bool
+
+  forces_out = coil_sign*coil.dir*...
+    forces_magcyl_shell_calc(mag.dim, coil.dim, squeeze(displ(cyldir,:)), J1(cyldir), coil.current, coil.turns);
+
+else
 
 if strcmp(magtype,'cuboid')
 
@@ -1034,6 +1079,25 @@ end
 
 end
 
+
+function Fz = forces_magcyl_shell_calc(magsize,coilsize,displ,Jmag,Nrz,I)
+
+Jcoil = 4*pi*1e-7*Nrz(2)*I/coil.dim(3);
+
+shell_forces = nan([length(displ) Nrz(1)]);
+
+for rr = 1:Nrz(1)
+
+  this_radius = coilsize(1)+(rr-1)/(Nrz(1)-1)*(coilsize(2)-coilsize(1));
+  shell_size = [this_radius, coilsize(3)];
+
+  shell_forces(:,rr) = forces_cyl_calc(magsize,shell_size,displ,Jmag,Jcoil)
+
+end
+
+Fz = sum(shell_forces,2);
+
+end
 
 
 
