@@ -58,15 +58,15 @@ end
 Ndispl = size(displ,2);
 
 if calc_force_bool
-  forces_out = repmat(NaN,[3 Ndispl]);
+  forces_out = nan([3 Ndispl]);
 end
 
 if calc_stiffness_bool
-  stiffnesses_out = repmat(NaN,[3 Ndispl]);
+  stiffnesses_out = nan([3 Ndispl]);
 end
 
 if calc_torque_bool
-  torques_out = repmat(NaN,[3 Ndispl]);
+  torques_out = nan([3 Ndispl]);
 end
 
 
@@ -113,8 +113,8 @@ if strcmp(magtype,'cuboid')
 
 elseif strcmp(magtype,'cylinder')
 
-  size1 = reshape(magnet_fixed.dim,[2 1]);
-  size2 = reshape(magnet_float.dim,[2 1]);
+  size1 = magnet_fixed.dim(:);
+  size2 = magnet_float.dim(:);
 
   if ~isfield(magnet_fixed,'dir')
     magnet_fixed.dir = [0 0 1];
@@ -160,6 +160,8 @@ elseif strcmp(magtype,'cylinder')
 
   J1 = magnet_fixed.magn*magnet_fixed.magdir;
   J2 = magnet_float.magn*magnet_float.magdir;
+
+end
 
 end
 
@@ -240,6 +242,7 @@ if calc_torque_bool
   error('Torques cannot be calculated for cylindrical magnets yet.')
 end
 
+end
 
 end
 
@@ -285,7 +288,7 @@ end
 
 function force_out = single_magnet_force(displ)
 
-force_components = repmat(NaN,[9 3]);
+force_components = nan([9 3]);
 
 
 d_x  = rotate_x_to_z(displ);
@@ -422,7 +425,7 @@ end
 
 function stiffness_out = single_magnet_stiffness(displ)
 
-stiffness_components = repmat(NaN,[9 3]);
+stiffness_components = nan([9 3]);
 
 
 d_x  = rotate_x_to_z(displ);
@@ -841,15 +844,15 @@ for ii=[0,1]
       for ll=[0,1]
         for mm=[0,1]
           for nn=[0,1]
-                        
+
             Cu=(-1)^ii.*a1-d;
             Cv=(-1)^kk.*b1-e;
             Cw=(-1)^mm.*c1-f;
-            
+
             u=a-(-1)^ii.*a1+(-1)^jj.*a2;
             v=b-(-1)^kk.*b1+(-1)^ll.*b2;
             w=c-(-1)^mm.*c1+(-1)^nn.*c2;
-            
+
             s=sqrt(u.^2+v.^2+w.^2);
 
             Ex=(1/8).*(...
@@ -887,7 +890,7 @@ for ii=[0,1]
             Tx=Tx+(-1)^(ii+jj+kk+ll+mm+nn)*Ex;
             Ty=Ty+(-1)^(ii+jj+kk+ll+mm+nn)*Ey;
             Tz=Tz+(-1)^(ii+jj+kk+ll+mm+nn)*Ez;
-            
+
           end
         end
       end
@@ -896,7 +899,7 @@ for ii=[0,1]
 end
 
 calc_out = real([Tx; Ty; Tz].*br1*br2/(16*pi^2*1e-7));
-                        
+
 end
 
 function calc_out = torques_calc_z_y(size1,size2,offset,lever,J1,J2)
@@ -939,16 +942,16 @@ z(4,:) = h_gap + size2(2)/2;
 C_d = zeros(size(h_gap));
 
 for ii = [1 2]
-  
+
   for jj = [3 4]
 
     a1 = z(ii,:) - z(jj,:);
     a2 = 1 + ( (r1-r2)./a1 ).^2;
     a3 = sqrt( (r1+r2).^2 + a1.^2 );
     a4 = 4*r1.*r2./( (r1+r2).^2 + a1.^2 );
-    
+
     [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
-    
+
     a2_ind = ( a2 == 1 | isnan(a2) );
     if all(a2_ind)% singularity at a2=1 (i.e., equal radii)
       PI_term(a2_ind) = 0;
@@ -958,11 +961,11 @@ for ii = [1 2]
       PI_term = zeros(size(a2));
       PI_term(~a2_ind) = (1-a1.^2/a3.^2).*PI;
     end
-    
+
     f_z = a1.*a2.*a3.*( K - E./a2 - PI_term );
 
     f_z(abs(a1)<eps)=0; % singularity at a1=0 (i.e., coincident faces)
-    
+
     C_d = C_d + (-1)^(ii+jj).*f_z;
 
   end

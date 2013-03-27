@@ -6,6 +6,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
+\usepackage{siunitx}
 \usepackage{hyperref}
 \hypersetup{colorlinks}
 \usepackage[hyperref,backref]{biblatex}
@@ -15,6 +16,7 @@
 \title{Forces between magnets\\ and multipole arrays of magnets:\\ A Matlab implementation}
 \author{Will Robertson}
 \maketitle
+\vfil
 \begin{abstract}
 This is the user guide and documented implementation of a set of
 Matlab functions for calculating the forces (and stiffnesses) between
@@ -24,6 +26,8 @@ This document is still evolving. The documentation for the source code,
 especially, is rather unclear/non-existent at present. The user guide,
 however, should contain the bulk of the information needed to use this code.
 \end{abstract}
+
+\newpage
 \tableofcontents
 
 \newpage
@@ -62,7 +66,7 @@ Similarly, when calculating all three of force/stiffness/torque, write
   [F S T] = magnetforces(magnet_fixed, magnet_float, displ,...
 	         'force','stiffness','torque');
 \end{verbatim}
-The ordering of `force`, `stiffness`, `torque` affects the order of the output
+The ordering of `force', `stiffness', `torque' affects the order of the output
 arguments.
 As shown in the original example, if no calculation type is requested then
 the forces only are calculated.
@@ -86,7 +90,8 @@ In other words, the following unit vectors are equivalent:
 (0,0,1)_{\text{cartesian}} &\equiv (0,90)_{\text{spherical}}
 \end{align*}
 N.B.\ $\theta$ and $\phi$ must be input in degrees, not radians.
-This seemingly odd decision was made in order to calculate quantities such as $\cos(\pi/2)=0$ exactly rather than to machine precision.
+This seemingly odd decision was made in order to calculate quantities such as $\cos(\pi/2)=0$ exactly rather than to machine precision.%
+\footnote{Try for example comparing the logical comparisons \texttt{cosd(90)==0} versus \texttt{cos(pi)==0}.}
 
 If you are calculating the torque on the second magnet, then it is assumed that the centre of rotation is at the centroid of the second magnet.
 If this is not the case, the centre of rotation of the second magnet can be specified with
@@ -292,6 +297,9 @@ programming in this way.
 \section{Documented code in a literate programming style}
 \subsection{Calculating forces between magnets}
 
+\DeleteShortVerb\|
+\MakeShortVerb\"
+
 This is the source of some code to
 calculate the forces and/or stiffnesses between two
 cuboid-shaped magnets with arbitary displacements and magnetisation direction.
@@ -361,7 +369,7 @@ function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
 end
 
-@ 
+@
 \subsubsection{Variables and data structures}
 First of all, address the data structures required for the input and output.
 Because displacement of a single magnet has three components, plus sizes of
@@ -425,18 +433,18 @@ if strcmp(magnet_float.type, 'coil')
   if ~strcmp(magnet_fixed.type, 'cylinder')
     error('Coil/magnet forces can only be calculated for cylindrical magnets.')
   end
-  
+
   coil_bool = true;
   coil = magnet_float;
   magnet = magnet_fixed;
   magtype = 'cylinder';
   coil_sign = -1;
-  
+
 end
 
 if coil_bool
 
-error('to do')
+  error('to do')
 
 else
 
@@ -1083,18 +1091,18 @@ z(3,:) = h_gap - size2(2)/2;
 z(4,:) = h_gap + size2(2)/2;
 
 C_d = zeros(size(h_gap));
-  
+
 for ii = [1 2]
-  
+
   for jj = [3 4]
 
     a1 = z(ii,:) - z(jj,:);
     a2 = 1 + ( (r1-r2)./a1 ).^2;
     a3 = sqrt( (r1+r2).^2 + a1.^2 );
     a4 = 4*r1.*r2./( (r1+r2).^2 + a1.^2 );
-    
+
     [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
-    
+
     a2_ind = ( a2 == 1 | isnan(a2) );
     if all(a2_ind)% singularity at a2=1 (i.e., equal radii)
       PI_term(a2_ind) = 0;
@@ -1104,11 +1112,11 @@ for ii = [1 2]
       PI_term = zeros(size(a2));
       PI_term(~a2_ind) = (1-a1.^2/a3.^2).*PI;
     end
-    
+
     f_z = a1.*a2.*a3.*( K - E./a2 - PI_term );
 
     f_z(abs(a1)<eps)=0; % singularity at a1=0 (i.e., coincident faces)
-    
+
     C_d = C_d + (-1)^(ii+jj).*f_z;
 
   end
@@ -1191,7 +1199,7 @@ for rr = 1:Nrz(1)
 
   this_radius = coilsize(1)+(rr-1)/(Nrz(1)-1)*(coilsize(2)-coilsize(1));
   shell_size = [this_radius, coilsize(3)];
-  
+
   shell_forces(:,rr) = forces_cyl_calc(magsize,shell_size,displ,Jmag,Jcoil)
 
 end
@@ -1257,15 +1265,15 @@ for ii=[0,1]
       for ll=[0,1]
         for mm=[0,1]
           for nn=[0,1]
-                        
+
             Cu=(-1)^ii.*a1-d;
             Cv=(-1)^kk.*b1-e;
             Cw=(-1)^mm.*c1-f;
-            
+
             u=a-(-1)^ii.*a1+(-1)^jj.*a2;
             v=b-(-1)^kk.*b1+(-1)^ll.*b2;
             w=c-(-1)^mm.*c1+(-1)^nn.*c2;
-            
+
             s=sqrt(u.^2+v.^2+w.^2);
 
             Ex=(1/8).*(...
@@ -1303,7 +1311,7 @@ for ii=[0,1]
             Tx=Tx+(-1)^(ii+jj+kk+ll+mm+nn)*Ex;
             Ty=Ty+(-1)^(ii+jj+kk+ll+mm+nn)*Ey;
             Tz=Tz+(-1)^(ii+jj+kk+ll+mm+nn)*Ez;
-            
+
           end
         end
       end
@@ -1312,7 +1320,7 @@ for ii=[0,1]
 end
 
 calc_out = real([Tx; Ty; Tz].*br1*br2/(16*pi^2*1e-7));
-                        
+
 end
 
 function calc_out = torques_calc_z_y(size1,size2,offset,lever,J1,J2)
@@ -1572,7 +1580,7 @@ end
 @   Also, we're using |atan| instead of |atan2| (otherwise the wrong results
 	are calculated --- I guess I don't totally understand that), which becomes
 	a problem when trying to compute |atan(0/0)| since |0/0| is |NaN|.
-	
+
 	This function computes |atan| but takes two arguments.
 
 << Helper functions >>=
@@ -1624,23 +1632,21 @@ debug_disp(J2')
    low-tech method. In time this test suite should be (somehow) useable for
    all implementations of \texttt{magnetocode}, not just Matlab. But I haven't
    thought about doing anything like that, yet.
- 
+
    Because I'm lazy, just run the tests manually for now.
    This script must be run twice if it updates itself.
 
 << testall.m >>=
 
-clc;
+clc
 
 test001a
 test001b
 test001c
 test001d
-
 testcyl01
-
 testcuboidtorque01
-
+testgrades01
 
 @ Force testing.
    This test checks that square magnets produce the same forces in the
@@ -1651,6 +1657,7 @@ testcuboidtorque01
 
 << test001a.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 001a: ')
 
@@ -1738,6 +1745,7 @@ otherforces = f([1 3],:);
 
 << test001b.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 001b: ')
 
@@ -1878,6 +1886,7 @@ assert ( ...
 
 << test001c.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 001c: ')
 
@@ -1972,6 +1981,7 @@ assert ( all( test1(:) ) && all( test2(:)) , ...
 
 << test001d.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 001d: ')
 
@@ -2060,6 +2070,7 @@ assert ( ...
 
 << test001e.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 001e: ')
 
@@ -2099,6 +2110,7 @@ disp('=================')
 
 << testcyl01.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST cylinder forces: ')
 
@@ -2129,7 +2141,7 @@ disp('=================')
 
 << testcuboidtorque01.m >>=
 
-
+clear all
 disp('=================')
 fprintf('TEST cuboid torques: ')
 
@@ -3017,7 +3029,7 @@ end
   Not much here yet.
 
 << testall.m >>=
-	
+
 test002a
 test002b
 test002c
@@ -3029,6 +3041,7 @@ test003a
 
 << test002a.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 002a: ')
 
@@ -3064,6 +3077,7 @@ disp('=================')
 
 << test002b.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 002b: ')
 
@@ -3102,6 +3116,7 @@ disp('=================')
 
 << test002c.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 002c: ')
 
@@ -3190,6 +3205,7 @@ disp('=================')
 
 << test002d.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 002d: ')
 
@@ -3256,6 +3272,7 @@ disp('=================')
 
 << test003a.m >>=
 
+clear all
 disp('=================')
 fprintf('TEST 003a: ')
 

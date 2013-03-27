@@ -56,15 +56,15 @@ end
 Ndispl = size(displ,2);
 
 if calc_force_bool
-  forces_out = repmat(NaN,[3 Ndispl]);
+  forces_out = nan([3 Ndispl]);
 end
 
 if calc_stiffness_bool
-  stiffnesses_out = repmat(NaN,[3 Ndispl]);
+  stiffnesses_out = nan([3 Ndispl]);
 end
 
 if calc_torque_bool
-  torques_out = repmat(NaN,[3 Ndispl]);
+  torques_out = nan([3 Ndispl]);
 end
 
 
@@ -74,11 +74,11 @@ fixed_array = complete_array_from_input(fixed_array);
 float_array = complete_array_from_input(float_array);
 
 if calc_force_bool
-  array_forces = repmat(NaN,[3 Ndispl fixed_array.total float_array.total]);
+  array_forces = nan([3 Ndispl fixed_array.total float_array.total]);
 end
 
 if calc_stiffness_bool
-  array_stiffnesses = repmat(NaN,[3 Ndispl fixed_array.total float_array.total]);
+  array_stiffnesses = nan([3 Ndispl fixed_array.total float_array.total]);
 end
 
 displ_from_array_corners = displ ...
@@ -262,7 +262,7 @@ end
 array.mcount = ones(1,3);
 array.mcount(linear_index) = array.Nmag;
 
-array.msize = repmat(NaN,[array.mcount 3]);
+array.msize = nan([array.mcount 3]);
 
 [sindex_x sindex_y sindex_z] = ...
   meshgrid(1:array.mcount(1), 1:array.mcount(2), 1:array.mcount(3));
@@ -531,9 +531,9 @@ end
 
 
 
-array.magloc = repmat(NaN,[array.total 3]);
+array.magloc = nan([array.total 3]);
 array.magdir = array.magloc;
-arrat.magloc_array = repmat(NaN,[array.mcount(1) array.mcount(2) array.mcount(3) 3]);
+arrat.magloc_array = nan([array.mcount(1) array.mcount(2) array.mcount(3) 3]);
 
 nn = 0;
 for iii = 1:array.mcount(1)
@@ -614,7 +614,7 @@ else
   mlength_adjust = true;
 end
 
-variables = repmat(NaN,[7 1]);
+variables = nan([7 1]);
 
 for iii = 1:length(var_names);
   if isfield(array,var_names(iii))
