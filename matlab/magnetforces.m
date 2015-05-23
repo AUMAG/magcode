@@ -1,15 +1,16 @@
 
 function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
-
-
 %% MAGNETFORCES  Calculate forces between two cuboid magnets
 %
 % Finish this off later. Please read the PDF documentation instead for now.
 %
 
+%%
 
-
-
+% \subsubsection{Wrangling user input and output}
+% We now have a choice of calculations to take based on the user input.
+% This chunk and the next are used in both \texttt{magnetforces.m} and
+% \texttt{multipoleforces.m}.
 
 debug_disp = @(str) disp([]);
 calc_force_bool = false;
@@ -45,6 +46,10 @@ if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
   calc_force_bool = true;
 end
 
+% \section{Organise input displacements}
+% Gotta check the displacement input for both functions.
+% After sorting that out, we can initialise the output variables now we
+% know how big they need to me.
 
 if size(displ,1) == 3
   % all good
@@ -69,6 +74,31 @@ if calc_torque_bool
   torques_out = nan([3 Ndispl]);
 end
 
+% \subsubsection{Variables and data structures}
+% First of all, address the data structures required for the input and output.
+% Because displacement of a single magnet has three components, plus sizes of
+% the faces another three, plus magnetisation strength and direction (two) makes
+% nine in total, we use one of Matlab's structures to pass the information into
+% the function. Otherwise we'd have an overwhelming number of input arguments.
+%
+% The input variables |magnet.dim| should be the entire side lengths of the
+% magnets; these dimensions are halved when performing all of the calculations.
+% (Because that's just how the maths is.)
+%
+% We use spherical coordinates to represent magnetisation angle, where |phi| is
+% the angle from the horizontal plane ($-\pi/2\le \phi \le\pi/2$) and |theta|
+% is the angle around the horizontal plane ($0\le\theta\le2\pi$). This follows
+% Matlab's definition; other conventions are commonly used as well. Remember:
+% \begin{quote}
+% $(1,0,0)_{\text{cartesian}} \equiv (0,0,1)_{\text{spherical}}$\\
+% $(0,1,0)_{\text{cartesian}} \equiv (\pi/2,0,1)_{\text{spherical}}$\\
+% $(0,0,1)_{\text{cartesian}} \equiv (0,\pi/2,1)_{\text{spherical}}$
+% \end{quote}
+% Cartesian components can also be used as input as well, in which case they
+% are made into a unit vector before multiplying it by the magnetisation
+% magnitude.
+% Either way (between spherical or cartesian input), |J1| and |J2| are made into
+% the magnetisation vectors in cartesian coordindates.
 
 if ~isfield(magnet_fixed,'type')
   if length(magnet_fixed.dim) == 2
@@ -252,7 +282,10 @@ J2_y    = rotate_y_to_z(J2);
 
 end
 
-
+% \section{Calculate for each displacement}
+% The actual mechanics.
+% The idea is that a multitude of displacements can be passed to the
+% function and we iterate to generate a matrix of vector outputs.
 
 if coil_bool
 
@@ -305,6 +338,10 @@ end
 
 end
 
+% \section{Return all results}
+% After all of the calculations have occured, they're placed back into
+% |varargout|. (This happens at the very end, obviously.)
+% Outputs are ordered in the same order as the inputs are specified.
 
 varargout = {};
 
@@ -323,6 +360,20 @@ end
 
 
 
+%\begin{mfunction}{grade2magn}
+%  Magnet `strength' can be specified using either "magn" or "grade".
+%  In the latter case, this should be a string such as "'N42'", from which
+%  the |magn| is automatically calculated using the equation
+%  \[
+%    B_r = 2\sqrt{\mu_0 [BH]_{\mathrm{max}}}
+%  \]
+%  where $[BH]_{\mathrm{max}}$ is the numeric value given in the grade in \si{MG.Oe}.
+%  I.e., an N42 magnet has $[BH]_{\mathrm{max}}=\SI{42}{MG.Oe}$.
+%  Since $\SI{1}{MG.Oe}=100/(4\pi)\,\si{kJ/m^3}$, the calculation simplifies to
+%  \[
+%    B_r = 2\sqrt{ N/100 }
+%  \]
+%  where $N$ is the numeric grade in \si{MG.Oe}. Easy.
 
 function magn = grade2magn(grade)
 
@@ -337,7 +388,16 @@ else
 end
 
 end
+%\end{mfunction}
 
+%\begin{mfunction}{resolve_magnetisations}
+% Magnetisation directions are specified in either cartesian or spherical
+% coordinates. Since this is shared code, it's sent to the end to belong in a
+% nested function.
+% 
+% We don't use Matlab's |sph2cart| here, because it doesn't calculate zero
+% accurately (because it uses radians and |cos(pi/2)| can only be evaluated
+% to machine precision of pi rather than symbolically).
 
 function J = resolve_magnetisations(magn,magdir)
 
@@ -358,7 +418,7 @@ else
 end
 
 end
-
+%\end{mfunction}
 
 function force_out = single_magnet_force(displ)
 
@@ -378,6 +438,12 @@ debug_disp('Magnetisations:')
 debug_disp(J1')
 debug_disp(J2')
 
+% The other forces (i.e., |x| and |y| components) require a rotation to get
+% the magnetisations correctly aligned.
+% In the case of the magnet sizes, the lengths are just flipped rather than
+% rotated (in rotation, sign is important).
+% After the forces are calculated, rotate them back to the original
+% coordinate system.
 
 calc_xyz = swap_x_z(calc_xyz);
 
@@ -412,6 +478,8 @@ force_components(6,:) = ...
 
 calc_xyz = swap_y_z(calc_xyz);
 
+% The easy one first, where our magnetisation components align with the
+% direction expected by the force functions.
 
 debug_disp('z-z force:')
 force_components(9,:) = forces_calc_z_z( size1,size2,displ,J1,J2 );
@@ -567,6 +635,20 @@ stiffness_out = sum(stiffness_components);
 end
 
 
+%\begin{mfunction}{forces_calc_z_z}
+%The expressions here follow directly from \textcite{akoun1984}.
+%
+%\begin{center}
+%\begin{tabular}{lll}
+% Inputs:
+% & |size1|=|(a,b,c)| & the half dimensions of the fixed magnet \\
+% & |size2|=|(A,B,C)| & the half dimensions of the floating magnet \\
+% & |displ|=|(dx,dy,dz)| & distance between magnet centres \\
+% &     |(J,J2)| & magnetisations of the magnet in the z-direction \\
+% Outputs:
+% & |forces_xyz|=|(Fx,Fy,Fz)| & Forces of the second magnet \\
+%\end{tabular}
+%\end{center}
 
 function calc_out = forces_calc_z_z(size1,size2,offset,J1,J2)
 
@@ -637,11 +719,15 @@ calc_out = J1*J2*magconst .* ...
 debug_disp(calc_out')
 
 end
+%\end{mfunction}
 
 
 
-
-
+% \begin{mfunction}{forces_calc_z_y}
+%  Orthogonal magnets forces given by \textcite{yonnet2009-ldia}.
+%  Note those equations seem to be written to calculate the force on the first
+%  magnet due to the second, so we negate all the values to get the force on
+%  the latter instead.
 
 
 function calc_out = forces_calc_z_y(size1,size2,offset,J1,J2)
@@ -720,7 +806,7 @@ calc_out = J1*J2*magconst .* ...
 debug_disp(calc_out')
 
 end
-
+%\end{mfunction}
 
 
 
@@ -879,7 +965,24 @@ calc_out = swap_x_y(stiffnesses_xyz);
 
 end
 
-
+%\begin{mfunction}{torques_calc_z_z}
+%  The expressions here follow directly from \textcite{janssen2010-ietm}.
+%  The code below was largely written by Allan Liu; thanks!
+%  We have checked it against Janssen's own Matlab code and the two give
+%  identical output.
+%
+%\begin{center}
+%\begin{tabular}{lll}
+% Inputs:
+% & |size1|=|(a1,b1,c1)| & the half dimensions of the fixed magnet \\
+% & |size2|=|(a2,b2,c2)| & the half dimensions of the floating magnet \\
+% & |displ|=|(a,b,c)| & distance between magnet centres \\
+% & |lever|=|(d,e,f)| & distance between floating magnet and its centre of rotation \\
+% &     |(J,J2)| & magnetisations of the magnet in the z-direction \\
+% Outputs:
+% & |forces_xyz|=|(Fx,Fy,Fz)| & Forces of the second magnet \\
+%\end{tabular}
+%\end{center}
 
 function calc_out = torques_calc_z_z(size1,size2,offset,lever,J1,J2)
 
@@ -975,6 +1078,7 @@ end
 calc_out = real([Tx; Ty; Tz].*br1*br2/(16*pi^2*1e-7));
 
 end
+%\end{mfunction}
 
 function calc_out = torques_calc_z_y(size1,size2,offset,lever,J1,J2)
 
@@ -1050,13 +1154,12 @@ calc_out = J1*J2/(8*pi*1e-7)*C_d;
 
 end
 
+% \begin{mfunction}{ellipkepi}
+% Complete elliptic integrals calculated with the arithmetric-geometric mean
+% algorithms contained here: \url{http://dlmf.nist.gov/19.8}.
+% Valid for $a<=1$ and $m<=1$.
 
 function [k,e,PI] = ellipkepi(a,m)
-
-% Complete elliptic integrals calculated with the arithmetric-geometric mean
-% algorithms contained here: http://dlmf.nist.gov/19.8
-%
-% Valid for a <= 1 and m <= 1
 
 a0 = 1;
 g0 = sqrt(1-m);
@@ -1067,8 +1170,6 @@ p0 = sqrt(1-a);
 Q0 = 1;
 Q1 = 1;
 QQ = Q0;
-
-w1 = ones(size(m));
 
 while max(Q1(:)) > eps
 
@@ -1107,8 +1208,9 @@ if ~isempty(im)
 end
 
 end
+% \end{mfunction}
 
-
+% \begin{mfunction}{forces_magcyl_shell_calc}
 function Fz = forces_magcyl_shell_calc(magsize,coilsize,displ,Jmag,Nrz,I)
 
 Jcoil = 4*pi*1e-7*Nrz(2)*I/coil.dim(3);
@@ -1120,29 +1222,38 @@ for rr = 1:Nrz(1)
   this_radius = coilsize(1)+(rr-1)/(Nrz(1)-1)*(coilsize(2)-coilsize(1));
   shell_size = [this_radius, coilsize(3)];
 
-  shell_forces(:,rr) = forces_cyl_calc(magsize,shell_size,displ,Jmag,Jcoil)
+  shell_forces(:,rr) = forces_cyl_calc(magsize,shell_size,displ,Jmag,Jcoil);
 
 end
 
 Fz = sum(shell_forces,2);
 
 end
+% \end{mfunction}
 
-
-
+%\section{Helpers}
+%  The equations contain two singularities. Specifically, the equations
+%  contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
+%  and $y$ are zero since $\log(0)$ is negative infinity.
+%
+% \begin{mfunction}{multiply_x_log_y}
+%  This function computes $x \log(y)$, special-casing the singularity to output
+%  zero, instead. (This is indeed the value of the limit.)
 function out = multiply_x_log_y(x,y)
   out = x.*log(y);
   out(~isfinite(out))=0;
 end
+% \end{mfunction}
 
-
+% \begin{mfunction}{atan1}
+% We're using |atan| instead of |atan2| (otherwise the wrong results
+%	are calculated --- I guess I don't totally understand that), which becomes
+%	a problem when trying to compute |atan(0/0)| since |0/0| is |NaN|.
 function out = atan1(x,y)
   out = zeros(size(x));
   ind = x~=0 & y~=0;
   out(ind) = atan(x(ind)./y(ind));
 end
-
-
+% \end{mfunction}
 
 end
-

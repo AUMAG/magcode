@@ -10,7 +10,6 @@
 \hypersetup{colorlinks}
 \usepackage[hyperref,backref]{biblatex}
 \bibliography{journals,phd}
-\MakeShortVerb\|
 
 \newcounter{mfunction}
 \newenvironment{mfunction}[1]{%
@@ -27,7 +26,154 @@
     {\texttt{#1}}%
 }{\addtocounter{mfunction}{-1}}
 
+
+\RequirePackage{expl3,color,geometry,l3regex,framed,ted}
+
+
+\ExplSyntaxOn
+
+\ior_new:N \pprint_doc_ior
+\seq_new:N \l_pprint_line_seq
+\tl_new:N \l_pprint_tl
+
+\int_new:N \g_pprint_indent_int
+\int_new:N \l_pprint_line_indent_int
+\dim_new:N \l_pprint_dim
+
+\tl_set:Nx \g_pprint_comment_tl { \cs_to_str:N \% }
+\definecolor{commentstrcolor}{rgb}{0,0.7,0}
+\definecolor{numberscolor}{gray}{0.6}
+
+\def\linecommentstyle{%
+  \sffamily
+  \color{commentstrcolor}%
+}
+
+\cs_new:Nn \pprint_scan_setup:
+ {
+  \char_set_catcode_space:N \ 
+%    \char_set_catcode_other:N \\
+%    \char_set_catcode_space:N \ % space
+%    \char_set_catcode_letter:N \#
+%    \char_set_catcode_letter:N \$
+%    \char_set_catcode_letter:N \^
+%    \char_set_catcode_letter:N \_
+%    \char_set_catcode_letter:N \& 
+ }
+
+%%%%
+
+\cs_new:Npn \PrettyPrintFile #1
+ {
+  \group_begin:
+  \setlength\parindent{0pt}%
+\int_new:N \g_pprint_docline_int
+\ior_open:Nn \pprint_doc_ior {#1}
+
+\cs_generate_variant:Nn \tl_if_eq:nnTF {x}
+
+\cs_set_eq:NN \___tl_trim_spaces:n \tl_trim_spaces:n
+\ior_str_map_inline:Nn \pprint_doc_ior
+ {
+  \int_gincr:N \g_pprint_docline_int
+
+  % avoid space trimming inside \seq_set_split:n following:
+  % (MAJOR SIDE-EFFECTS OF COURSE)
+  \cs_set_eq:NN \tl_trim_spaces:n \use:n
+  \exp_args:NNo \seq_set_split:Nnn \l_pprint_line_seq \g_pprint_comment_tl {##1}
+  \cs_set_eq:NN \tl_trim_spaces:n \___tl_trim_spaces:n
+  
+  \seq_pop_left:NNT \l_pprint_line_seq \l_pprint_tl
+   {
+    \tl_if_empty:NTF \l_pprint_tl
+     {
+       \pprint_doc_line_comment:
+     }
+     {
+       \pprint_doc_line_code: 
+     }
+   }
+ }
+  \group_end:
+ }
+
+\cs_generate_variant:Nn \tl_if_eq:nnTF {o}
+\cs_new:Nn \pprint_doc_line_comment:
+ {
+  \seq_pop_left:NNTF \l_pprint_line_seq \l_pprint_tl
+   % Comment on a line of its own:
+   {
+    \seq_put_right:No \l_pprint_codelines_seq \l_pprint_tl
+   }
+   % A completely empty line:
+   {
+    \pprint_flush_codelines:
+    \vspace{\baselineskip}
+   }
+ }
+
+\cs_new:Nn \pprint_rescan_comment:n
+ {
+  \exp_args:Nno \tl_rescan:nn
+   {
+    \pprint_scan_setup:
+   }
+   { #1 }
+ }
+
+\cs_new:Nn \pprint_typeset_startcomment:
+ {
+  \group_begin:
+    \bfseries
+    \g_pprint_comment_tl
+  \group_end:
+ }
+
+\cs_generate_variant:Nn \regex_extract_once:nnNTF {no}
+\cs_generate_variant:Nn \tl_if_in:nnT {xx}
+\seq_new:N \l_tmp_seq
+\seq_new:N \l_pprint_codelines_seq
+
+\cs_new:Nn \pprint_doc_line_code:
+ {
+  \pprint_flush_codelines:
+
+  \makebox[0em][r]{\tiny\color{numberscolor}\int_use:N \g_pprint_docline_int\quad}
+  \texttt{\l_pprint_tl}
+  
+  \seq_pop_left:NNT \l_pprint_line_seq \l_pprint_tl
+   {
+    \makebox
+     {%
+      \linecommentstyle
+      \pprint_typeset_startcomment:\space
+      \pprint_rescan_comment:n { \l_pprint_tl }
+     }
+   }
+  \par
+ }
+
+\cs_new:Nn \pprint_flush_codelines:
+ {
+  \seq_if_empty:NF \l_pprint_codelines_seq
+   {
+    \medskip
+    \seq_map_inline:Nn \l_pprint_codelines_seq
+     {
+      \pprint_rescan_comment:n {##1}
+      \space   
+     }
+    \seq_clear:N \l_pprint_codelines_seq
+    \smallskip
+    \par
+   }
+ }
+\ExplSyntaxOff
+
+
 \begin{document}
+\MakeShortVerb\|
+\MakeShortVerb\"
 \title{Forces between magnets\\ and multipole arrays of magnets:\\ A Matlab implementation}
 \author{Will Robertson}
 \maketitle
