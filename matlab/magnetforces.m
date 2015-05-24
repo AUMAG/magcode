@@ -5,9 +5,7 @@ function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 % Finish this off later. Please read the PDF documentation instead for now.
 %
 
-%%
-
-% \subsubsection{Wrangling user input and output}
+%% \section{Wrangling user input and output}
 % We now have a choice of calculations to take based on the user input.
 % This chunk and the next are used in both \texttt{magnetforces.m} and
 % \texttt{multipoleforces.m}.
@@ -44,7 +42,7 @@ if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
   calc_force_bool = true;
 end
 
-% \section{Organise input displacements}
+%% \subsection{Organise input displacements}
 % Gotta check the displacement input for both functions.
 % After sorting that out, we can initialise the output variables now we
 % know how big they need to me.
@@ -72,11 +70,11 @@ if calc_torque_bool
   torques_out = nan([3 Ndispl]);
 end
 
-% \subsubsection{Variables and data structures}
+%% \subsubsection{Variables and data structures}
 % First of all, address the data structures required for the input and output.
 % Because displacement of a single magnet has three components, plus sizes of
 % the faces another three, plus magnetisation strength and direction (two) makes
-% nine in total, we use one of Matlab's structures to pass the information into
+% nine in total, we use a structure to pass the information into
 % the function. Otherwise we'd have an overwhelming number of input arguments.
 %
 % The input variables |magnet.dim| should be the entire side lengths of the
@@ -295,14 +293,14 @@ else
   if strcmp(magtype,'cuboid')
     
     if calc_force_bool
-      for ii = 1:Ndispl
-        forces_out(:,ii)  =  single_magnet_force(displ(:,ii));
+      for iii = 1:Ndispl
+        forces_out(:,iii)  =  single_magnet_force(displ(:,iii));
       end
     end
     
     if calc_stiffness_bool
-      for ii = 1:Ndispl
-        stiffnesses_out(:,ii)  =  single_magnet_stiffness(displ(:,ii));
+      for iii = 1:Ndispl
+        stiffnesses_out(:,iii)  =  single_magnet_stiffness(displ(:,iii));
       end
     end
     
@@ -336,7 +334,7 @@ else
   
 end
 
-% \section{Return all results}
+%% \section{Return all results}
 % After all of the calculations have occured, they're placed back into
 % |varargout|. (This happens at the very end, obviously.)
 % Outputs are ordered in the same order as the inputs are specified.
@@ -418,6 +416,7 @@ end
   end
 %\end{mfunction}
 
+%\begin{mfunction}{single_magnet_force}
   function force_out = single_magnet_force(displ)
     
     force_components = nan([9 3]);
@@ -436,12 +435,12 @@ end
     debug_disp(J1')
     debug_disp(J2')
     
-    % The other forces (i.e., |x| and |y| components) require a rotation to get
-    % the magnetisations correctly aligned.
-    % In the case of the magnet sizes, the lengths are just flipped rather than
-    % rotated (in rotation, sign is important).
-    % After the forces are calculated, rotate them back to the original
-    % coordinate system.
+% The other forces (i.e., |x| and |y| components) require a rotation to get
+% the magnetisations correctly aligned.
+% In the case of the magnet sizes, the lengths are just flipped rather than
+% rotated (in rotation, sign is important).
+% After the forces are calculated, rotate them back to the original
+% coordinate system.
     
     calc_xyz = swap_x_z(calc_xyz);
     
@@ -491,8 +490,8 @@ end
     
     force_out = sum(force_components);
   end
-
-
+% \end{mfunction}
+% \begin{mfunction}{single_magnet_torque}
   function torques_out = single_magnet_torque(displ,lever)
     
     torque_components = nan([size(displ) 9]);
@@ -559,7 +558,7 @@ end
     
     torques_out = sum(torque_components,3);
   end
-
+%\end{mfunction}
 
 
 
@@ -653,10 +652,9 @@ end
     J1 = J1(3);
     J2 = J2(3);
     
-    
     if (J1==0 || J2==0)
       debug_disp('Zero magnetisation.')
-      calc_out  =  [0; 0; 0];
+      calc_out = [0; 0; 0];
       return;
     end
     
@@ -726,13 +724,10 @@ end
 %  Note those equations seem to be written to calculate the force on the first
 %  magnet due to the second, so we negate all the values to get the force on
 %  the latter instead.
-
-
   function calc_out = forces_calc_z_y(size1,size2,offset,J1,J2)
     
     J1 = J1(3);
     J2 = J2(2);
-    
     
     if (J1==0 || J2==0)
       debug_disp('Zero magnetisation.')
@@ -798,16 +793,16 @@ end
     
     calc_out = J1*J2*magconst .* ...
       [ sum(component_x(:)) ;
-      sum(component_y(:)) ;
-      sum(component_z(:)) ] ;
+        sum(component_y(:)) ;
+        sum(component_z(:)) ] ;
     
     debug_disp(calc_out')
     
   end
-%\end{mfunction}
+% \end{mfunction}
 
 
-
+% \begin{mfunction}{forces_calc_z_x}
   function calc_out = forces_calc_z_x(size1,size2,offset,J1,J2)
     
     calc_xyz = swap_x_y(calc_xyz);
@@ -880,11 +875,9 @@ end
     debug_disp(calc_out')
     
   end
+% \end{mfunction}
 
-
-
-
-
+% \begin{mfunction}{stiffnesses_calc_z_y}
   function calc_out = stiffnesses_calc_z_y(size1,size2,offset,J1,J2)
     
     J1 = J1(3);
@@ -945,11 +938,9 @@ end
     debug_disp(calc_out')
     
   end
+% \end{mfunction}
 
-
-
-
-
+% \begin{mfunction}{stiffnesses_calc_z_x}
   function calc_out = stiffnesses_calc_z_x(size1,size2,offset,J1,J2)
     
     calc_xyz = swap_x_y(calc_xyz);
@@ -962,8 +953,9 @@ end
     calc_out = swap_x_y(stiffnesses_xyz);
     
   end
+% \end{mfunction}
 
-%\begin{mfunction}{torques_calc_z_z}
+% \begin{mfunction}{torques_calc_z_z}
 %  The expressions here follow directly from \textcite{janssen2010-ietm}.
 %  The code below was largely written by Allan Liu; thanks!
 %  We have checked it against Janssen's own Matlab code and the two give
@@ -1076,8 +1068,9 @@ end
     calc_out = real([Tx; Ty; Tz].*br1*br2/(16*pi^2*1e-7));
     
   end
-%\end{mfunction}
+% \end{mfunction}
 
+% \begin{mfunction}{torques_calc_z_y}
   function calc_out = torques_calc_z_y(size1,size2,offset,lever,J1,J2)
     
     if J1(3)~=0 && J2(2)~=0
@@ -1087,7 +1080,9 @@ end
     calc_out = 0*offset;
     
   end
+% \end{mfunction}
 
+% \begin{mfunction}{torques_calc_z_x}
   function calc_out = torques_calc_z_x(size1,size2,offset,lever,J1,J2)
     
     if J1(3)~=0 && J2(1)~=0
@@ -1097,9 +1092,9 @@ end
     calc_out = 0*offset;
     
   end
+% \end{mfunction}
 
-
-
+% \begin{mfunction}{forces_cyl_calc}
   function calc_out = forces_cyl_calc(size1,size2,h_gap,J1,J2)
     
     % inputs
@@ -1151,6 +1146,7 @@ end
     calc_out = J1*J2/(8*pi*1e-7)*C_d;
     
   end
+% \end{mfunction}
 
 % \begin{mfunction}{ellipkepi}
 % Complete elliptic integrals calculated with the arithmetric-geometric mean
