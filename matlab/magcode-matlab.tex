@@ -1,14 +1,14 @@
 
 \documentclass{article}
 \usepackage{amsmath,array,booktabs,enumitem,upquote,shortvrb,underscore}
-\usepackage{pprint}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage{siunitx}
+\usepackage{matlab-prettifier}
 \usepackage{hyperref}
 \hypersetup{colorlinks}
-\usepackage[hyperref,backref]{biblatex}
+\usepackage[hyperref,backref,backend=bibtex]{biblatex}
 \bibliography{journals,phd}
 
 \newcounter{mfunction}
@@ -63,42 +63,41 @@
 
 %%%%
 
+\cs_generate_variant:Nn \tl_if_eq:nnTF {x}
+\cs_generate_variant:Nn \tl_if_eq:nnTF {o}
+\cs_generate_variant:Nn \regex_extract_once:nnNTF {no}
+\cs_generate_variant:Nn \tl_if_in:nnT {xx}
+\cs_set_eq:NN \___tl_trim_spaces:n \tl_trim_spaces:n
+\int_new:N \g_pprint_docline_int
+\seq_new:N \l_tmp_seq
+\seq_new:N \l_pprint_codelines_seq
+
 \cs_new:Npn \PrettyPrintFile #1
  {
   \group_begin:
-  \setlength\parindent{0pt}%
-\int_new:N \g_pprint_docline_int
-\ior_open:Nn \pprint_doc_ior {#1}
+  \ior_open:Nn \pprint_doc_ior {#1}
 
-\cs_generate_variant:Nn \tl_if_eq:nnTF {x}
-
-\cs_set_eq:NN \___tl_trim_spaces:n \tl_trim_spaces:n
-\ior_str_map_inline:Nn \pprint_doc_ior
- {
-  \int_gincr:N \g_pprint_docline_int
-
-  % avoid space trimming inside \seq_set_split:n following:
-  % (MAJOR SIDE-EFFECTS OF COURSE)
-  \cs_set_eq:NN \tl_trim_spaces:n \use:n
-  \exp_args:NNo \seq_set_split:Nnn \l_pprint_line_seq \g_pprint_comment_tl {##1}
-  \cs_set_eq:NN \tl_trim_spaces:n \___tl_trim_spaces:n
-  
-  \seq_pop_left:NNT \l_pprint_line_seq \l_pprint_tl
+  \ior_str_map_inline:Nn \pprint_doc_ior
    {
-    \tl_if_empty:NTF \l_pprint_tl
+    \int_gincr:N \g_pprint_docline_int
+
+    % avoid space trimming inside \seq_set_split:n following:
+    % (MAJOR SIDE-EFFECTS OF COURSE)
+    \cs_set_eq:NN \tl_trim_spaces:n \use:n
+    \exp_args:NNo \seq_set_split:Nnn \l_pprint_line_seq \g_pprint_comment_tl {##1}
+    \cs_set_eq:NN \tl_trim_spaces:n \___tl_trim_spaces:n
+  
+    \seq_pop_left:NNT \l_pprint_line_seq \l_pprint_tl
      {
-       \pprint_doc_line_comment:
-     }
-     {
-       \pprint_doc_line_code: 
+      \tl_if_empty:NTF \l_pprint_tl
+       { \pprint_doc_line_nocode: }
+       { \pprint_doc_line_code: }
      }
    }
- }
   \group_end:
  }
 
-\cs_generate_variant:Nn \tl_if_eq:nnTF {o}
-\cs_new:Nn \pprint_doc_line_comment:
+\cs_new:Nn \pprint_doc_line_nocode:
  {
   \seq_pop_left:NNTF \l_pprint_line_seq \l_pprint_tl
    % Comment on a line of its own:
@@ -108,38 +107,21 @@
    % A completely empty line:
    {
     \pprint_flush_codelines:
-    \vspace{\baselineskip}
+    \medskip
    }
  }
 
-\cs_new:Nn \pprint_rescan_comment:n
- {
-  \exp_args:Nno \tl_rescan:nn
-   {
-    \pprint_scan_setup:
-   }
-   { #1 }
- }
-
-\cs_new:Nn \pprint_typeset_startcomment:
- {
-  \group_begin:
-    \bfseries
-    \g_pprint_comment_tl
-  \group_end:
- }
-
-\cs_generate_variant:Nn \regex_extract_once:nnNTF {no}
-\cs_generate_variant:Nn \tl_if_in:nnT {xx}
-\seq_new:N \l_tmp_seq
-\seq_new:N \l_pprint_codelines_seq
-
+\cs_new:Nn \pprint_matlab:n { \lstinline[style=Matlab-editor]!#1! }
+\cs_new:Nn \pprint_matlab:N { \exp_after:wN \pprint_matlab:n \exp_after:wN {#1} }
 \cs_new:Nn \pprint_doc_line_code:
  {
   \pprint_flush_codelines:
 
+  \noindent
   \makebox[0em][r]{\tiny\color{numberscolor}\int_use:N \g_pprint_docline_int\quad}
-  \texttt{\l_pprint_tl}
+%  \texttt{\l_pprint_tl}
+  \tl_replace_all:Nnn \l_pprint_tl {~} {\ }
+  \pprint_matlab:N \l_pprint_tl
   
   \seq_pop_left:NNT \l_pprint_line_seq \l_pprint_tl
    {
@@ -153,6 +135,25 @@
   \par
  }
 
+\cs_new:Nn \pprint_rescan_comment:n
+ {
+  \exp_args:Nno \tl_rescan:nn
+   {
+    \pprint_scan_setup:
+   }
+   { #1 }
+ }
+
+% a bold percent sign to start a comment after a line of code:
+\cs_new:Nn \pprint_typeset_startcomment:
+ {
+  \group_begin:
+    \small
+    \bfseries
+    \g_pprint_comment_tl
+  \group_end:
+ }
+
 \cs_new:Nn \pprint_flush_codelines:
  {
   \seq_if_empty:NF \l_pprint_codelines_seq
@@ -160,8 +161,11 @@
     \medskip
     \seq_map_inline:Nn \l_pprint_codelines_seq
      {
-      \pprint_rescan_comment:n {##1}
-      \space   
+      \tl_if_blank:nTF {##1} {\par}
+       {
+        \pprint_rescan_comment:n {##1}
+        \space
+       }
      }
     \seq_clear:N \l_pprint_codelines_seq
     \smallskip
