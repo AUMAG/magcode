@@ -13,33 +13,31 @@ function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 % \texttt{multipoleforces.m}.
 
 debug_disp = @(str) disp([]);
-calc_force_bool = false;
+calc_force_bool     = false;
 calc_stiffness_bool = false;
-calc_torque_bool = false;
+calc_torque_bool    = false;
 
 % Undefined calculation flags for the three directions:
-calc_xyz = [-1; -1; -1];
+calc_xyz = [false; false; false];
 
-for ii = 1:length(varargin)
-  switch varargin{ii}
+for iii = 1:length(varargin)
+  switch varargin{iii}
     case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
     case 'stiffness',  calc_stiffness_bool = true;
     case 'torque',     calc_torque_bool    = true;
-    case 'x',  calc_xyz(1) = 1;
-    case 'y',  calc_xyz(2) = 1;
-    case 'z',  calc_xyz(3) = 1;
+    case 'x',  calc_xyz(1) = true;
+    case 'y',  calc_xyz(2) = true;
+    case 'z',  calc_xyz(3) = true;
     otherwise
-      error(['Unknown calculation option ''',varargin{ii},''''])
+      error(['Unknown calculation option ''',varargin{iii},''''])
   end
 end
 
 % If none of |'x'|, |'y'|, |'z'| are specified, calculate all.
-if all( calc_xyz == -1 )
-  calc_xyz = [1; 1; 1];
+if all( ~calc_xyz )
+  calc_xyz = [true; true; true];
 end
-
-calc_xyz( calc_xyz == -1 ) = 0;
 
 if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
   varargin{end+1} = 'force';
