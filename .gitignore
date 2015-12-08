@@ -8,3 +8,24 @@ examples/magspring/fig/
 fig/*
 
 /examples/data/
+magcode.tmproj
+
+*.aux
+
+*.bbl
+
+*.bcf
+
+*.blg
+
+*.synctex
+
+*.toc
+
+matlab/magcode-matlab.run.xml
+
+*.out
+
+*.log
+
+matlab/magcode-matlab-blx.bib
