@@ -96,37 +96,13 @@ end
 % Either way (between spherical or cartesian input), |J1| and |J2| are made into
 % the magnetisation vectors in cartesian coordindates.
 
-if ~isfield(magnet_fixed,'type')
-  if length(magnet_fixed.dim) == 2
-    magnet_fixed.type = 'cylinder';
-  else
-    magnet_fixed.type = 'cuboid';
-  end
+if ~isfield(magnet_fixed,'fndefined')
+  magnet_fixed = magnetdefine(magnet_fixed);
+end
+if ~isfield(magnet_float,'fndefined')
+  magnet_float = magnetdefine(magnet_float);
 end
 
-if ~isfield(magnet_float,'type')
-  if length(magnet_float.dim) == 2
-    magnet_float.type = 'cylinder';
-  else
-    magnet_float.type = 'cuboid';
-  end
-end
-
-if isfield(magnet_fixed,'grade')
-  if isfield(magnet_fixed,'magn')
-    error('Cannot specify both ''magn'' and ''grade''.')
-  else
-    magnet_fixed.magn = grade2magn(magnet_fixed.grade);
-  end
-end
-
-if isfield(magnet_float,'grade')
-  if isfield(magnet_float,'magn')
-    error('Cannot specify both ''magn'' and ''grade''.')
-  else
-    magnet_float.magn = grade2magn(magnet_float.grade);
-  end
-end
 
 coil_bool = false;
 
@@ -193,38 +169,7 @@ else
     
     size1 = magnet_fixed.dim(:);
     size2 = magnet_float.dim(:);
-    
-    if ~isfield(magnet_fixed,'dir')
-      if ~isfield(magnet_fixed,'magdir')
-        magnet_fixed.dir    = [0 0 1];
-        magnet_fixed.magdir = [0 0 1];
-      else
-        magnet_fixed.dir = magnet_fixed.magdir;        
-      end
-    else
-      % have "dir"
-      if ~isfield(magnet_fixed,'magdir')
-        magnet_fixed.magdir = magnet_fixed.dir;        
-      else
-        magnet_fixed.magdir = [0 0 1];
-      end      
-    end
-    if ~isfield(magnet_float,'dir')
-      if ~isfield(magnet_float,'magdir')
-        magnet_float.dir    = [0 0 1];
-        magnet_float.magdir = [0 0 1];
-      else
-        magnet_float.dir = magnet_float.magdir;        
-      end
-    else
-      % have "dir"
-      if ~isfield(magnet_float,'magdir')
-        magnet_float.magdir = magnet_float.dir;        
-      else
-        magnet_float.magdir = [0 0 1];
-      end      
-    end
-    
+        
     if any(abs(magnet_fixed.dir) ~= abs(magnet_float.dir))
       error('Cylindrical magnets must be oriented in the same direction')
     end
@@ -248,13 +193,6 @@ else
     magnet_fixed.magdir = magnet_fixed.magdir(:);
     magnet_float.dir = magnet_float.dir(:);
     magnet_fixed.dir = magnet_fixed.dir(:);
-    
-    if ~isfield(magnet_fixed,'magn')
-      magnet_fixed.magn = 4*pi*1e-7*magnet_fixed.turns*magnet_fixed.current/magnet_fixed.dim(2);
-    end
-    if ~isfield(magnet_float,'magn')
-      magnet_float.magn = 4*pi*1e-7*magnet_float.turns*magnet_float.current/magnet_float.dim(2);
-    end
     
     J1 = magnet_fixed.magn*magnet_fixed.magdir;
     J2 = magnet_float.magn*magnet_float.magdir;
@@ -370,35 +308,6 @@ end
 
 
 
-%\begin{mfunction}{grade2magn}
-%  Magnet `strength' can be specified using either "magn" or "grade".
-%  In the latter case, this should be a string such as "'N42'", from which
-%  the |magn| is automatically calculated using the equation
-%  \[
-%    B_r = 2\sqrt{\mu_0 [BH]_{\mathrm{max}}}
-%  \]
-%  where $[BH]_{\mathrm{max}}$ is the numeric value given in the grade in \si{MG.Oe}.
-%  I.e., an N42 magnet has $[BH]_{\mathrm{max}}=\SI{42}{MG.Oe}$.
-%  Since $\SI{1}{MG.Oe}=100/(4\pi)\,\si{kJ/m^3}$, the calculation simplifies to
-%  \[
-%    B_r = 2\sqrt{ N/100 }
-%  \]
-%  where $N$ is the numeric grade in \si{MG.Oe}. Easy.
-
-  function magn = grade2magn(grade)
-    
-    if isnumeric(grade)
-      magn = 2*sqrt(grade/100);
-    else
-      if strcmp(grade(1),'N')
-        magn = 2*sqrt(str2num(grade(2:end))/100);
-      else
-        magn = 2*sqrt(str2num(grade)/100);
-      end
-    end
-    
-  end
-%\end{mfunction}
 
 %\begin{mfunction}{resolve_magnetisations}
 % Magnetisation directions are specified in either cartesian or spherical
@@ -428,6 +337,7 @@ end
     end
     
   end
+
 %\end{mfunction}
 
       
@@ -452,6 +362,14 @@ end
 % \end{mfunction}
 
 %\begin{mfunction}{single_magnet_force}
+
+% The |x| and |y| forces require a rotation to get
+% the magnetisations correctly aligned.
+% In the case of the magnet sizes, the lengths are just flipped rather than
+% rotated (in rotation, sign is important).
+% After the forces are calculated, rotate them back to the original
+% coordinate system.
+
   function force_out = single_magnet_force(displ)
     
     force_components = nan([9 3]);
@@ -467,13 +385,6 @@ end
     debug_disp('Magnetisations:')
     debug_disp(J1')
     debug_disp(J2')
-    
-% The other forces (i.e., |x| and |y| components) require a rotation to get
-% the magnetisations correctly aligned.
-% In the case of the magnet sizes, the lengths are just flipped rather than
-% rotated (in rotation, sign is important).
-% After the forces are calculated, rotate them back to the original
-% coordinate system.
     
     calc_xyz = swap_x_z(calc_xyz);
     
@@ -521,8 +432,12 @@ end
     
     force_out = sum(force_components);
   end
+
 % \end{mfunction}
+
+
 % \begin{mfunction}{single_magnet_torque}
+
   function torques_out = single_magnet_torque(displ,lever)
     
     torque_components = nan([size(displ) 9]);
@@ -591,6 +506,7 @@ end
     
     torques_out = sum(torque_components,3);
   end
+
 %\end{mfunction}
 
 
@@ -666,6 +582,7 @@ end
 
 
 %\begin{mfunction}{forces_calc_z_z}
+%
 %The expressions here follow directly from \textcite{akoun1984}.
 %
 %\begin{center}
@@ -748,15 +665,18 @@ end
     debug_disp(calc_out')
     
   end
+
 %\end{mfunction}
 
 
 
 % \begin{mfunction}{forces_calc_z_y}
+%
 %  Orthogonal magnets forces given by \textcite{yonnet2009-ldia}.
 %  Note those equations seem to be written to calculate the force on the first
 %  magnet due to the second, so we negate all the values to get the force on
 %  the latter instead.
+
   function calc_out = forces_calc_z_y(size1,size2,offset,J1,J2)
     
     J1 = J1(3);
@@ -832,10 +752,12 @@ end
     debug_disp(calc_out')
     
   end
+
 % \end{mfunction}
 
 
 % \begin{mfunction}{forces_calc_z_x}
+
   function calc_out = forces_calc_z_x(size1,size2,offset,J1,J2)
     
     calc_xyz = swap_x_y(calc_xyz);
@@ -908,9 +830,11 @@ end
     debug_disp(calc_out')
     
   end
+
 % \end{mfunction}
 
 % \begin{mfunction}{stiffnesses_calc_z_y}
+
   function calc_out = stiffnesses_calc_z_y(size1,size2,offset,J1,J2)
     
     J1 = J1(3);
@@ -971,9 +895,11 @@ end
     debug_disp(calc_out')
     
   end
+
 % \end{mfunction}
 
 % \begin{mfunction}{stiffnesses_calc_z_x}
+
   function calc_out = stiffnesses_calc_z_x(size1,size2,offset,J1,J2)
     
     calc_xyz = swap_x_y(calc_xyz);
@@ -986,9 +912,11 @@ end
     calc_out = swap_x_y(stiffnesses_xyz);
     
   end
+
 % \end{mfunction}
 
 % \begin{mfunction}{torques_calc_z_z}
+%
 %  The expressions here follow directly from \textcite{janssen2010-ietm}.
 %  The code below was largely written by Allan Liu; thanks!
 %  We have checked it against Janssen's own Matlab code and the two give
@@ -1413,7 +1341,7 @@ end
   end
 % \end{mfunction}
 
-%\section{Helpers}
+% \section{Helpers}
 %  The equations contain two singularities. Specifically, the equations
 %  contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
 %  and $y$ are zero since $\log(0)$ is negative infinity.
