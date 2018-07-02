@@ -1,4 +1,13 @@
+%% magnetdefine()
+%
+% Create a pseudo-object representing a magnet or coil.
+
+% \START
+
+% \section{The \texttt{magnetdefine()} function}
+
 function [mag] = magnetdefine(varargin)
+
 
 if nargin == 1
   mag = varargin{1};

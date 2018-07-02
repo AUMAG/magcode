@@ -1,9 +1,13 @@
-
-function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 %% MAGNETFORCES  Calculate forces between two cuboid magnets
 %
-% Finish this off later. Please read the PDF documentation instead for now.
-%
+% I haven't written proper inline help, sorry!
+% Please read the PDF documentation instead for now.
+
+% \START
+
+% \section{The \texttt{magnetforces()} function}
+
+function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
 %% \section{Wrangling user input and output}
 % We now have a choice of calculations to take based on the user input.
@@ -236,7 +240,7 @@ if strcmp(magtype,'cuboid')
   
 end
 
-% \section{Calculate for each displacement}
+% \subsection{Calculate for each displacement}
 % The actual mechanics.
 % The idea is that a multitude of displacements can be passed to the
 % function and we iterate to generate a matrix of vector outputs.
@@ -286,7 +290,7 @@ else
   
 end
 
-%% \section{Return all results}
+%% \subsection{Return all results}
 % After all of the calculations have occured, they're placed back into
 % |varargout|. (This happens at the very end, obviously.)
 % Outputs are ordered in the same order as the inputs are specified.
@@ -1341,7 +1345,7 @@ end
   end
 % \end{mfunction}
 
-% \section{Helpers}
+% \subsection{Helpers}
 %  The equations contain two singularities. Specifically, the equations
 %  contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
 %  and $y$ are zero since $\log(0)$ is negative infinity.

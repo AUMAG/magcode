@@ -1,13 +1,13 @@
-
-function [varargout] = multipoleforces(fixed_array, float_array, displ, varargin)
-
-
 %% MULTIPOLEFORCES  Calculate forces between two multipole arrays of magnets
 %
 % Finish this off later. Please read the PDF documentation instead for now.
 %
 
+% \START
 
+% \section{The \texttt{multipoleforces} function}
+
+function [varargout] = multipoleforces(fixed_array, float_array, displ, varargin)
 
 debug_disp = @(str) disp([]);
 calc_force_bool = false;

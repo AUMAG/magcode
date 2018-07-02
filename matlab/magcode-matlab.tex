@@ -5,6 +5,13 @@
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage{siunitx}
+
+\usepackage{geometry}
+\geometry{margin=3cm}
+
+\usepackage{fancyvrb}
+\fvset{fontsize=\small}
+
 \usepackage{matlab-prettifier}
 \usepackage{hyperref}
 \hypersetup{colorlinks}
@@ -17,17 +24,19 @@
   \ifcase\value{mfunction}\relax
     \ERROR
   \or
-    \expandafter\section
-  \or
     \expandafter\subsection
   \or
     \expandafter\subsubsection
+  \or
+    \expandafter\paragraph
+  \or
+    \expandafter\subparagraph
   \fi
     {\texttt{#1}}%
 }{\addtocounter{mfunction}{-1}}
 
 
-\RequirePackage{expl3,color,geometry,framed,ted}
+\RequirePackage{expl3,color,framed,ted}
 
 
 \ExplSyntaxOn
@@ -71,31 +80,44 @@
 \int_new:N \g_pprint_docline_int
 \seq_new:N \l_tmp_seq
 \seq_new:N \l_pprint_codelines_seq
+\bool_new:N \l_pprint_start_bool
+
+\tl_set:Nx \c_pprint_START_tl { \c_percent_str\c_space_tl \string \START }
 
 \cs_new:Npn \PrettyPrintFile #1
- {
-  \group_begin:
-  \ior_open:Nn \pprint_doc_ior {#1}
+  {
+    \group_begin:
 
-  \ior_str_map_inline:Nn \pprint_doc_ior
-   {
-    \int_gincr:N \g_pprint_docline_int
-
-    % avoid space trimming inside \seq_set_split:n following:
-    % (MAJOR SIDE-EFFECTS OF COURSE)
-    \cs_set_eq:NN \tl_trim_spaces:n \use:n
-    \exp_args:NNo \seq_set_split:Nnn \l_pprint_line_seq \g_pprint_comment_tl {##1}
-    \cs_set_eq:NN \tl_trim_spaces:n \___tl_trim_spaces:n
-  
-    \seq_pop_left:NNT \l_pprint_line_seq \l_pprint_tl
-     {
-      \tl_if_empty:NTF \l_pprint_tl
-       { \pprint_doc_line_nocode: }
-       { \pprint_doc_line_code: }
-     }
-   }
-  \group_end:
- }
+      \bool_set_false:N \l_pprint_start_bool
+      \ior_open:Nn \pprint_doc_ior {#1}
+    
+      \ior_str_map_inline:Nn \pprint_doc_ior
+        {
+          \int_gincr:N \g_pprint_docline_int
+          
+          \bool_if:NTF \l_pprint_start_bool
+            {
+              % avoid space trimming inside \seq_set_split:n following:
+              % (MAJOR SIDE-EFFECTS OF COURSE)
+              \cs_set_eq:NN \tl_trim_spaces:n \use:n
+              \exp_args:NNo \seq_set_split:Nnn
+                  \l_pprint_line_seq \g_pprint_comment_tl {##1}
+              \cs_set_eq:NN \tl_trim_spaces:n \___tl_trim_spaces:n
+            
+              \seq_pop_left:NNT \l_pprint_line_seq \l_pprint_tl
+                {
+                  \tl_if_empty:NTF \l_pprint_tl
+                    { \pprint_doc_line_nocode: }
+                    { \pprint_doc_line_code:   }
+                }
+            }
+            {
+              \str_if_eq_x:nnT {\c_pprint_START_tl} {##1}
+                { \bool_set_true:N \l_pprint_start_bool }
+            }
+        }
+    \group_end:
+  }
 
 \cs_new:Nn \pprint_doc_line_nocode:
  {
@@ -178,7 +200,7 @@
 \begin{document}
 \MakeShortVerb\|
 \MakeShortVerb\"
-\title{Forces between magnets\\ and multipole arrays of magnets:\\ A Matlab implementation}
+\title{Forces between magnets and multipole arrays of magnets:\\ A Matlab implementation}
 \author{Will Robertson}
 \maketitle
 \vfil
@@ -192,14 +214,89 @@ especially, is rather unclear/non-existent at present. The user guide,
 however, should contain the bulk of the information needed to use this code.
 \end{abstract}
 
-\newpage
 \tableofcontents
 
 \newpage
 
-\section{User guide}
+\part{User guide}
 
-(See Section~\ref{meta} for installation instructions.)
+(\emph{See Section~\ref{meta} for installation instructions.})
+
+\section{Defining magnets and coils}
+
+\begin{Verbatim}
+  magnet = magnetdefine('type',T,key1,val1,...)
+\end{Verbatim}
+
+\paragraph{\texttt{'type'}}
+The possible options for \texttt{T} are: \texttt{'cuboid'}, \texttt{'cylinder'}, \texttt{'coil'}.
+If \texttt{'type',T} is omitted it will be inferred by the number of elements used to specify the dimensions of the magnets/coils.
+
+\paragraph{Cuboid magnets}
+For cuboid magnets, the following should be specified:
+\begin{description}[noitemsep,font=\ttfamily]
+\item['dim'] A $(3\times1)$ vector of the side-lengths of the magnet.
+\item['grade'] The `grade' of the magnet as a string such as \texttt{'N42'}.
+\item['magdir'] A vector representing the direction of the magnetisation.
+                This may be either a $(3\times1)$ vector in cartesian
+                coordinates or a $(2\times1)$ vector in spherical coordidates.
+\end{description}
+Instead of specifying a magnet grade, you may explicitly input the remanence magnetisation
+of the magnet direction with
+\begin{description}[noitemsep,font=\ttfamily]
+\item['magn'] The remanence magnetisation of the magnet in Tesla.
+\end{description}
+Note that when not specified, the |magn| value $B_r$ is calculated from the magnet grade $N$ using $B_r=2\sqrt{N/100}$.
+
+In cartesian coordinates, the |'magdir'| vector is interpreted as a unit vector; it is only used to calculate the direction of the magnetisation.
+In other words, writing |[1;0;0]| is the same as |[2;0;0]|, and so on.
+In spherical coordinates $(\theta,\phi)$, $\theta$ is the vertical projection of the angle around the $x$--$y$ plane ($\theta=0$ coincident with the $x$-axis), and $\phi$ is the angle from the $x$--$y$ plane towards the $z$-axis.
+In other words, the following unit vectors are equivalent:
+\begin{align*}
+(1,0,0)_{\text{cartesian}} &\equiv (0,0)_{\text{spherical}}\\
+(0,1,0)_{\text{cartesian}} &\equiv (90,0)_{\text{spherical}}\\
+(0,0,1)_{\text{cartesian}} &\equiv (0,90)_{\text{spherical}}
+\end{align*}
+N.B.\ $\theta$ and $\phi$ must be input in degrees, not radians.
+This seemingly odd decision was made in order to calculate quantities such as $\cos(\pi/2)=0$ exactly rather than to machine precision.%
+\footnote{Try for example comparing the logical comparisons \texttt{cosd(90)==0} versus \texttt{cos(pi)==0}.}
+
+If you are calculating the torque on the second magnet, then it is assumed that the centre of rotation is at the centroid of the second magnet.
+If this is not the case, the centre of rotation of the second magnet can be specified with
+\begin{description}[noitemsep,font=\ttfamily]
+\item['lever'] A $(3\times1)$ vector of the centre of rotation
+(or $(3\times D)$ if necessary; see $D$ below).
+\end{description}
+
+\paragraph{Cylindrical magnets/coils}
+If the dimension of the magnet (\texttt{'dim'}) only has two elements,
+or the \texttt{'type'} is \texttt{'cylinder'}, the forces are calculated between two cylindrical magnets.
+
+While coaxial and `eccentric' geometries can be calculated, the latter is around 50 times slower; you may want to benchmark your solutions to ensure speed is acceptable. (In the not-too-near-field, you can sometimes approximate a cylindrical magnet by a cuboid magnet with equal depth and equal face area.)
+\begin{description}[noitemsep,font=\ttfamily]
+\item['dim'] A $(2\times1)$ vector containing, respectively, the magnet radius and length.
+\item['dir'] Alignment direction of the cylindrical magnets;
+`\textsf{x}' or `\textsf{y}' or `\textsf{z}' (default).
+E.g., for an alignment direction of `\textsf{z}', the faces of the cylinder will be oriented in the $x$--$y$ plane.
+\end{description}
+A `thin' magnetic coil can be modelled in the same way as a magnet, above; instead of
+specifying a magnetisation, however, use the following:
+\begin{description}[noitemsep,font=\ttfamily]
+\item['turns'] A scalar representing the number of axial turns of the coil.
+\item['current'] Scalar coil current flowing CCW-from-top.
+\end{description}
+
+A `thick' magnetic coil contains multiple windings in the radial direction and requires further specification.
+The complete list of variables to describe a thick coil, which requires \texttt{'type'} to be `\textsf{coil}' are
+\begin{description}[noitemsep,font=\ttfamily]
+\item['dim'] A $(3\times1)$ vector containing, respectively, the inner coil radius, the outer coil radius, and the coil length.
+\item['turns'] A $(2\times1)$ containing, resp., the number of radial turns and the number of axial turns of the coil.
+\item['current'] Scalar coil current flowing CCW-from-top.
+\end{description}
+Again, only coaxial displacements and forces can be investigated at this stage.
+
+
+\section{Forces}
 
 \subsection{Forces between magnets}
 
@@ -216,7 +313,7 @@ between magnets. The syntax is as follows:
         ... = magnetforces( ... , 'z');
 \end{verbatim}
 
-|magnetforces| takes three mandatory inputs to specify the position and magnetisation of the first and second magnets and the displacement between them.
+|magnetforces| takes three mandatory inputs to specify `fixed' and `floating' magnets and the displacement between them.
 Optional arguments appended indicate whether to calculate force and/or torque and/or stiffness and whether to calculate components in $x$- and/or $y$- and/or $z$- components respectively.
 The force\footnote{From now I will omit most mention of calculating torques and stiffnesses; assume whenever I say `force' I mean `force \emph{and/or} stiffness \emph{and/or} torque'} is calculated as that imposed on the second magnet; for this reason, I often call the first magnet the `fixed' magnet and the second `floating'.
 
@@ -228,76 +325,13 @@ For example, when only calculating torque, the syntax is
 \end{verbatim}
 Similarly, when calculating all three of force/stiffness/torque, write
 \begin{verbatim}
-  [F S T] = magnetforces(magnet_fixed, magnet_float, displ,...
+  [F, S, T] = magnetforces(magnet_fixed, magnet_float, displ,...
 	         'force','stiffness','torque');
 \end{verbatim}
 The ordering of `force', `stiffness', `torque' affects the order of the output
 arguments.
 As shown in the original example, if no calculation type is requested then
 the forces only are calculated.
-
-\paragraph{Cuboid magnets}
-The first two inputs are structures containing the following fields:
-\begin{description}[noitemsep,font=\ttfamily]
-\item[magnet.dim] A $(3\times1)$ vector of the side-lengths of the magnet.
-\item[magnet.grade] The `grade' of the magnet as a string such as \texttt{'N42'}.
-\item[magnet.magdir] A vector representing the direction of the magnetisation.
-              This may be either a $(3\times1)$ vector in cartesian
-              coordinates or a $(2\times1)$ vector in spherical coordidates.
-\end{description}
-Instead of specifying a magnet grade, you may explicitly input the remanence magnetisation
-of the magnet direction with
-\begin{description}[noitemsep,font=\ttfamily]
-\item[magnet.magn] The remanence magnetisation of the magnet in Tesla.
-\end{description}
-Note that when not specified, the |magn| value $B_r$ is calculated from the magnet grade $N$ using $B_r=2\sqrt{N/100}$.
-
-In cartesian coordinates, the |magdir| vector is interpreted as a unit vector; it is only used to calculate the direction of the magnetisation.
-In other words, writing |[1;0;0]| is the same as |[2;0;0]|, and so on.
-In spherical coordinates $(\theta,\phi)$, $\theta$ is the vertical projection of the angle around the $x$--$y$ plane ($\theta=0$ coincident with the $x$-axis), and $\phi$ is the angle from the $x$--$y$ plane towards the $z$-axis.
-In other words, the following unit vectors are equivalent:
-\begin{align*}
-(1,0,0)_{\text{cartesian}} &\equiv (0,0)_{\text{spherical}}\\
-(0,1,0)_{\text{cartesian}} &\equiv (90,0)_{\text{spherical}}\\
-(0,0,1)_{\text{cartesian}} &\equiv (0,90)_{\text{spherical}}
-\end{align*}
-N.B.\ $\theta$ and $\phi$ must be input in degrees, not radians.
-This seemingly odd decision was made in order to calculate quantities such as $\cos(\pi/2)=0$ exactly rather than to machine precision.%
-\footnote{Try for example comparing the logical comparisons \texttt{cosd(90)==0} versus \texttt{cos(pi)==0}.}
-
-If you are calculating the torque on the second magnet, then it is assumed that the centre of rotation is at the centroid of the second magnet.
-If this is not the case, the centre of rotation of the second magnet can be specified with
-\begin{description}[noitemsep,font=\ttfamily]
-\item[magnet_float.lever] A $(3\times1)$ vector of the centre of rotation
-(or $(3\times D)$ if necessary; see $D$ below).
-\end{description}
-
-\paragraph{Cylindrical magnets/coils}
-If the dimension of the magnet (\texttt{magnet.dim}) only has two elements,
-or the \texttt{magnet.type} is `\textsf{cylinder}', the forces are calculated between two cylindrical magnets.
-
-While coaxial and `eccentric' geometries can be calculated, the latter is around 50 times slower; you may want to benchmark your solutions to ensure speed is acceptable. (In the not-too-near-field, you can sometimes approximate a cylindrical magnet by a cuboid magnet with equal depth and equal face area.)
-\begin{description}[noitemsep,font=\ttfamily]
-\item[magnet.dim] A $(2\times1)$ vector containing, respectively, the magnet radius and length.
-\item[magnet.dir] Alignment direction of the cylindrical magnets;
-`\textsf{x}' or `\textsf{y}' or `\textsf{z}' (default).
-E.g., for an alignment direction of `\textsf{z}', the faces of the cylinder will be oriented in the $x$--$y$ plane.
-\end{description}
-A `thin' magnetic coil can be modelled in the same way as a magnet, above; instead of
-specifying a magnetisation, however, use the following:
-\begin{description}[noitemsep,font=\ttfamily]
-\item[coil.turns] A scalar representing the number of axial turns of the coil.
-\item[coil.current] Scalar coil current flowing CCW-from-top.
-\end{description}
-
-A `thick' magnetic coil contains multiple windings in the radial direction and requires further specification.
-The complete list of variables to describe a thick coil, which requires \texttt{magnet.type} to be `\textsf{coil}' are
-\begin{description}[noitemsep,font=\ttfamily]
-\item[coil.dim] A $(3\times1)$ vector containing, respectively, the inner coil radius, the outer coil radius, and the coil length.
-\item[coil.turns] A $(2\times1)$ containing, resp., the number of radial turns and the number of axial turns of the coil.
-\item[coil.current] Scalar coil current flowing CCW-from-top.
-\end{description}
-Again, only coaxial displacements and forces can be investigated at this stage.
 
 \paragraph{Displacement inputs}
 
@@ -308,7 +342,7 @@ The size of |displ| dictates the size of the output force matrix; |forces| (etc.
 \paragraph{Example} Using |magnetforces| is rather simple. A magnet is set up
 as a simple structure like
 \begin{verbatim}
-magnet_fixed = struct(...
+magnet_fixed = magnetdefine(...
   'dim'   , [0.02 0.012 0.006], ...
   'magn'  , 0.38, ...
   'magdir', [0 0 1] ...
@@ -321,6 +355,7 @@ displ = [0; 0; 1]*linspace(0.01,0.03);
 \end{verbatim}
 And that's about it.
 For a complete example, see `\path{examples/magnetforces_example.m}'.
+
 
 \subsection{Forces between multipole arrays of magnets}
 
@@ -414,6 +449,7 @@ Some facilities are provided to generate more general/arbitrary--shaped arrays.
 \end{description}
 This approach for generating magnet arrays has been little-tested. Please inform me of associated problems if found.
 
+
 \section{Meta-information}\label{meta}
 
 \paragraph{Obtaining}
@@ -442,9 +478,14 @@ permissions and limitations under the License.
 Please report problems and suggestions at the GitHub issue tracker.%
 \footnote{\url{http://github.com/wspr/magcode/issues}}
 
+\printbibliography
+
 \clearpage
-\part{Magnet forces}
+\part{Typeset code / implementation}
+\PrettyPrintFile{magnetdefine.m}
+
 \PrettyPrintFile{magnetforces.m}
 
-\printbibliography
+\PrettyPrintFile{multipoleforces.m}
+
 \end{document}
