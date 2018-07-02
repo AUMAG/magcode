@@ -37,7 +37,7 @@ fcyl = magnetforces(...
   displ'*[0 0 1]...
 );
 
-%% Plot output
+% Plot output
 
 try
   willfig('cylmag','tiny'); clf; hold on
@@ -69,7 +69,9 @@ fprintf(f,'%f %f\n',[1000*displ' fcyl(3,:)']');
 % First do a number of tests in a loop; this will be much slower
 % (than Mathematica) because of the overheads in my magnetforces().
 
-NN = 1;
+clc
+
+NN = 1000;
 
 Nturns = round(500*rand);
 current = 10*rand;
@@ -91,7 +93,7 @@ for nn = 1:NN
   f_rand(nn,:) = magnetforces( coil, magnet, [0 0 displ(nn)] );
 end
 elapsedtime = toc;
-disp(['Average time: ',num2str(1000*elapsedtime/NN),' ms']);
+disp(['Average time: ',num2str(1000*elapsedtime/NN),' ms (loop)']);
 
 % But now compare this to the vectorised code, which avoids the overheads
 % of processing magnetforces() multiple times. With vector operations,
@@ -100,7 +102,7 @@ disp(['Average time: ',num2str(1000*elapsedtime/NN),' ms']);
 tic
 f_rand2 = magnetforces( coil, magnet, displ'*[0 0 1] );
 elapsedtime = toc;
-disp(['Average time: ',num2str(1000*elapsedtime/NN),' ms']);
+disp(['Average time: ',num2str(1000*elapsedtime/NN),' ms (no loop)']);
 
 close_enough = @(x) round(x*1e6);
 assert(all(close_enough(f_rand(:,3)) == close_enough(f_rand2(3,:))'),'loop and vector code must be equal')

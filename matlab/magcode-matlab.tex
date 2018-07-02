@@ -27,7 +27,7 @@
 }{\addtocounter{mfunction}{-1}}
 
 
-\RequirePackage{expl3,color,geometry,l3regex,framed,ted}
+\RequirePackage{expl3,color,geometry,framed,ted}
 
 
 \ExplSyntaxOn
@@ -276,7 +276,7 @@ If this is not the case, the centre of rotation of the second magnet can be spec
 If the dimension of the magnet (\texttt{magnet.dim}) only has two elements,
 or the \texttt{magnet.type} is `\textsf{cylinder}', the forces are calculated between two cylindrical magnets.
 
-Only the force between coaxial cylinders can be calculated at present; this is still an area of active investigation.
+While coaxial and `eccentric' geometries can be calculated, the latter is around 50 times slower; you may want to benchmark your solutions to ensure speed is acceptable. (In the not-too-near-field, you can sometimes approximate a cylindrical magnet by a cuboid magnet with equal depth and equal face area.)
 \begin{description}[noitemsep,font=\ttfamily]
 \item[magnet.dim] A $(2\times1)$ vector containing, respectively, the magnet radius and length.
 \item[magnet.dir] Alignment direction of the cylindrical magnets;
