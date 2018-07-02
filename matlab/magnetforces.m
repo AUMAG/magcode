@@ -9,7 +9,16 @@
 
 function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
-%% \section{Wrangling user input and output}
+%% \subsection{Main function body}
+
+magconst = 1/(4*pi*(4*pi*1e-7));
+
+[index_i, index_j, index_k, index_l, index_p, index_q] = ndgrid([0 1]);
+
+index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
+
+
+%% \subsubsection{Wrangling user input and output}
 % We now have a choice of calculations to take based on the user input.
 % This chunk and the next are used in both \texttt{magnetforces.m} and
 % \texttt{multipoleforces.m}.
@@ -46,7 +55,7 @@ if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
   calc_force_bool = true;
 end
 
-%% \subsection{Organise input displacements}
+%% \subsubsection{Organise input displacements}
 % Gotta check the displacement input for both functions.
 % After sorting that out, we can initialise the output variables now we
 % know how big they need to me.
@@ -108,7 +117,6 @@ if ~isfield(magnet_float,'fndefined')
 end
 
 
-coil_bool = false;
 
 if strcmp(magnet_fixed.type, 'coil')
   
@@ -116,10 +124,9 @@ if strcmp(magnet_fixed.type, 'coil')
     error('Coil/magnet forces can only be calculated for cylindrical magnets.')
   end
   
-  coil_bool = true;
   coil = magnet_fixed;
   magnet = magnet_float;
-  magtype = 'cylinder';
+  magtype = 'coil';
   coil_sign = +1;
   
 end
@@ -130,91 +137,39 @@ if strcmp(magnet_float.type, 'coil')
     error('Coil/magnet forces can only be calculated for cylindrical magnets.')
   end
   
-  coil_bool = true;
   coil = magnet_float;
   magnet = magnet_fixed;
-  magtype = 'cylinder';
+  magtype = 'coil';
   coil_sign = -1;
   
 end
 
-if coil_bool
-  
-  error('to do')
-  
-else
-  
-  if ~strcmp(magnet_fixed.type, magnet_float.type)
-    error('Magnets must be of same type')
-  end
-  magtype = magnet_fixed.type;
-  
-  
-  if strcmp(magtype,'cuboid')
-    
-    size1 = reshape(magnet_fixed.dim/2,[3 1]);
-    size2 = reshape(magnet_float.dim/2,[3 1]);
-    
-    J1 = resolve_magnetisations(magnet_fixed.magn,magnet_fixed.magdir);
-    J2 = resolve_magnetisations(magnet_float.magn,magnet_float.magdir);
-    
-    if calc_torque_bool
-      if ~isfield(magnet_float,'lever')
-        magnet_float.lever = [0; 0; 0];
-      else
-        ss = size(magnet_float.lever);
-        if (ss(1)~=3) && (ss(2)==3)
-          magnet_float.lever = magnet_float.lever'; % attempt [3 M] shape
-        end
-      end
-    end
-    
-  elseif strcmp(magtype,'cylinder')
-    
-    size1 = magnet_fixed.dim(:);
-    size2 = magnet_float.dim(:);
-        
-    if any(abs(magnet_fixed.dir) ~= abs(magnet_float.dir))
-      error('Cylindrical magnets must be oriented in the same direction')
-    end
-    if any(abs(magnet_fixed.magdir) ~= abs(magnet_float.magdir))
-      error('Cylindrical magnets must be oriented in the same direction')
-    end
-    if any(abs(magnet_fixed.dir) ~= abs(magnet_fixed.magdir))
-      error('Cylindrical magnets must be magnetised in the same direction as their orientation')
-    end
-    if any(abs(magnet_float.dir) ~= abs(magnet_float.magdir))
-      error('Cylindrical magnets must be magnetised in the same direction as their orientation')
-    end
-    
-    cyldir = find(magnet_float.magdir ~= 0);
-    cylnotdir = find(magnet_float.magdir == 0);
-    if length(cyldir) ~= 1
-      error('Cylindrical magnets must be aligned in one of the x, y or z directions')
-    end
-    
-    magnet_float.magdir = magnet_float.magdir(:);
-    magnet_fixed.magdir = magnet_fixed.magdir(:);
-    magnet_float.dir = magnet_float.dir(:);
-    magnet_fixed.dir = magnet_fixed.dir(:);
-    
-    J1 = magnet_fixed.magn*magnet_fixed.magdir;
-    J2 = magnet_float.magn*magnet_float.magdir;
-    
-  end
-  
+
+if ~strcmp(magnet_fixed.type, magnet_float.type)
+  error('Magnets must be of same type')
 end
-
-
-magconst = 1/(4*pi*(4*pi*1e-7));
-
-[index_i, index_j, index_k, index_l, index_p, index_q] = ndgrid([0 1]);
-
-index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
+magtype = magnet_fixed.type;
 
 
 if strcmp(magtype,'cuboid')
   
+  size1 = reshape(magnet_fixed.dim/2,[3 1]);
+  size2 = reshape(magnet_float.dim/2,[3 1]);
+  
+  J1 = resolve_magnetisations(magnet_fixed.magn,magnet_fixed.magdir);
+  J2 = resolve_magnetisations(magnet_float.magn,magnet_float.magdir);
+  
+  if calc_torque_bool
+    if ~isfield(magnet_float,'lever')
+      magnet_float.lever = [0; 0; 0];
+    else
+      ss = size(magnet_float.lever);
+      if (ss(1)~=3) && (ss(2)==3)
+        magnet_float.lever = magnet_float.lever'; % attempt [3 M] shape
+      end
+    end
+  end
+
   swap_x_y = @(vec) vec([2 1 3],:);
   swap_x_z = @(vec) vec([3 2 1],:);
   swap_y_z = @(vec) vec([1 3 2],:);
@@ -238,67 +193,104 @@ if strcmp(magtype,'cuboid')
   J1_y    = rotate_y_to_z(J1);
   J2_y    = rotate_y_to_z(J2);
   
+elseif strcmp(magtype,'cylinder')
+  
+  size1 = magnet_fixed.dim(:);
+  size2 = magnet_float.dim(:);
+  
+  if any(abs(magnet_fixed.dir) ~= abs(magnet_float.dir))
+    error('Cylindrical magnets must be oriented in the same direction')
+  end
+  if any(abs(magnet_fixed.magdir) ~= abs(magnet_float.magdir))
+    error('Cylindrical magnets must be oriented in the same direction')
+  end
+  if any(abs(magnet_fixed.dir) ~= abs(magnet_fixed.magdir))
+    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
+  end
+  if any(abs(magnet_float.dir) ~= abs(magnet_float.magdir))
+    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
+  end
+  
+  cyldir = find(magnet_float.magdir ~= 0);
+  cylnotdir = find(magnet_float.magdir == 0);
+  if length(cyldir) ~= 1
+    error('Cylindrical magnets must be aligned in one of the x, y or z directions')
+  end
+  
+  magnet_float.magdir = magnet_float.magdir(:);
+  magnet_fixed.magdir = magnet_fixed.magdir(:);
+  magnet_float.dir = magnet_float.dir(:);
+  magnet_fixed.dir = magnet_fixed.dir(:);
+  
+  J1 = magnet_fixed.magn*magnet_fixed.magdir;
+  J2 = magnet_float.magn*magnet_float.magdir;
+  
 end
 
-% \subsection{Calculate for each displacement}
+
+%% \subsubsection{Calculate for each displacement}
 % The actual mechanics.
 % The idea is that a multitude of displacements can be passed to the
 % function and we iterate to generate a matrix of vector outputs.
 
-if coil_bool
+if strcmp(magtype,'coil')
   
-  forces_out = coil_sign*coil.dir*...
-    forces_magcyl_shell_calc(mag.dim, coil.dim, squeeze(displ(cyldir,:)), J1(cyldir), coil.current, coil.turns);
+  for iii = 1:Ndispl
+    forces_out(:,iii) = coil_sign*coil.dir*...
+      forces_magcyl_shell_calc(...
+        magnet.dim, ...
+        coil.dim, ...
+        squeeze(displ(cyldir,:)), ...
+        J1(cyldir), ...
+        coil.current, ...
+        coil.turns);
+  end
   
-else
+elseif strcmp(magtype,'cuboid')
   
-  if strcmp(magtype,'cuboid')
-    
-    if calc_force_bool
-      for iii = 1:Ndispl
-        forces_out(:,iii)  =  single_magnet_force(displ(:,iii));
-      end
+  if calc_force_bool
+    for iii = 1:Ndispl
+      forces_out(:,iii) = single_magnet_force(displ(:,iii));
     end
-    
-    if calc_stiffness_bool
-      for iii = 1:Ndispl
-        stiffnesses_out(:,iii)  =  single_magnet_stiffness(displ(:,iii));
-      end
+  end
+  
+  if calc_stiffness_bool
+    for iii = 1:Ndispl
+      stiffnesses_out(:,iii) = single_magnet_stiffness(displ(:,iii));
     end
-    
-    if calc_torque_bool
-      torques_out  =  single_magnet_torque(displ,magnet_float.lever);
+  end
+  
+  if calc_torque_bool
+    torques_out = single_magnet_torque(displ,magnet_float.lever);
+  end
+  
+elseif strcmp(magtype,'cylinder')
+  
+  if calc_force_bool
+    for iii = 1:Ndispl
+      forces_out(:,iii)  =  single_magnet_cyl_force(displ(:,iii));
     end
-    
-  elseif strcmp(magtype,'cylinder')
-        
-    if calc_force_bool
-      for iii = 1:Ndispl
-        forces_out(:,iii)  =  single_magnet_cyl_force(displ(:,iii));
-      end
-    end
-    
-    if calc_stiffness_bool
-      error('Stiffness cannot be calculated for cylindrical magnets yet.')
-    end
-    
-    if calc_torque_bool
-      error('Torques cannot be calculated for cylindrical magnets yet.')
-    end
-    
+  end
+  
+  if calc_stiffness_bool
+    error('Stiffness cannot be calculated for cylindrical magnets yet.')
+  end
+  
+  if calc_torque_bool
+    error('Torques cannot be calculated for cylindrical magnets yet.')
   end
   
 end
 
-%% \subsection{Return all results}
+%% \subsubsection{Return all results}
 % After all of the calculations have occured, they're placed back into
 % |varargout|. (This happens at the very end, obviously.)
 % Outputs are ordered in the same order as the inputs are specified.
 
 varargout = {};
 
-for ii = 1:length(varargin)
-  switch varargin{ii}
+for iii = 1:length(varargin)
+  switch varargin{iii}
     case 'force'
       varargout{end+1} = forces_out;
       
@@ -311,6 +303,7 @@ for ii = 1:length(varargin)
 end
 
 
+%% \subsection{Nested functions}
 
 
 %\begin{mfunction}{resolve_magnetisations}
@@ -1345,7 +1338,7 @@ end
   end
 % \end{mfunction}
 
-% \subsection{Helpers}
+% \subsubsection{Helpers}
 %  The equations contain two singularities. Specifically, the equations
 %  contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
 %  and $y$ are zero since $\log(0)$ is negative infinity.
