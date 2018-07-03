@@ -153,22 +153,11 @@ magtype = magnet_fixed.type;
 
 if strcmp(magtype,'cuboid')
   
-  size1 = reshape(magnet_fixed.dim/2,[3 1]);
-  size2 = reshape(magnet_float.dim/2,[3 1]);
+  size1 = magnet_fixed.dim(:)/2;
+  size2 = magnet_float.dim(:)/2;
   
   J1 = resolve_magnetisations(magnet_fixed.magn,magnet_fixed.magdir);
   J2 = resolve_magnetisations(magnet_float.magn,magnet_float.magdir);
-  
-  if calc_torque_bool
-    if ~isfield(magnet_float,'lever')
-      magnet_float.lever = [0; 0; 0];
-    else
-      ss = size(magnet_float.lever);
-      if (ss(1)~=3) && (ss(2)==3)
-        magnet_float.lever = magnet_float.lever'; % attempt [3 M] shape
-      end
-    end
-  end
 
   swap_x_y = @(vec) vec([2 1 3],:);
   swap_x_z = @(vec) vec([3 2 1],:);
@@ -285,22 +274,33 @@ end
 %% \subsubsection{Return all results}
 % After all of the calculations have occured, they're placed back into
 % |varargout|. (This happens at the very end, obviously.)
-% Outputs are ordered in the same order as the inputs are specified.
+% Outputs are ordered in the same order as the inputs are specified, which
+% makes the code a bit uglier but is presumably a bit nicer for the user
+% and/or just a bit more flexible.
 
-varargout = {};
+argcount = 0;
 
 for iii = 1:length(varargin)
   switch varargin{iii}
-    case 'force'
-      varargout{end+1} = forces_out;
-      
-    case 'stiffness'
-      varargout{end+1} = stiffnesses_out;
-      
-    case 'torque'
-      varargout{end+1} = torques_out;
+    case 'force',     argcount = argcount+1;
+    case 'stiffness', argcount = argcount+1; 
+    case 'torque',    argcount = argcount+1;
   end
 end
+
+varargout = cell(argcount,1);
+
+argcount = 0;
+
+for iii = 1:length(varargin)
+  switch varargin{iii}
+    case 'force',      argcount = argcount+1; varargout{argcount} = forces_out;
+    case 'stiffness',  argcount = argcount+1; varargout{argcount} = stiffnesses_out;
+    case 'torque',     argcount = argcount+1; varargout{argcount} = torques_out;
+  end
+end
+
+% That is the end of the main function.
 
 
 %% \subsection{Nested functions}
@@ -346,13 +346,15 @@ end
     ecc = sqrt(sum(displ(cylnotdir).^2));
     
     if ecc < eps
-      forces_out = magnet_fixed.magdir*forces_cyl_calc(size1, size2, displ(cyldir), J1(cyldir), J2(cyldir)).';    
+      magdir = [0;0;0];
+      magdir(cyldir) = 1;
+      forces_out = magdir*forces_cyl_calc(size1, size2, displ(cyldir), J1(cyldir), J2(cyldir)).';    
     else
       ecc_forces = forces_cyl_ecc_calc(size1, size2, displ(cyldir), ecc, J1(cyldir), J2(cyldir)).';  
       forces_out(cyldir) = ecc_forces(2);
       forces_out(cylnotdir(1)) = displ(cylnotdir(1))/ecc*ecc_forces(1);
       forces_out(cylnotdir(2)) = displ(cylnotdir(2))/ecc*ecc_forces(1);
-      % not 100% sure this is correct...
+      % not 100% sure this division into components is correct...
     end
     
   end

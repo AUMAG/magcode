@@ -32,6 +32,16 @@ if isfield(mag,'grade')
 end
 
 
+if ~isfield(mag,'lever')
+  mag.lever = [0; 0; 0];
+else
+  ss = size(mag.lever);
+  if (ss(1)~=3) && (ss(2)==3)
+    mag.lever = mag.lever.'; % attempt [3 M] shape
+  end
+end
+
+
 if strcmp(mag.type,'cylinder')
   
   % default to +Z magnetisation
