@@ -16,6 +16,7 @@ else
 end
 
 if ~isfield(mag,'type')
+  warning('Magnets should always define their "type". E.g., {''type'',''cuboid''} for a cuboid magnet.')
   if length(mag.dim) == 2
     mag.type = 'cylinder';
   else
