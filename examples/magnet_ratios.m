@@ -67,7 +67,7 @@ text(1.5,1.22,'$\gamma=0.4$')
 ylim([0.7,1.3])
 
 xlabel('Displacement $x$, mm')
-ylabel('Normalised force $\bar F$')
+ylabel('Normalised force')
 
 if ~simple_graph
   colourplot
@@ -90,7 +90,7 @@ text(8.5,1.155,'$0.7$')
 text(8.75,1.1,'$0.8$')
 
 xlabel('Displacement $x$, mm')
-ylabel('Normalised force $\bar F$')
+ylabel('Normalised force')
 
 if ~simple_graph
   colourplot
@@ -209,7 +209,7 @@ for mm = 1:Ncrit-1
 end
 
 xlabel 'Displacement $x$, mm'
-ylabel 'Normalised force $\bar F$' 'interpreter' 'none'
+ylabel 'Normalised force' 'interpreter' 'none'
 
 if ~simple_graph
   axistight
@@ -231,7 +231,7 @@ for mm = Ncrit+1:Ncm
 end
 
 xlabel 'Displacement $x$, mm'
-ylabel 'Normalised force $\bar F$' 'interpreter' 'none'
+ylabel 'Normalised force' 'interpreter' 'none'
 
 if ~simple_graph
   axistight

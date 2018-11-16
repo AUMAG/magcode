@@ -111,7 +111,7 @@ end
 plot(1000*yrange,0.001*lforces([2 3],:))
 
 set(gca,'box','on','ticklength',[0.02 0.05])
-xlabel('$y$-displacement, $\muphdispl$, mm')
+xlabel('Horiz.\ displacement $\muphdispl$, mm')
 ylabel('Force, kN')
 text(-20,0.250,'$F_z$','interpreter','latex');
 text( 15,0.250,'$F_y$','interpreter','latex');
@@ -136,7 +136,7 @@ end
 plot(1000*yrange,1000\pforces([2 3],:));
 set(gca,'box','on','ticklength',[0.02 0.05])
 
-xlabel('$y$-displacement, $\muphdispl$, mm')
+xlabel('Horiz.\ displacement $\muphdispl$, mm')
 ylabel('Force, kN')
 text( -20, 0.200,'$F_z$','interpreter','LaTeX');
 text( -30,-0.100,'$F_y$','interpreter','LaTeX');
@@ -162,7 +162,7 @@ end
 plot(1000*yrange,1000\qforces([2 3],:));
 set(gca,'box','on','ticklength',[0.02 0.05])
 
-xlabel('$y$-displacement, $\muphdispl$, mm')
+xlabel('Horiz.\ displacement $\muphdispl$, mm')
 ylabel('Force, kN')
 text( -18, 0.200,'$F_z$','interpreter','LaTeX');
 text( -15,-0.220,'$F_y$','interpreter','LaTeX');

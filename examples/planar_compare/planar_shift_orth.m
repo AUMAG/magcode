@@ -108,7 +108,7 @@ end
 plot(1000*xrange,0.001*lforces([1 3],:))
 
 set(gca,'box','on','ticklength',[0.02 0.05])
-xlabel('$\ax$-displacement, mm')
+xlabel('Horiz.\ $\ax$ displacement, mm')
 ylabel('Force, kN')
 text(-40,0.250,'$F_z$','interpreter','latex');
 text(-30,-0.120,'$F_x$','interpreter','latex');
