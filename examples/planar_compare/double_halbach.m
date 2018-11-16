@@ -59,8 +59,8 @@ ind2 = indsum-offsetrange;
 
 ddforces = dforces(:,ind1)+dforces(:,ind2);
 
-%plot(yrange(indsum),dforces([2 3],ind1));
-%plot(yrange(indsum),dforces([2 3],ind2));
+plot(yrange(indsum),dforces(3,ind1),'--');
+plot(yrange(indsum),dforces(3,ind2),'--');
 plot(yrange(indsum),ddforces([2 3],:));
 set(gca,'box','on','ticklength',[0.02 0.05])
 

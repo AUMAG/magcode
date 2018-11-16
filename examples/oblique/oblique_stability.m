@@ -90,7 +90,7 @@ ylabel('Relative displacement, mm')
 axistight;
 yl = ylim;
 colourplot;
-matlabfrag(['fig/mbq-',figname])
+matlabfrag(['fig/xmbq-',figname])
 
 figname = 'dyn-xy-map';
 willfig(figname,'small'); clf; hold on
@@ -100,7 +100,7 @@ ylabel('Vertical, mm')
 axis equal
 ylim(yl);
 draworigin;
-matlabfrag(['fig/mbq-',figname])
+matlabfrag(['fig/xmbq-',figname])
 
 
 %% Dynamic analysis (vertical & horizontal)
@@ -155,7 +155,7 @@ axistight;
 colourplot;
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
-matlabfrag(['fig/mbq-',figname])
+matlabfrag(['fig/xmbq-',figname])
 
 figname = 'dyn-yr-r';
 willfig(figname,'small'); clf; hold on
@@ -165,7 +165,7 @@ axistight;
 colourplot;
 xlabel('Time, s')
 ylabel('Rotation, deg.')
-matlabfrag(['fig/mbq-',figname])
+matlabfrag(['fig/xmbq-',figname])
 
 
 %% Vertical and rotational
@@ -188,7 +188,7 @@ axis tight
 colourplot;
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
-%matlabfrag(['fig/mbq-',figname])
+matlabfrag(['fig/xmbq-',figname])
 
 figname = 'dyn-yr-r';
 willfig(figname,'small'); clf; hold on
@@ -198,7 +198,7 @@ axis tight
 colourplot;
 xlabel('Time, s')
 ylabel('Rotation, deg.')
-%matlabfrag(['fig/mbq-',figname])
+matlabfrag(['fig/xmbq-',figname])
 
 
 %% All three: Unconstrained is unstable!
@@ -214,32 +214,39 @@ fprintf('\n\n')
   'perturb',[1e-9 -0.001 1e-9]...
   );
 
-figname = 'dyn-xyr-x';
-willfig(figname,'tiny'); clf; hold on
-plot(T4,1000*X4(:,1))
-xlabel('Time, s')
-ylabel('Displacement, mm')
-colourplot;
-axistight([],[],'y','+x');
-matlabfrag(['fig/mbq-',figname])
-
 figname = 'dyn-xyr-y';
-willfig(figname,'tiny'); clf; hold on
+willfig(figname,'3across'); clf; hold on
 plot(T4,1000*(X4(:,3)-param4.y0))
 xlabel('Time, s')
 ylabel('Relative displacement, mm')
 colourplot;
 axistight([],[],'y','+x');
-matlabfrag(['fig/mbq-',figname])
+set(gca,'xtick',[0 0.2 0.4 0.6],'ytick',-100:25:0);
+p = get(gca,'position');
+
+matlabfrag(['fig/xmbq-',figname])
+
+figname = 'dyn-xyr-x';
+willfig(figname,'3across'); clf; hold on
+plot(T4,1000*X4(:,1))
+xlabel('Time, s')
+ylabel('Displacement, mm')
+colourplot;
+axistight([],[],'y','+x');
+set(gca,'xtick',[0 0.2 0.4 0.6]);
+set(gca,'position',p);
+matlabfrag(['fig/xmbq-',figname])
 
 figname = 'dyn-xyr-r';
-willfig(figname,'tiny'); clf; hold on
+willfig(figname,'3across'); clf; hold on
 plot(T4,180/pi*X4(:,5))
 xlabel('Time, s')
 ylabel('Rotation, deg.')
 colourplot;
 axistight([],[],'y','+x');
-matlabfrag(['fig/mbq-',figname])
+set(gca,'xtick',[0 0.2 0.4 0.6]);
+set(gca,'position',p);
+matlabfrag(['fig/xmbq-',figname])
 
 
 
