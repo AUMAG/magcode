@@ -63,6 +63,39 @@ end
 f = fopen('data/magcyl-matlab.txt','w');
 fprintf(f,'%f %f\n',[1000*displ' fcyl(3,:)']');
 
+%% Two magnets
+
+
+
+% Magnet 1:
+r1 = 0.02; % radius, metres
+h1 = 0.02; % height, metres
+grade1 = 'N35';
+
+% Magnet 2:
+r2 = 0.015; % radius, metres
+h2 = 0.015; % height, metres
+grade2 = 'N42';
+
+% Displacement:
+gap_max = 0.05; % metres
+face_gap = linspace(0,gap_max);
+displ = face_gap + h1/2 + h2/2;
+
+% Calculate forces:
+fcyl = magnetforces(...
+  struct('grade',grade1,'dim',[r1 h1],'dir',[0 0 -1]),...
+  struct('grade',grade2,'dim',[r2 h2],'dir',[0 0 1]),...
+  displ'*[0 0 1]...
+);
+
+figure(1); clf; hold on
+plot(1000*face_gap,fcyl(3,:))
+
+xlabel('Face gap, mm')
+ylabel('Force, N')
+
+
 
 %% Benchmark tests
 %
