@@ -17,7 +17,7 @@ function [ T, X, param ] = oblique_dynamics( varargin )
 %   RelTol & AbsTol      1e-4
 %
 % If the moment of inertia is not given, it will be automatically
-% calculated with J = 1/3*m*L^2 where m is the mass and L is the lever arm.
+% calculated with J = 1/12*m*L^2 where m is the mass and L is the lever arm.
 %
 % The 'maxdispl' parameter is used when constructing the curve for
 % finding the equilibrium position. For very light masses you may wish to
@@ -83,7 +83,7 @@ J = p.Results.momentofinertia;
 if(isnan(J))
   % assume the system is a uniformly distributed mass
   % pretty approximate but that's okay
-  J = 1/3*m*(p.Results.leverratio*p.Results.unitlength)^2;
+  J = 1/12*m*(p.Results.leverratio*p.Results.unitlength)^2;
   fprintf('Calculated moment of inertia: %3.3f g m^2\n',1000*J)
 end
 param.momentofinertia = J;
