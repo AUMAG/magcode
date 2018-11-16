@@ -30,7 +30,7 @@
 	border-right-style: solid;
 	border-right-color: rgb(255,255,255);
 	border-right-width: 1px;
-	
+
 }
 td.MenuItems:hover {
 	background-color: rgb(15,73,123);
@@ -103,8 +103,8 @@ figcaption {
                 </ul>
             </ul>
             </i></p>
-            
-            
+
+
             <p class="BodyHeader"><a name="Magnetforces">Magnetforces.m</a></p>
             <p>The function magnetforces is used to calculate forces and stiffnesses between either cuboid or cylindrical magnets. The calculation of the force between cuboidal magnets is done by using the method described by Gilles Akoun and Jean-Paul Yonnet [1]. The forces for cylindrical magnets are calculated by using several methods depending on the situation.</p>
             <p><b>Force between cuboidal magnets</b></p>
@@ -147,23 +147,23 @@ figcaption {
             % Set geometrical parameters
             w = 0.05; h = 0.05; d = 0.05;
             N = linspace(h,3*h,50);
-            
+
             % Define the magnet parameters
             size1 = [w h d];
             grade1 = 'N35';
             size2 = [w h d];
             grade2 = 'N35';
-            
+
             % Define magnet structures
             magnet_fixed = struct('grade',grade1,'dim',size1,'magdir',[0 1 0]);
             magnet_float = struct('grade',grade2,'dim',size2,'magdir',[0 -1 0]);
-            
+
             % Create the displacement matrix
             displ = N'*[0 1 0];
-            
+
             % Calculate the magnet forces
             F = magnetforces(magnet_fixed, magnet_float, displ);
-            
+
             % Plot forces
             plot(1000*N,F(2,:))
             xlabel('N (mm)'); ylabel('F (N)');
@@ -196,20 +196,20 @@ figcaption {
             gradef = 'N42';
             pos1 = [0 0 0.12];
             pos2 = [0 0 -0.12];
-            
+
             % Define magnet structures
-            magnets_fixed(1) = 
+            magnets_fixed(1) =
             	struct('grade',grade1,'dim',[r1 h1],'magdir',[0 0 1]);
-            magnets_fixed(2) = 
+            magnets_fixed(2) =
             	struct('grade',grade2,'dim',[r2 h2],'magdir',[0 0 -1]);
-            magnet_float = 
+            magnet_float =
             	struct('grade',gradef,'dim',[rf hf],'magdir',[0 0 -1]);
-            
+
             % Define displacements & positions
             displ = linspace(-0.002,0.002,50);
             displ = displ'*[0 0 1];
             pos = [pos1;pos2];
-            
+
             % Calculate forces
             F = multimagnetforces(magnet_float, displ, magnets_fixed, pos);
             </pre>
@@ -218,12 +218,6 @@ figcaption {
             <figcaption>Fig3. - Left: cylindrical levitation system. Right: levitation system with cuboidal magnets.</figcaption>
         	<p class="BodySubHeader"><a name="Drawmagnet">Drawmagnet.m</a></p>
             <p>Function drawmagnets plots a 3D visualization of the magnets used in multimagnetforces. The floating magnet is shown in a green color, the fixed magnets are shown in a red color.</p>
-        </td>
-	</tr>
-    <tr>
-		<td colspan="3" class="footer">
-        	<br />
-        	<img src="images/UoA_logo_col_horz.png" width="200" height="61.2" />
         </td>
 	</tr>
 </table>
