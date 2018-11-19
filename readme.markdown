@@ -10,9 +10,11 @@ where possible (ask if you are unsure).
 
 In addition, please cite this code repository as:
 
-* Title: *‘MAGCODE: framework of models for calculating magnetic fields and interactions’
+* Title: ‘MAGCODE: framework of models for calculating magnetic fields and interactions’
 * Author: William S. P. Robertson
-* [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
+* DOI: 10.5281/zenodo.1491206
+
+DOI for the latest release: [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
 
 
 
