@@ -23,18 +23,23 @@ This code marks my first attempt to freely share, in a useful way, the work of m
 Installation and information
 ----------------------------
 
-The `matlab/` subdirectory of this repository contains the source files.
+The `matlab/` subdirectory of this repository contains the main source files.
 After cloning the Git repository, you can simply add the `matlab/` folder to your Matlab
 path in order to start using the code.
-
 The documentation `matlab/magcode-matlab.pdf` contains both a user's guide and the
 documented source code in a literate programming style.
 
+If you are a Mathematica user please explore; the code here is not as fully developed but also contains some more extensive work from my PhD.
 
-Examples and test suite
------------------------
+The code under `ansys/` is a historic collection of material for calculating magnetic fields and forces using Ansys Classic, driven by Matlab code to write the APDL files. Now that Ansys has incorporated Maxwell into its product suite for EM simulations, it's possible that this code is no longer particularly useful.
 
-The `examples/` subdirectory contains a number of files to illustrate the use of the `magnetforces` code (and other related things). These files are:
+
+Examples
+--------
+
+The `examples/` subdirectory contains a number of files to illustrate the use of the `magnetforces` code (and other related things).
+
+Some of these examples relate to cases from the literature. These include (non-exhaustive):
 
 - `allag_torques.m` is an implementation of the theory of [Allag and Yonnet (2009)][1] for calculating the torques between cuboid magnets.
 - `magnetforces_example.m` contains a reproduction of the results of [Akoun and Yonnet (1984)][2] and of [Janssen et al. (2009)][3].
@@ -46,7 +51,11 @@ The `examples/` subdirectory contains a number of files to illustrate the use of
 [3]: http://dx.doi.org/10.1166/sl.2009.1049
 [4]: http://dx.doi.org/10.1109/ELECTROMOTION.2009.5259084
 
-The source code contains a number of automated tests to ensure that future changes don't break existing functionality or start producing incorrect results. These are not included in the repository for clarity; extract them with `mtangle`.
+
+Test suite
+----------
+
+The files located in `matlab/testsuite` contains a number of automated tests to ensure that future changes don't break existing functionality or start producing incorrect results. They are not yet comprehensive.
 
 
 Contributors
@@ -59,6 +68,8 @@ The following students have contributed to this work over the years:
 * Allan Liu
 * Matthew Forbes
 * James O'Connell
+
+Thanks!
 
 
 Licence for modification and distribution
