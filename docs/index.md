@@ -1,5 +1,6 @@
 
-# MAGCODE: framework of models for calculating magnetic fields and interactions
+MAGCODE: models for calculating magnetic fields and interactions
+================================================================
 
 This repository contains code originally written for my PhD for calculating the forces
 (and stiffnesses) between permanent magnets and arrays of magnets.

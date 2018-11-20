@@ -1,5 +1,6 @@
-MAGCODE: framework of models for calculating magnetic fields and interactions
-=============================================================================
+
+MAGCODE: models for calculating magnetic fields and interactions
+================================================================
 
 Public-facing documentation for this repository is located at: <http://wspr.io/magcode/>
 
