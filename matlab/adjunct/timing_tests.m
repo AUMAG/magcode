@@ -10,25 +10,27 @@ calc_xyz = [true true true];
 
 tol = 1e-9;
 
+checkloop = 6;
+
 s1 = rand(1,3); s2 = rand(1,3); dd = rand(1,3); J1 = rand(1); J2 = rand(1);
 F1 = forces_calc_sumsum(s1,s2,dd,J1,J2);
-F2 = forces_calc_loop(s1,s2,dd,J1,J2);
-F3 = forces_calc_loop2(s1,s2,dd,J1,J2);
+F2 = forces_calc_loop(  s1,s2,dd,J1,J2);
+F3 = forces_calc_loop2( s1,s2,dd,J1,J2);
 [F1 F2 F3]
 assert(all(abs(F2-F1)<tol));
 assert(all(abs(F3-F1)<tol));
 
 s1 = [1 1 1]; s2 = [1 1 1]; dd = 2*[1 1 1]; J1 = 1; J2 = 1;
 F1 = forces_calc_sumsum(s1,s2,dd,J1,J2);
-F2 = forces_calc_loop(s1,s2,dd,J1,J2);
-F3 = forces_calc_loop2(s1,s2,dd,J1,J2);
+F2 = forces_calc_loop(  s1,s2,dd,J1,J2);
+F3 = forces_calc_loop2( s1,s2,dd,J1,J2);
 [F1 F2 F3]
 assert(all(abs(F2-F1)<tol));
 assert(all(abs(F3-F1)<tol));
 
 %%
 
-N = 100;
+N = 1000;
 tic
 for noop = 1:N
   F = forces_calc_sumsum(rand(1,3),rand(1,3),rand(1,3),rand(1),rand(1));
@@ -53,12 +55,14 @@ toc
     component_y = 0;
     component_z = 0;
     
+    count = 0;
     for ii = [1 -1]
       for jj = [1 -1]
         for kk = [1 -1]
           for ll = [1 -1]
             for pp = [1 -1]
               for qq = [1 -1]
+                count = count + 1;
                 
                 u = offset(1) + size2(1)*jj - size1(1)*ii;
                 v = offset(2) + size2(2)*ll - size1(2)*kk;
@@ -118,6 +122,7 @@ toc
     component_y = 0;
     component_z = 0;
     
+    count = 0;
     for ii = [1 -1]
       for jj = [1 -1]
         for kk = [1 -1]
@@ -125,32 +130,46 @@ toc
             for pp = [1 -1]
               for qq = [1 -1]
                 
+                count = count + 1;
+                
                 u = offset(1) + size2(1)*jj - size1(1)*ii;
                 v = offset(2) + size2(2)*ll - size1(2)*kk;
                 w = offset(3) + size2(3)*qq - size1(3)*pp;
                 r = sqrt(u.^2+v.^2+w.^2);
                 
+                if w == 0
+                  atan_term = 0;
+                else
+                  atan_term = atan(u.*v./(r.*w));
+                end
+                if abs(r-u) < eps
+                  log_ru = 0;
+                else
+                  log_ru = log(r-u);
+                end
+                if abs(r-v) < eps
+                  log_rv = 0;
+                else
+                  log_rv = log(r-v);
+                end
+                
                 cx = ...
-                  + 0.5*(v.^2-w.^2).*log(r-u) ...
-                  + u.*v.*log(r-v) ...
-                  + v.*w.*atan(u.*v./(r.*w)) ...
+                  + 0.5*(v.^2-w.^2).*log_ru ...
+                  + u.*v.*log_rv ...
+                  + v.*w.*atan_term...
                   + 0.5*r.*u;
                 
                 cy = ...
-                  + 0.5*(u.^2-w.^2).*log(r-v) ...
-                  + u.*v.*log(r-u) ...
-                  + u.*w.*atan(u.*v./(r.*w)) ...
+                  + 0.5*(u.^2-w.^2).*log_rv ...
+                  + u.*v.*log_ru ...
+                  + u.*w.*atan_term ...
                   + 0.5*r.*v;
                 
                 cz = ...
-                  - u.*w.*log(r-u) ...
-                  - v.*w.*log(r-v) ...
-                  + u.*v.*atan(u.*v./(r.*w)) ...
+                  - u.*w.*log_ru ...
+                  - v.*w.*log_rv ...
+                  + u.*v.*atan_term ...
                   - r.*w;
-                
-                if isnan(cx), cx = 0; end
-                if isnan(cy), cx = 0; end
-                if isnan(cz), cx = 0; end
 
                 ind_sum = ii*jj*kk*ll*pp*qq;
                 component_x = component_x + ind_sum.*cx;
