@@ -14,6 +14,8 @@ function F = multimagnetforces(magnet_float, displ, magnets_fixed, pos)
 % Note: floating magnet has position xyz = [0 0 0];
 %
 
+error('Now deprecated. magnetforces.m will be updated "soon" and this function will be removed.')
+
 figure
 view(3)
 grid on
