@@ -7,6 +7,12 @@ function magnetdraw(magnet,pos,varargin)
 % color = color of the magnet (1x3)
 %
 
+if nargin == 0
+  disp('No arguments; running MAGNETDRAW demo.')
+  demo_magnetdraw;
+  return
+end
+
 color = [0.7 0 0.2];
 
 switch magnet.type
@@ -45,7 +51,6 @@ function draw_cube(magnet,pos)
     patch(vrtc([6,7,3,2],1),vrtc([6,7,3,2],2),vrtc([6,7,3,2],3),color);
     patch(vrtc([5,8,4,1],1),vrtc([5,8,4,1],2),vrtc([5,8,4,1],3),color);
 
-    % TEST: figure(1); clf; magnetdraw(struct('type','cuboid','dim',[0.1 0.2 0.3],'magdir','z'),[0; 0; 0]); view(3); xlabel('x'); ylabel('y'); zlabel('z')
 end
 
 function draw_cyl(magnet,pos)
@@ -72,7 +77,6 @@ function draw_cyl(magnet,pos)
     patch(X(1,:),Y(1,:),Z(1,:),color);
     patch(X(2,:),Y(2,:),Z(2,:),color);
     
-    % TEST: figure(1); clf; magnetdraw(struct('type','cylinder','dim',[0.1 0.2],'magdir','z'),[0; 0; 0]); view(3); xlabel('x'); ylabel('y'); zlabel('z')
 end
 
 end
