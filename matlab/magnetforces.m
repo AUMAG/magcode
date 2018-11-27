@@ -156,8 +156,8 @@ if strcmp(magtype,'cuboid')
   size1 = magnet_fixed.dim(:)/2;
   size2 = magnet_float.dim(:)/2;
   
-  J1 = resolve_magnetisations(magnet_fixed.magn,magnet_fixed.magdir);
-  J2 = resolve_magnetisations(magnet_float.magn,magnet_float.magdir);
+  J1 = magnet_fixed.magn*magnet_fixed.magdir;
+  J2 = magnet_float.magn*magnet_float.magdir;
 
   swap_x_y = @(vec) vec([2 1 3],:);
   swap_x_z = @(vec) vec([3 2 1],:);
@@ -304,38 +304,6 @@ end
 
 
 %% \subsection{Nested functions}
-
-
-%\begin{mfunction}{resolve_magnetisations}
-% Magnetisation directions are specified in either cartesian or spherical
-% coordinates. Since this is shared code, it's sent to the end to belong in a
-% nested function.
-%
-% We don't use Matlab's |sph2cart| here, because it doesn't calculate zero
-% accurately (because it uses radians and |cos(pi/2)| can only be evaluated
-% to machine precision of pi rather than symbolically).
-
-  function J = resolve_magnetisations(magn,magdir)
-    
-    if length(magdir)==2
-      J_r = magn;
-      J_t = magdir(1);
-      J_p = magdir(2);
-      J   = [ J_r * cosd(J_p) * cosd(J_t)  ; ...
-        J_r * cosd(J_p) * sind(J_t)  ; ...
-        J_r * sind(J_p) ];
-    else
-      if all(magdir == zeros(size(magdir)) )
-        J = [0; 0; 0];
-      else
-        J = magn*magdir/norm(magdir);
-        J = reshape(J,[3 1]);
-      end
-    end
-    
-  end
-
-%\end{mfunction}
 
       
 % \begin{mfunction}{single_magnet_cyl_force}

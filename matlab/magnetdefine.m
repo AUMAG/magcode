@@ -42,6 +42,13 @@ else
   end
 end
 
+if ~isfield(mag,'magdir')
+  warning('Magnet direction ("magdir") not specified; assuming +z.')
+  mag.magdir = [0; 0; 1];
+else
+  mag.magdir = resolve_magdir(mag.magdir);
+end
+
 
 if strcmp(mag.type,'cylinder')
   
@@ -99,4 +106,48 @@ else
 end
 
 end
+%\end{mfunction}
+
+%\begin{mfunction}{resolve_magdir}
+
+function magdir = resolve_magdir(magdir)
+
+% Magnetisation directions are specified in either cartesian or spherical
+% coordinates.
+%
+% We don't use Matlab's |sph2cart| here, because it doesn't calculate zero
+% accurately (because it uses radians and |cos(pi/2)| can only be evaluated
+% to machine precision of pi rather than symbolically).
+
+  if numel(magdir) == 2
+    theta = magdir(1);
+    phi = magdir(2);
+    magdir = [ cosd(phi)*cosd(theta); cosd(phi)*sind(theta); sind(phi) ];
+  elseif numel(magdir) == 3
+    if all(magdir == zeros(size(magdir)) )
+      warning('Magnet direction ("magdir") should not be zero; assuming +z.')
+      magdir = [0; 0; 1];
+    else
+      magdir = magdir(:)/norm(magdir);
+    end
+  elseif numel(magdir) == 1
+    switch magdir
+      case  'x'; magdir = [1;0;0];
+      case  'y'; magdir = [0;1;0];
+      case  'z'; magdir = [0;0;1];
+      case '+x'; magdir = [1;0;0];
+      case '+y'; magdir = [0;1;0];
+      case '+z'; magdir = [0;0;1];
+      case '-x'; magdir = [-1; 0; 0];
+      case '-y'; magdir = [ 0;-1; 0];
+      case '-z'; magdir = [ 0; 0;-1];
+      otherwise, error('Magnetisation %s not understood.',magdir);
+    end
+  else
+    error('magdir has wrong number of elements.')
+  end
+
+
+end
+
 %\end{mfunction}
