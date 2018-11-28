@@ -124,9 +124,8 @@ function magdir = resolve_magdir(magdir)
     phi = magdir(2);
     magdir = [ cosd(phi)*cosd(theta); cosd(phi)*sind(theta); sind(phi) ];
   elseif numel(magdir) == 3
-    if all(magdir == zeros(size(magdir)) )
-      warning('Magnet direction ("magdir") should not be zero; assuming +z.')
-      magdir = [0; 0; 1];
+    if all(magdir == 0)
+      magdir = [0; 0; 0]; % this looks redundant but ensures column vector
     else
       magdir = magdir(:)/norm(magdir);
     end
