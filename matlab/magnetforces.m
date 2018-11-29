@@ -213,6 +213,9 @@ elseif strcmp(magtype,'cylinder')
   
   J1 = magnet_fixed.magn*magnet_fixed.magdir;
   J2 = magnet_float.magn*magnet_float.magdir;
+  debug_disp('Magnetisation vectors:')
+  debug_disp(J1)
+  debug_disp(J2)
   
 end
 
@@ -314,10 +317,12 @@ end
     ecc = sqrt(sum(displ(cylnotdir).^2));
     
     if ecc < eps
+      debug_disp('Coaxial')
       magdir = [0;0;0];
       magdir(cyldir) = 1;
       forces_out = magdir*forces_cyl_calc(size1, size2, displ(cyldir), J1(cyldir), J2(cyldir)).';    
     else
+      debug_disp('Non-coaxial')
       ecc_forces = forces_cyl_ecc_calc(size1, size2, displ(cyldir), ecc, J1(cyldir), J2(cyldir)).';  
       forces_out(cyldir) = ecc_forces(2);
       forces_out(cylnotdir(1)) = displ(cylnotdir(1))/ecc*ecc_forces(1);
