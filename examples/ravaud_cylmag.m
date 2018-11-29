@@ -32,18 +32,14 @@ displ = linspace(-displ_range,displ_range,NN);
 
 % Calculate forces:
 fcyl = magnetforces(...
-  struct('turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]),...
-  struct('magn',J2,'dim',[r2 h2],'dir',[0 0 1]),...
-  displ'*[0 0 1]...
+  struct('type','cylinder','turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]),...
+  struct('type','cylinder','magn',J2,'dim',[r2 h2],'dir',[0 0 1]),...
+  [0;0;1]*displ...
 );
 
 % Plot output
 
-try
-  willfig('cylmag','tiny'); clf; hold on
-catch
-  figure
-end
+figure(1);
 
 plot(1000*displ,fcyl(3,:))
 
@@ -84,17 +80,19 @@ displ = face_gap + h1/2 + h2/2;
 
 % Calculate forces:
 fcyl = magnetforces(...
-  struct('grade',grade1,'dim',[r1 h1],'dir',[0 0 -1]),...
-  struct('grade',grade2,'dim',[r2 h2],'dir',[0 0 1]),...
+  struct('type','cylinder','grade',grade1,'dim',[r1 h1],'dir',[0 0 -1]),...
+  struct('type','cylinder','grade',grade2,'dim',[r2 h2],'dir',[0 0 1]),...
   displ'*[0 0 1]...
 );
 
-figure(1); clf; hold on
+figure(2); clf; hold on
 plot(1000*face_gap,fcyl(3,:))
 
 xlabel('Face gap, mm')
 ylabel('Force, N')
 
+
+return
 
 
 %% Benchmark tests
@@ -118,8 +116,8 @@ displ = 0.1*rand([1 NN]);
 
 f_rand = nan([NN 3]);
 
-coil = struct('turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]);
-magnet = struct('magn',J2,'dim',[r2 h2],'dir',[0 0 1]);
+coil = struct('type','cylinder','turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]);
+magnet = struct('type','cylinder','magn',J2,'dim',[r2 h2],'dir',[0 0 1]);
 
 tic
 for nn = 1:NN

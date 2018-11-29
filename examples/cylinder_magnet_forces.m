@@ -17,7 +17,7 @@ current = 1; % Amperes
 mu0 = 4*pi*10^(-7);
 J1 = mu0*Nturns*current/h1;
 
-coil_cyl_z = magnetdefine('turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]);
+coil_cyl_z = magnetdefine('type','cylinder','turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]);
 
 % Magnet:
 
@@ -25,7 +25,7 @@ r2 = 0.015; % metres
 h2 = 0.015; % metres
 J2 = 1; % Tesla
 
-mag_cyl_z = magnetdefine('magn',J2,'dim',[r2 h2],'dir',[0 0 1]);
+mag_cyl_z = magnetdefine('type','cylinder','magn',J2,'dim',[r2 h2],'dir',[0 0 1]);
 
 % "Equivalent" cuboid magnet:
 
@@ -38,7 +38,7 @@ V2 = x2*y2*h2;
 assert(abs(V1-V2)<eps,'Volume of cyl and cuboid not same.')
 
 J2 = 1; % Tesla
-mag_cuboid_z = magnetdefine('magn',J2,'dim',[x2 y2 h2],'magdir',[0 0 1]);
+mag_cuboid_z = magnetdefine('type','cuboid','magn',J2,'dim',[x2 y2 h2],'magdir',[0 0 1]);
 
 
 %% 1. Coaxial example
