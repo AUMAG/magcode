@@ -84,6 +84,8 @@
 
 \tl_set:Nx \c_pprint_START_tl { \c_percent_str\c_space_tl \string \START }
 
+\seq_put_right:Nn \l_file_search_path_seq {private/}
+
 \cs_new:Npn \PrettyPrintFile #1
   {
     \group_begin:
@@ -487,5 +489,11 @@ Please report problems and suggestions at the GitHub issue tracker.%
 \PrettyPrintFile{magnetforces.m}
 
 \PrettyPrintFile{multipoleforces.m}
+
+\section{Magnetic calculations}
+
+\PrettyPrintFile{cuboid_force_z_z.m}
+\PrettyPrintFile{cylinder_force_coaxial.m}
+\PrettyPrintFile{cylinder_force_eccentric.m}
 
 \end{document}

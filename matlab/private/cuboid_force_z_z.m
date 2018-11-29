@@ -30,15 +30,12 @@ component_x = 0;
 component_y = 0;
 component_z = 0;
 
-count = 0;
 for ii = [1 -1]
   for jj = [1 -1]
     for kk = [1 -1]
       for ll = [1 -1]
         for pp = [1 -1]
           for qq = [1 -1]
-            
-            count = count + 1;
             
             u = offset(1) + size2(1)*jj - size1(1)*ii;
             v = offset(2) + size2(2)*ll - size1(2)*kk;

@@ -320,14 +320,14 @@ end
       debug_disp('Coaxial')
       magdir = [0;0;0];
       magdir(cyldir) = 1;
-      forces_out = magdir*forces_cyl_calc(size1, size2, displ(cyldir), J1(cyldir), J2(cyldir)).';    
+      forces_out = magdir*cylinder_force_coaxial(size1, size2, displ(cyldir), J1(cyldir), J2(cyldir)).';    
     else
       debug_disp('Non-coaxial')
-      ecc_forces = forces_cyl_ecc_calc(size1, size2, displ(cyldir), ecc, J1(cyldir), J2(cyldir)).';  
+      ecc_forces = cylinder_force_eccentric(size1, size2, displ(cyldir), ecc, J1(cyldir), J2(cyldir)).';  
       forces_out(cyldir) = ecc_forces(2);
       forces_out(cylnotdir(1)) = displ(cylnotdir(1))/ecc*ecc_forces(1);
       forces_out(cylnotdir(2)) = displ(cylnotdir(2))/ecc*ecc_forces(1);
-      % not 100% sure this division into components is correct...
+      % Need to check this division into components is correct...
     end
     
   end
@@ -942,270 +942,6 @@ end
   end
 % \end{mfunction}
 
-% \begin{mfunction}{forces_cyl_calc}
-  function calc_out = forces_cyl_calc(size1,size2,h_gap,J1,J2)
-    
-    % inputs
-    
-    r1 = size1(1);
-    r2 = size2(1);
-    
-    % implicit
-    
-    z = nan(4,length(h_gap));
-    z(1,:) = -size1(2)/2;
-    z(2,:) =  size1(2)/2;
-    z(3,:) = h_gap - size2(2)/2;
-    z(4,:) = h_gap + size2(2)/2;
-    
-    C_d = zeros(size(h_gap));
-    
-    for ii = [1 2]
-      
-      for jj = [3 4]
-        
-        a1 = z(ii,:) - z(jj,:);
-        a2 = 1 + ( (r1-r2)./a1 ).^2;
-        a3 = sqrt( (r1+r2).^2 + a1.^2 );
-        a4 = 4*r1.*r2./( (r1+r2).^2 + a1.^2 );
-        
-        [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
-        
-        a2_ind = ( a2 == 1 | isnan(a2) );
-        if all(a2_ind)% singularity at a2=1 (i.e., equal radii)
-          PI_term(a2_ind) = 0;
-        elseif all(~a2_ind)
-          PI_term = (1-a1.^2./a3.^2).*PI;
-        else % this branch just for completeness
-          PI_term = zeros(size(a2));
-          PI_term(~a2_ind) = (1-a1.^2/a3.^2).*PI;
-        end
-        
-        f_z = a1.*a2.*a3.*( K - E./a2 - PI_term );
-        
-        f_z(abs(a1)<eps)=0; % singularity at a1=0 (i.e., coincident faces)
-        
-        C_d = C_d + (-1)^(ii+jj).*f_z;
-        
-      end
-      
-    end
-    
-    calc_out = J1*J2/(8*pi*1e-7)*C_d;
-    
-  end
-% \end{mfunction}
-%
-% \begin{mfunction}{forces_cyl_ecc_calc}
-  function calc_out = forces_cyl_ecc_calc(size1,size2,h_gap,e_displ,J1,J2)
-    
-    r1 = size1(1);
-    r2 = size2(1);
-    
-    z1 = -size1(2)/2;
-    z2 =  size1(2)/2;
-    z3 = h_gap - size2(2)/2;
-    z4 = h_gap + size2(2)/2;
-        
-    h = [z4-z2; z3-z2; z4-z1; z3-z1];
-    
-    fn = @(t) [xdir(t,r1,r2,h,e_displ), zdir(t,r1,r2,h,e_displ)];
-    fn_int = integral(fn,0,pi,'ArrayValued',true,'AbsTol',1e-6);
-    
-    calc_out = -1e7*J1*J2*r1*r2*fn_int/4/pi/pi;
-    
-    function gx = xdir(t,r,R,h,p)
-      
-      X = sqrt(r^2+R^2-2*r*R*cos(t));
-      hh = h.^2;
-      ff = (p+X)^2+hh;
-      gg = (p-X)^2+hh;
-      f = sqrt(ff);
-      g = sqrt(gg);
-      m = 1-gg./ff;  % equivalent to $m = 4pX/f^2$
-      
-      [KK, EE] = ellipke(m);
-      [F2, E2] = arrayfun(@elliptic12,asin(h./g),1-m);
-      
-      Ta = f.*EE;
-      Tb = (p^2-X^2).*KK./f;
-      Tc = sign(p-X)*h.*( F2.*(EE-KK) + KK.*E2 - 1 );
-      Td = -pi/2*h;
-      
-      T = cos(t)/p*(Ta+Tb+Tc+Td);
-      gx = -T(1)+T(2)+T(3)-T(4);
-      
-    end
-    
-    function gz = zdir(t,r,R,h,p)
-      
-      XX = p^2+R^2-2*p*R*cos(t);
-      rr = r.^2;
-      X = sqrt(XX);
-      hh = h.^2;
-      ff = (r+X)^2+hh;
-      gg = (r-X)^2+hh;
-      f = sqrt(ff);
-      g = sqrt(gg);
-      m = 1-gg./ff;
-      
-      [KK, EE] = ellipke(m);
-      [F2, E2] = arrayfun(@elliptic12,asin(h./g),1-m);
-      
-      Ta = +h.*f.*(EE-KK);
-      Tb = -h.*KK.*(r-X)^2./f;
-      Tc = abs(rr-XX).*( F2.*(EE-KK) + KK.*E2 - 1 );
-      Td = 4/pi.*min(rr,XX);   % note $r^2+X^2 - \lvert r^2-X^2\rvert = 2\min(r^2,X^2)$
-      
-      T = (R-p.*cos(t))./(2.*r.*XX).*(Ta+Tb+Tc+Td);
-      gz = -T(1)+T(2)+T(3)-T(4);
-      
-    end
-    
-  end
-% \end{mfunction}
-
-% \begin{mfunction}{ellipkepi}
-% Complete elliptic integrals calculated with the arithmetric-geometric mean
-% algorithms contained here: \url{http://dlmf.nist.gov/19.8}.
-% Valid for $a<=1$ and $m<=1$.
-
-  function [k,e,PI] = ellipkepi(a,m)
-    
-    a0 = 1;
-    g0 = sqrt(1-m);
-    s0 = m;
-    nn = 0;
-    
-    p0 = sqrt(1-a);
-    Q0 = 1;
-    Q1 = 1;
-    QQ = Q0;
-    
-    while max(Q1(:)) > eps
-      
-      % for Elliptic I
-      a1 = (a0+g0)/2;
-      g1 = sqrt(a0.*g0);
-      
-      % for Elliptic II
-      nn = nn + 1;
-      c1 = (a0-g0)/2;
-      w1 = 2^nn*c1.^2;
-      s0 = s0 + w1;
-      
-      % for Elliptic III
-      rr = p0.^2+a0.*g0;
-      p1 = rr./(2.*p0);
-      Q1 = 0.5*Q0.*(p0.^2-a0.*g0)./rr;
-      QQ = QQ+Q1;
-      
-      a0 = a1;
-      g0 = g1;
-      Q0 = Q1;
-      p0 = p1;
-      
-    end
-    
-    k = pi./(2*a1);
-    e = k.*(1-s0/2);
-    PI = pi./(4.*a1).*(2+a./(1-a).*QQ);
-    
-    im = find(m == 1);
-    if ~isempty(im)
-      k(im) = inf;
-      e(im) = ones(length(im),1);
-      PI(im) = inf;
-    end
-    
-  end
-% \end{mfunction}
-
-  function [F,E] = elliptic12(u,m)
-    % ELLIPTIC12 evaluates the value of the Incomplete Elliptic Integrals
-    % of the First, Second Kind.
-    % GNU GENERAL PUBLIC LICENSE Version 2, June 1991
-    % Copyright (C) 2007 by Moiseev Igor.
-    
-    % EDITED BY WSPR to optimise for numel(u)=numel(m)=1
-    % TODO: re-investigate vectorising once the wrapper code is properly in place
-    
-    tol = eps; % making this 1e-6 say makes it slower??
-        
-    F = zeros(size(u)); E = F; Z = E;
-    
-    m(m<eps) = 0;
-    
-    I = uint32( find(m ~= 1 & m ~= 0) );
-    if ~isempty(I)
-      signU = sign(u(I));
-      
-      % pre-allocate space and augment if needed
-      chunk = 7;
-      a = zeros(chunk,1);
-      c = a;
-      b = a;
-      a(1,:) = 1;
-      c(1,:) = sqrt(m);
-      b(1,:) = sqrt(1-m);
-      n = uint32( zeros(1,1) );
-      i = 1;
-      while any(abs(c(i,:)) > tol) % Arithmetic-Geometric Mean of A, B and C
-        i = i + 1;
-        if i > size(a,1)
-          a = [a; zeros(2,1)];
-          b = [b; zeros(2,1)];
-          c = [c; zeros(2,1)];
-        end
-        a(i,:) = 0.5 * (a(i-1,:) + b(i-1,:));
-        b(i,:) = sqrt(a(i-1,:) .* b(i-1,:));
-        c(i,:) = 0.5 * (a(i-1,:) - b(i-1,:));
-        in = uint32( find((abs(c(i,:)) <= tol) & (abs(c(i-1,:)) > tol)) );
-        if ~isempty(in)
-          [mi,ni] = size(in);
-          n(in) = ones(mi,ni)*(i-1);
-        end
-      end
-      
-      mmax = length(I);
-      mn = double(max(n));
-      phin = zeros(1,mmax);     C  = zeros(1,mmax);
-      Cp = C;  e  = uint32(C);  phin(:) = signU.*u(I);
-      i = 0;   c2 = c.^2;
-      while i < mn % Descending Landen Transformation
-        i = i + 1;
-        in = uint32(find(n > i));
-        if ~isempty(in)
-          phin(in) = atan(b(i)./a(i).*tan(phin(in))) + ...
-            pi.*ceil(phin(in)/pi - 0.5) + phin(in);
-          e(in) = 2.^(i-1) ;
-          C(in) = C(in)  + double(e(in(1)))*c2(i);
-          Cp(in)= Cp(in) + c(i+1).*sin(phin(in));
-        end
-      end
-      
-      Ff = phin ./ (a(mn).*double(e)*2);
-      F(I) = Ff.*signU;                        % Incomplete Ell. Int. of the First Kind
-      E(I) = (Cp + (1 - 1/2*C) .* Ff).*signU;  % Incomplete Ell. Int. of the Second Kind
-    end
-    
-    % Special cases: m == {0, 1}
-    m0 = find(m == 0);
-    if ~isempty(m0), F(m0) = u(m0); E(m0) = u(m0); end
-    
-    m1 = find(m == 1);
-    um1 = abs(u(m1));
-    if ~isempty(m1)
-      N = floor( (um1+pi/2)/pi );
-      M = find(um1 < pi/2);
-      
-      F(m1(M)) = log(tan(pi/4 + u(m1(M))/2));
-      F(m1(um1 >= pi/2)) = Inf.*sign(u(m1(um1 >= pi/2)));
-      
-      E(m1) = ((-1).^N .* sin(um1) + 2*N).*sign(u(m1));
-    end
-  end
-
 
 % \begin{mfunction}{forces_magcyl_shell_calc}
   function Fz = forces_magcyl_shell_calc(magsize,coilsize,displ,Jmag,Nrz,I)
@@ -1219,7 +955,7 @@ end
       this_radius = coilsize(1)+(rr-1)/(Nrz(1)-1)*(coilsize(2)-coilsize(1));
       shell_size = [this_radius, coilsize(3)];
       
-      shell_forces(:,rr) = forces_cyl_calc(magsize,shell_size,displ,Jmag,Jcoil);
+      shell_forces(:,rr) = cylinder_force_coaxial(magsize,shell_size,displ,Jmag,Jcoil);
       
     end
     

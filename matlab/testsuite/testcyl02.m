@@ -15,7 +15,7 @@ magnet_float.type = 'cylinder';
 magnet_fixed.dir  = [0; 0; 1];
 magnet_float.dir  = [0; 0; 1]; % must be same
 
-magnet_fixed.magdir  = [0; 0;  1];
+magnet_fixed.magdir  = [0; 0; +1];
 magnet_float.magdir  = [0; 0; -1];
 
 zdispl = 0.03;
