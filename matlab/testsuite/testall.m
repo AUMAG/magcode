@@ -1,4 +1,5 @@
 
+clear all
 clc
 
 test001a
@@ -19,6 +20,8 @@ test003a
 return
 
 testcuboidtorque01
+
 testcyl01
+testcyl02
 
 
