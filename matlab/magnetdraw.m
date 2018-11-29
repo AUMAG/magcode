@@ -13,7 +13,7 @@ if nargin == 0
   return
 end
 
-color = [0.7 0 0.2];
+color = [1 0 0.2];
 
 switch magnet.type
   case 'cuboid',  draw_cube(magnet,pos);
@@ -25,58 +25,110 @@ end
 
 function draw_cube(magnet,pos)
 
-    hdim = magnet.dim/2;
-    
-    % Define vertices of cube
-    % Top plate:    no. 1, 2, 3, 4
-    % Bottom plate: no. 5, 6, 7, 8
-    
-    vrtc = zeros(8,3);
-    vrtc(1,:) = [-hdim(1); -hdim(2);  hdim(3)] + pos;
-    vrtc(2,:) = [ hdim(1); -hdim(2);  hdim(3)] + pos;
-    vrtc(3,:) = [ hdim(1);  hdim(2);  hdim(3)] + pos;
-    vrtc(4,:) = [-hdim(1);  hdim(2);  hdim(3)] + pos;
-    vrtc(5,:) = [-hdim(1); -hdim(2); -hdim(3)] + pos;
-    vrtc(6,:) = [ hdim(1); -hdim(2); -hdim(3)] + pos;
-    vrtc(7,:) = [ hdim(1);  hdim(2); -hdim(3)] + pos;
-    vrtc(8,:) = [-hdim(1);  hdim(2); -hdim(3)] + pos;
-    
-    % Draw top & bottom patches
-    patch(vrtc(1:4,1),vrtc(1:4,2),vrtc(1:4,3),color);
-    patch(vrtc(5:8,1),vrtc(5:8,2),vrtc(5:8,3),color);
-    
-    % Draw side patches
-    patch(vrtc([5,6,2,1],1),vrtc([5,6,2,1],2),vrtc([5,6,2,1],3),color);
-    patch(vrtc([8,7,3,4],1),vrtc([8,7,3,4],2),vrtc([8,7,3,4],3),color);
-    patch(vrtc([6,7,3,2],1),vrtc([6,7,3,2],2),vrtc([6,7,3,2],3),color);
-    patch(vrtc([5,8,4,1],1),vrtc([5,8,4,1],2),vrtc([5,8,4,1],3),color);
+  pos = transpose(pos(:));
+hdim = magnet.dim/2;
+
+vrtc = zeros(8,3);
+vrtc(1,:) = [-hdim(1); -hdim(2);  hdim(3)]; % top plate
+vrtc(2,:) = [ hdim(1); -hdim(2);  hdim(3)];
+vrtc(3,:) = [ hdim(1);  hdim(2);  hdim(3)];
+vrtc(4,:) = [-hdim(1);  hdim(2);  hdim(3)];
+vrtc(5,:) = [-hdim(1); -hdim(2); -hdim(3)]; % bottom plate
+vrtc(6,:) = [ hdim(1); -hdim(2); -hdim(3)];
+vrtc(7,:) = [ hdim(1);  hdim(2); -hdim(3)];
+vrtc(8,:) = [-hdim(1);  hdim(2); -hdim(3)];
+
+faces(1,:) = [1,2,3,4]; % top
+faces(2,:) = [5,6,7,8]; % bottom
+faces(3,:) = [5,6,2,1]; % sides
+faces(4,:) = [8,7,3,4]; %
+faces(5,:) = [6,7,3,2]; %
+faces(6,:) = [5,8,4,1]; %
+
+[vrtc_p, vrtc_n] = split_patches(vrtc,faces,magnet.magdir);
+
+patch('Faces',faces,'Vertices',vrtc_p+pos,'FaceColor',color)
+patch('Faces',faces,'Vertices',vrtc_n+pos,'FaceColor',color/2)
 
 end
 
 function draw_cyl(magnet,pos)
 
-    r = magnet.dim(1);
-    h = magnet.dim(2);
-    n = 50;
+pos = transpose(pos(:));
+
+r = magnet.dim(1);
+h = magnet.dim(2);
+n = 50;
+
+[X,Y,Z] = cylinder(r,n);
+Z(2,:) = h*Z(2,:);
+X = X;
+Y = Y;
+Z = Z-0.5*h;
+
+vrtc = [X(:), Y(:), Z(:)];
+faces = nan(n,4);
+for ii = 1:n
+  faces(ii,:) = 2*(ii-1)+[1 3 4 2];
+end
+
+% Sides
+
+[vrtc_p, vrtc_n, faces_p, faces_n] = split_patches(vrtc,faces,magnet.magdir);
+
+patch('Faces',faces_p,'Vertices',vrtc_p+pos,'FaceColor',color,'EdgeColor','none')
+patch('Faces',faces_n,'Vertices',vrtc_n+pos,'FaceColor',color/2,'EdgeColor','none')
+
+% Bottom & Top cover
+
+faces = [1:2:2*(n+1);2:2:2*(n+1)];
+[vrtc_p, vrtc_n, faces_p, faces_n] = split_patches(vrtc,faces,magnet.magdir);
+
+patch('Faces',faces_p,'Vertices',vrtc_p+pos,'FaceColor',color,'EdgeColor','none')
+patch('Faces',faces_n,'Vertices',vrtc_n+pos,'FaceColor',color/2,'EdgeColor','none')
+
+end
+
+end
+
+function [vrtc_p, vrtc_n, faces_p, faces_n] = split_patches(vrtc,faces,norm)
+
+Nfaces = size(faces,1);
+Nedges = size(faces,2);
+
+vrtc_p = vrtc;
+vrtc_n = vrtc;
+faces_p = faces;
+faces_n = faces;
+
+for ff = 1:Nfaces
+  line_ind = [faces(ff,:),faces(ff,1)];
+  for ll = 1:Nedges
+    p2 = vrtc(line_ind(ll+1),:);
+    p1 = vrtc(line_ind(ll),:);
+    line_vec = p2-p1;
     
-    [X,Y,Z] = cylinder(r,n);
-    Z(2,:) = h*Z(2,:);
-    X = X + pos(1);
-    Y = Y + pos(2);
-    Z = Z-0.5*h + pos(3);
+    s = -dot(norm,p1)/(dot(norm,line_vec));
+    c = p1+s*line_vec;
+    pn = sign(dot(norm,p1));
     
-    % Draw cylinder sides
-    for ii = 1:n
-        patch([X(1,ii) X(1,ii+1) X(2,ii+1) X(2,ii)],...
-              [Y(1,ii) Y(1,ii+1) Y(2,ii+1) Y(2,ii)],...
-              [Z(1,ii) Z(1,ii+1) Z(2,ii+1) Z(2,ii)],...
-              color,'edgecolor','none');
+    if s>0 && s<=1
+      if pn > 0
+        vrtc_n(line_ind(ll  ),:) = c;
+        vrtc_p(line_ind(ll+1),:) = c;
+      else
+        vrtc_n(line_ind(ll+1),:) = c;
+        vrtc_p(line_ind(ll  ),:) = c;
+      end
+    else
+      if pn > 0
+%        faces_n(ff,:) = NaN;
+      elseif pn < 0
+%        faces_p(ff,:) = NaN;
+      end
     end
     
-    % Bottom & Top cover
-    patch(X(1,:),Y(1,:),Z(1,:),color);
-    patch(X(2,:),Y(2,:),Z(2,:),color);
-    
+  end
 end
 
 end
