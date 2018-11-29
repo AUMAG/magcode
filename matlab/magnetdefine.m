@@ -42,12 +42,6 @@ else
   end
 end
 
-if ~isfield(mag,'magdir')
-  warning('Magnet direction ("magdir") not specified; assuming +z.')
-  mag.magdir = [0; 0; 1];
-else
-  mag.magdir = resolve_magdir(mag.magdir);
-end
 
 
 if strcmp(mag.type,'cylinder')
@@ -63,8 +57,6 @@ if strcmp(mag.type,'cylinder')
   else
     if ~isfield(mag,'magdir')
       mag.magdir = mag.dir;
-    else
-      mag.magdir = [0 0 1];
     end
   end
   
@@ -73,6 +65,15 @@ if strcmp(mag.type,'cylinder')
     mag.magn = 4*pi*1e-7*mag.turns*mag.current/mag.dim(2);
   end
   
+else
+  
+  if ~isfield(mag,'magdir')
+    warning('Magnet direction ("magdir") not specified; assuming +z.')
+    mag.magdir = [0; 0; 1];
+  else
+    mag.magdir = resolve_magdir(mag.magdir);
+  end
+
 end
 
 mag.fndefined = true;
