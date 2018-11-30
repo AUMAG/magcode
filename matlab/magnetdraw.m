@@ -45,10 +45,11 @@ faces(4,:) = [8,7,3,4]; %
 faces(5,:) = [6,7,3,2]; %
 faces(6,:) = [5,8,4,1]; %
 
-[vrtc_p, vrtc_n] = split_patches(vrtc,faces,magnet.magdir);
+[vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
+[vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
 
-patch('Faces',faces,'Vertices',vrtc_p+pos,'FaceColor',color)
-patch('Faces',faces,'Vertices',vrtc_n+pos,'FaceColor',color/2)
+patch('Faces',faces_p,'Vertices',vrtc_p+pos,'FaceColor',color)
+patch('Faces',faces_n,'Vertices',vrtc_n+pos,'FaceColor',color/2)
 
 end
 
@@ -74,7 +75,8 @@ end
 
 % Sides
 
-[vrtc_p, vrtc_n, faces_p, faces_n] = split_patches(vrtc,faces,magnet.magdir);
+[vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
+[vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
 
 patch('Faces',faces_p,'Vertices',vrtc_p+pos,'FaceColor',color,'EdgeColor','none')
 patch('Faces',faces_n,'Vertices',vrtc_n+pos,'FaceColor',color/2,'EdgeColor','none')
@@ -82,7 +84,8 @@ patch('Faces',faces_n,'Vertices',vrtc_n+pos,'FaceColor',color/2,'EdgeColor','non
 % Bottom & Top cover
 
 faces = [1:2:2*(n+1);2:2:2*(n+1)];
-[vrtc_p, vrtc_n, faces_p, faces_n] = split_patches(vrtc,faces,magnet.magdir);
+[vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
+[vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
 
 patch('Faces',faces_p,'Vertices',vrtc_p+pos,'FaceColor',color,'EdgeColor','none')
 patch('Faces',faces_n,'Vertices',vrtc_n+pos,'FaceColor',color/2,'EdgeColor','none')
@@ -91,44 +94,55 @@ end
 
 end
 
-function [vrtc_p, vrtc_n, faces_p, faces_n] = split_patches(vrtc,faces,norm)
+function [vrtc_new, faces_new] = split_patches(vrtc,faces,norm)
 
 Nfaces = size(faces,1);
-Nedges = size(faces,2);
+Nvrtc  = size(faces,2);
 
-vrtc_p = vrtc;
-vrtc_n = vrtc;
-faces_p = faces;
-faces_n = faces;
+faces_pn = calc_face_vertex_side(faces,vrtc);
+
+% remove faces on the wrong side of the plane
+faces(all(faces_pn<0,2),:) = [];
+Nfaces = size(faces,1);
+
+faces_pn = calc_face_vertex_side(faces,vrtc);
+
+vrtc_new  = vrtc;
+faces_new = faces;
 
 for ff = 1:Nfaces
   line_ind = [faces(ff,:),faces(ff,1)];
-  for ll = 1:Nedges
-    p2 = vrtc(line_ind(ll+1),:);
-    p1 = vrtc(line_ind(ll),:);
+  for vv = 1:Nvrtc
+    p2 = vrtc(line_ind(vv+1),:);
+    p1 = vrtc(line_ind(vv),:);
     line_vec = p2-p1;
     
     s = -dot(norm,p1)/(dot(norm,line_vec));
     c = p1+s*line_vec;
-    pn = sign(dot(norm,p1));
     
     if s>0 && s<=1
-      if pn > 0
-        vrtc_n(line_ind(ll  ),:) = c;
-        vrtc_p(line_ind(ll+1),:) = c;
+      if faces_pn(ff,vv) > 0
+        vrtc_new(line_ind(vv+1),:) = c;
       else
-        vrtc_n(line_ind(ll+1),:) = c;
-        vrtc_p(line_ind(ll  ),:) = c;
-      end
-    else
-      if pn > 0
-%        faces_n(ff,:) = NaN;
-      elseif pn < 0
-%        faces_p(ff,:) = NaN;
+        vrtc_new(line_ind(vv  ),:) = c;
       end
     end
     
   end
 end
+
+  function faces_pn = calc_face_vertex_side(faces,vrtc)
+    
+    faces_pn = nan(size(faces));
+    
+    % calculate whether face vertices are pos or neg w.r.t. the plane
+    for fff = 1:Nfaces
+      for vvv = 1:Nvrtc
+        pp = vrtc(faces(fff,vvv),:);
+        faces_pn(fff,vvv) = sign(dot(norm,pp));
+      end
+    end
+
+  end
 
 end
