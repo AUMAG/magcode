@@ -59,11 +59,11 @@ end
 %patch('Faces',faces_n,'Vertices',vrtc_n,'FaceColor',color/2,'FaceAlpha',0.5)
 
 for ii = 1:size(vrtc_p,1)
-  plot3(vrtc_p(ii,1),vrtc_p(ii,2),vrtc_p(ii,3),'r','markersize',20)
+  plot3(vrtc_p(ii,1),vrtc_p(ii,2),vrtc_p(ii,3),'.r','markersize',20)
   text(vrtc_p(ii,1),vrtc_p(ii,2),vrtc_p(ii,3),num2str(ii),'color','red','fontsize',20)
 end
 for ii = []%1:size(vrtc_n,1)
-  plot3(vrtc_n(ii,1),vrtc_n(ii,2),vrtc_n(ii,3),'b','markersize',20)
+  plot3(vrtc_n(ii,1),vrtc_n(ii,2),vrtc_n(ii,3),'.b','markersize',20)
   text(vrtc_n(ii,1),vrtc_n(ii,2),vrtc_n(ii,3),num2str(ii),'color','blue','fontsize',20)
 end
 
@@ -124,6 +124,8 @@ Nfaces = size(faces_new,1);
 Nedges = size(faces_new,2)-1;
 
 for ff = 1:Nfaces
+  vrtc_to_delete = [];
+  faces_update = nan(1,Nfaces-1);
   for vv = 1:Nedges
     
     v1 = vv;
@@ -142,7 +144,7 @@ for ff = 1:Nfaces
     plot3(c(1),c(2),c(3),'k.','markersize',20)
     
     if s>0 && s<=1
-      vvnew = v1+faces_pn(ff,v1);
+      vvnew = vv+faces_pn(ff,vv);
       Nnew = size(vrtc_new,1)+1;
       vrtc_new(Nnew,:) = c;
       faces_update(vvnew) = Nnew;
@@ -150,13 +152,15 @@ for ff = 1:Nfaces
     else
       if faces_pn(ff,v1) < 1 && faces_pn(ff,v2) < 1
         disp('Edge on wrong side of plane; deleting')
-        faces_update(v1) = NaN;
-        faces_update(v2) = NaN;
+        vrtc_to_delete = [vrtc_to_delete,faces_new(ff,v1),faces_new(ff,v2)];
       end
     end
-    
   end
   faces_new(ff,:) = faces_update;
+  for ii = 1:numel(vrtc_to_delete)
+    ind = faces_new(ff,:) == vrtc_to_delete(ii);
+    faces_new(ff,ind) = NaN;
+  end
 end
 
   function faces_pn = calc_face_vertex_side(faces,vrtc)
