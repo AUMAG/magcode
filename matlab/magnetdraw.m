@@ -124,39 +124,53 @@ Nfaces = size(faces_new,1);
 Nedges = size(faces_new,2)-1;
 
 for ff = 1:Nfaces
+  
+  this_face = faces_new(ff,:);
+  new_face = [];
   vrtc_to_delete = [];
   faces_update = nan(1,Nfaces-1);
+  
   for vv = 1:Nedges
     
     v1 = vv;
     v2 = vv+1;
     faces_update(vv) = faces_new(ff,vv);
     
-    fprintf('Face %i, Edge %i-%i\n',ff,faces_new(ff,v1),faces_new(ff,v2))
+    fprintf('Face %i, Edge %i-%i\n',ff,this_face(v1),this_face(v2))
 
-    p1 = vrtc_new(faces_new(ff,v1),:);
-    p2 = vrtc_new(faces_new(ff,v2),:);
+    p1 = vrtc_new(this_face(v1),:);
+    p2 = vrtc_new(this_face(v2),:);
     line_vec = p2-p1;
     
-    s = -dot(normm,p1)/(dot(normm,line_vec));
-      fprintf('s: %2.2f\n',s)
-    c = p1+s*line_vec;
-    plot3(c(1),c(2),c(3),'k.','markersize',20)
+    pside1 = faces_pn(ff,v1);
+    pside2 = faces_pn(ff,v2);
     
-    if s>0 && s<=1
+    if pside1 == 0 && pside2 == 0
+      disp('Delete this edge.')
+      vrtc_to_delete = [vrtc_to_delete,faces_new(ff,v1),faces_new(ff,v2)];
+    elseif pside1 > 0 && pside2 > 0
+      disp('Keep this edge.')
+      new_face = [new_face,v1,v2];
+    else
+      disp('Cut this edge.')
+      
+      s = -dot(normm,p1)/(dot(normm,line_vec));
+      fprintf('s: %2.2f\n',s)
+      c = p1+s*line_vec;
+      plot3(c(1),c(2),c(3),'k.','markersize',20)
+      
+      assert( s>0 && s<=1 , 'Cut not calculated correctly?')
       vvnew = vv+faces_pn(ff,vv);
       Nnew = size(vrtc_new,1)+1;
       vrtc_new(Nnew,:) = c;
       faces_update(vvnew) = Nnew;
       fprintf('Edge cut; new vertex %i created.\n',Nnew)
-    else
-      if faces_pn(ff,v1) < 1 && faces_pn(ff,v2) < 1
-        disp('Edge on wrong side of plane; deleting')
-        vrtc_to_delete = [vrtc_to_delete,faces_new(ff,v1),faces_new(ff,v2)];
-      end
-    end
+      
   end
-  faces_new(ff,:) = faces_update;
+  
+  
+end
+faces_new(ff,:) = faces_update;
   for ii = 1:numel(vrtc_to_delete)
     ind = faces_new(ff,:) == vrtc_to_delete(ii);
     faces_new(ff,ind) = NaN;
