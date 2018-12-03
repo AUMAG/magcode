@@ -23,7 +23,7 @@ alpha = 0;
 beta  = -0.008;
 gamma = 0.015;
 
-magnet_fixed.dim = [2*a 2*b 2*c];
+magnet_fixed.dim = [2*c 2*b 2*a];
 magnet_float.dim = [2*a 2*b 2*c];
 
 magnet_fixed.magn = 1.23;
@@ -51,6 +51,7 @@ xlabel('Horizontal $x$ displacement, m')
 ylabel('Torques, Nm')
 
 legend('x','y','z')
+grid on
 
 if ~simple_graph
   draworigin([0 0],'h','--')
