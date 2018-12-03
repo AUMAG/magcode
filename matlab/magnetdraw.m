@@ -1,10 +1,18 @@
 function magnetdraw(arg_magnet,arg_pos,varargin)
-% drawmagnets(magnet_struct,pos,color). Draws the magnet in 3D by using the
-% same structure used in other magnet scripts.
+% MAGNETDRAW(mag,pos) Draws a magnet in 3D.
 %
-% magnet_struct = magnet data
+% # Mandatory arguments
+%
+% mag = magnet created by magnetdefine()
 % pos = position of the magnet (1x3)
-% color = color of the magnet (1x3)
+%
+% # Optional arguments
+%
+% 'color', color1 : color of the magnet (1x3)
+% 'color2',color2 : color of the "alternate face" of the magnet (1x3)
+% 'alpha', alpha  : transparency of the magnet
+%
+% By default color2 is 0.5*color1.
 %
 
 if nargin == 0
@@ -49,22 +57,21 @@ end
     pos = transpose(pos(:));
     hdim = magnet.dim/2;
     
-    vrtc = zeros(8,3);
-    vrtc(1,:) = [-hdim(1); -hdim(2);  hdim(3)]; % top plate
-    vrtc(2,:) = [ hdim(1); -hdim(2);  hdim(3)];
-    vrtc(3,:) = [ hdim(1);  hdim(2);  hdim(3)];
-    vrtc(4,:) = [-hdim(1);  hdim(2);  hdim(3)];
-    vrtc(5,:) = [-hdim(1); -hdim(2); -hdim(3)]; % bottom plate
-    vrtc(6,:) = [ hdim(1); -hdim(2); -hdim(3)];
-    vrtc(7,:) = [ hdim(1);  hdim(2); -hdim(3)];
-    vrtc(8,:) = [-hdim(1);  hdim(2); -hdim(3)];
+    vrtc = [-1 -1 +1; % top plate
+            +1 -1 +1;
+            +1 +1 +1;
+            -1 +1 +1;
+            -1 -1 -1; % bottom plate
+            +1 -1 -1;
+            +1 +1 -1;
+            -1 +1 -1].*hdim;
     
-    faces(1,:) = [1,2,3,4]; % top
-    faces(2,:) = [5,6,7,8]; % bottom
-    faces(3,:) = [5,6,2,1]; % sides
-    faces(4,:) = [8,7,3,4]; %
-    faces(5,:) = [6,7,3,2]; %
-    faces(6,:) = [5,8,4,1]; %
+    faces = [1,2,3,4;  % top
+             5,6,7,8;  % bottom
+             5,6,2,1;  % sides
+             8,7,3,4;  %
+             6,7,3,2;  %
+             5,8,4,1]; %
     
     [vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
     [vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
@@ -86,28 +93,22 @@ end
     n = 50;
     
     [X,Y,Z] = cylinder(r,n);
-    Z = h*(Z-0.5);
-    
-    vrtc = [X(:), Y(:), Z(:)];
+    vrtc = [X(:), Y(:), h*(Z(:)-0.5)];
     faces = nan(n,4);
     for ii = 1:n
       faces(ii,:) = 2*(ii-1)+[1 3 4 2];
     end
     
     % Sides
-    
     [vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
     [vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
-    
     patch('Faces',faces_p,'Vertices',vrtc_p+pos,patch_opts1{:})
     patch('Faces',faces_n,'Vertices',vrtc_n+pos,patch_opts2{:})
     
     % Bottom & Top cover
-    
     faces = [1:2:2*(n+1);2:2:2*(n+1)];
     [vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
     [vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
-    
     patch('Faces',faces_p,'Vertices',vrtc_p+pos,patch_opts1{:})
     patch('Faces',faces_n,'Vertices',vrtc_n+pos,patch_opts2{:})
     
@@ -147,7 +148,7 @@ for ff = 1:Nfaces
     pside2 = faces_pn(ff,ind2);
 %    fprintf('Face %i, Edge %i-%i\n',ff,v1,v2)
     
-    if pside1 == 0 && pside2 == 0    %disp('Drop this edge.')
+    if pside1 < 0 && pside2 < 0    %disp('Drop this edge.')
     elseif pside1 > 0 && pside2 > 0  %disp('Keep this edge.')
       new_face = [new_face,v1,v2];
     else                             %disp('Cut this edge.')
@@ -171,15 +172,17 @@ for ff = 1:Nfaces
       
     end
     
+    % Combine new face back into face vertices array
+    
     new_face(isnan(new_face)) = [];
     Nedges_new = numel(new_face)-1;
     
     if Nedges_new > Nedges
-      % enlarge vertices array with nan to fit face
+      % enlarge face vertices array with nan to fit face
       faces_new = [faces_new, nan(Nfaces,Nedges_new-Nedges)];
       Nedges = Nedges_new;
     elseif Nedges_new < Nedges
-      % pad face with nan to fit into vertices array
+      % pad face with nan to fit into face vertices array
       tmp = nan(1,Nedges+1);
       tmp(1:(Nedges_new+1)) = new_face;
       new_face = tmp;
@@ -210,7 +213,7 @@ faces_pn = nan(size(faces));
 for fff = 1:Nfaces
   for vvv = 1:Nedges
     pp = vrtc(faces(fff,vvv),:);
-    faces_pn(fff,vvv) = (1+sign(dot(normm,pp)))/2;
+    faces_pn(fff,vvv) = sign(dot(normm,pp));
   end
 end
 
