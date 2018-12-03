@@ -809,27 +809,26 @@ end
 %  We have checked it against Janssen's own Matlab code and the two give
 %  identical output.
 %
-%\begin{center}
-%\begin{tabular}{lll}
-% Inputs:
-% & |size1|=|(a1,b1,c1)| & the half dimensions of the fixed magnet \\
-% & |size2|=|(a2,b2,c2)| & the half dimensions of the floating magnet \\
-% & |displ|=|(a,b,c)| & distance between magnet centres \\
-% & |lever|=|(d,e,f)| & distance between floating magnet and its centre of rotation \\
-% &     |(J,J2)| & magnetisations of the magnet in the z-direction \\
-% Outputs:
-% & |forces_xyz|=|(Fx,Fy,Fz)| & Forces of the second magnet \\
-%\end{tabular}
-%\end{center}
+% \begin{center}
+% \begin{tabular}{lll}
+%  Inputs:
+%  & |size1|=|(a1,b1,c1)| & the half dimensions of the fixed magnet \\
+%  & |size2|=|(a2,b2,c2)| & the half dimensions of the floating magnet \\
+%  & |displ|=|(a,b,c)| & distance between magnet centres \\
+%  & |lever|=|(d,e,f)| & distance between floating magnet and its centre of rotation \\
+%  &     |(J,J2)| & magnetisations of the magnet in the z-direction \\
+%  Outputs:
+%  & |forces_xyz|=|(Fx,Fy,Fz)| & Forces of the second magnet \\
+% \end{tabular}
+% \end{center}
 
-  function calc_out = torques_calc_z_z(size1,size2,offset,lever,J1,J2)
+  function torque_zz = torques_calc_z_z(size1,size2,offset,lever,J1,J2)
     
     br1 = J1(3);
     br2 = J2(3);
     
     if br1==0 || br2==0
-      debug_disp('Zero magnetisation')
-      calc_out = 0*offset;
+      torque_zz = 0*offset;
       return
     end
     
@@ -849,9 +848,9 @@ end
     e = b+lever(2,:);
     f = c+lever(3,:);
     
-    Tx=zeros([1 size(offset,2)]);
-    Ty=Tx;
-    Tz=Tx;
+    Tx = zeros([1 size(offset,2)]);
+    Ty = Tx;
+    Tz = Tx;
     
     for ii=[0,1]
       for jj=[0,1]
@@ -860,13 +859,13 @@ end
             for mm=[0,1]
               for nn=[0,1]
                 
-                Cu=(-1)^ii.*a1-d;
-                Cv=(-1)^kk.*b1-e;
-                Cw=(-1)^mm.*c1-f;
+                Cu = (-1)^ii.*a1 - d;
+                Cv = (-1)^kk.*b1 - e;
+                Cw = (-1)^mm.*c1 - f;
                 
-                u=a-(-1)^ii.*a1+(-1)^jj.*a2;
-                v=b-(-1)^kk.*b1+(-1)^ll.*b2;
-                w=c-(-1)^mm.*c1+(-1)^nn.*c2;
+                u = a-(-1)^ii.*a1 + (-1)^jj.*a2;
+                v = b-(-1)^kk.*b1 + (-1)^ll.*b2;
+                w = c-(-1)^mm.*c1 + (-1)^nn.*c2;
                 
                 s=sqrt(u.^2+v.^2+w.^2);
                 
@@ -875,14 +874,14 @@ end
                   w.*(-8.*v.*u+s.^2+8.*Cv.*s+6.*v.*s)+...
                   2.*(2.*Cw+w).*(u.^2+w.^2).*log(v+s)+...
                   4.*(...
-                  2.*Cv.*u.*w.*acoth(u./s) + ...
-                  w.*(v.^2+2.*Cv.*v-w.*(2.*Cw+w)).*acoth(v./s) - ...
-                  u.*(...
-                  2*w.*(Cw+w).*atan(v./w) + ...
-                  2*v.*(Cw+w).*log(s-u) + ...
-                  (w.^2+2.*Cw.*w-v.*(2.*Cv+v)).*atan( u.*v./(w.*s) ) ...
-                  )...
-                  )...
+                     2.*Cv.*u.*w.*acoth(u./s) + ...
+                     w.*(v.^2+2.*Cv.*v-w.*(2.*Cw+w)).*acoth(v./s) - ...
+                     u.*(...
+                        2*w.*(Cw+w).*atan(v./w) + ...
+                        2*v.*(Cw+w).*log(s-u) + ...
+                        (w.^2+2.*Cw.*w-v.*(2.*Cv+v)).*atan( u.*v./(w.*s) ) ...
+                        )...
+                     )...
                   );
                 
                 Ey=(1/8)*...
@@ -913,7 +912,7 @@ end
       end
     end
     
-    calc_out = real([Tx; Ty; Tz].*br1*br2/(16*pi^2*1e-7));
+    torque_zz = real([Tx; Ty; Tz].*br1*br2/(16*pi^2*1e-7));
     
   end
 % \end{mfunction}
