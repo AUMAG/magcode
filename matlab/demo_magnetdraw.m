@@ -11,7 +11,7 @@ view(3);
 axis equal
 camlight
 
-title('Cuboid magnet')
+title('Cuboid magnets')
 xlabel('x');
 ylabel('y');
 zlabel('z');
@@ -48,7 +48,7 @@ view(3);
 axis equal
 camlight
 
-title('Cylinder magnet')
+title('Cylinder magnets')
 xlabel('x');
 ylabel('y');
 zlabel('z');
@@ -63,17 +63,17 @@ mag_cyl = magnetdefine(...
   'magn',1);
 
 mag_cyl.magdir = [0 0 5];
-magnetdraw(mag_cyl,[0.2; 0; 0]);
+magnetdraw(mag_cyl,[0.2; 0; 0],'color',[0 0.7 0.2]);
 
 mag_cyl.magdir = [5 0 0];
-magnetdraw(mag_cyl,[0.4; 0; 0]);
+magnetdraw(mag_cyl,[0.4; 0; 0],'color',[0 0.7 0.2]);
 
 mag_cyl.magdir = [5 0 5];
-magnetdraw(mag_cyl,[0.6; 0; 0]);
+magnetdraw(mag_cyl,[0.6; 0; 0],'color',[0 0.7 0.2]);
 
 mag_cyl.magdir = [5 0 1];
-magnetdraw(mag_cyl,[0.8; 0; 0]);
+magnetdraw(mag_cyl,[0.8; 0; 0],'color',[0 0.7 0.2]);
 
 mag_cyl.magdir = [5 2 1];
-magnetdraw(mag_cyl,[1.0; 0; 0]);
+magnetdraw(mag_cyl,[1.0; 0; 0],'color',[0 0.7 0.2]);
 
