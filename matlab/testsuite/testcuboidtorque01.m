@@ -17,7 +17,7 @@ magnet_float.magdir  = [0 0 1]; % must be (anti-)parallel
 
 T = magnetforces(magnet_fixed,magnet_float,[0.02; 0; 0.03],'torque');
 
-assert( all( round(1e6*T) == [0; 33877; 0] ), 'incorrect reference torques between parallel magnets' )
+assert( all( round(1e6*T) == [0; 422829; 0] ), 'incorrect reference torques between parallel magnets' )
 
 
 magnet_fixed.dim = [0.04 0.02 0.04];
@@ -31,7 +31,7 @@ magnet_float.magdir  = [0 1 0]; % must be (anti-)parallel
 
 T2 = magnetforces(magnet_fixed,magnet_float,[0; 0.03; 0.02],'torque');
 
-assert( all( round(1e6*T2) == [33877; 0; 0] ), 'incorrect reference torques between parallel magnets' )
+assert( all( round(1e6*T2) == [422829; 0; 0] ), 'incorrect reference torques between parallel magnets' )
 
 
 magnet_fixed.dim = [0.02 0.04 0.04];
@@ -45,7 +45,7 @@ magnet_float.magdir  = [1 0 0]; % must be (anti-)parallel
 
 T3 = magnetforces(magnet_fixed,magnet_float,[0.03; 0.02; 0],'torque');
 
-assert( all( round(1e6*T3) == [0; 0; 33877] ), 'incorrect reference torques between parallel magnets' )
+assert( all( round(1e6*T3) == [0; 0; 422829] ), 'incorrect reference torques between parallel magnets' )
 
 fprintf('passed\n')
 disp('=================')
