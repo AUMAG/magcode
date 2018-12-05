@@ -22,7 +22,7 @@
     J1 = J1(3);
     J2 = J2(2);
     
-    if (J1==0 || J2==0)
+    if ( abs(J1)<eps || abs(J2)<eps )
       forces_xyz  =  [0; 0; 0];
       return;
     end

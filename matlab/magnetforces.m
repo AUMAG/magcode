@@ -370,7 +370,7 @@ end
     
     debug_disp('Forces x-z:')
     force_components(3,:) = ...
-      rotate_z_to_x( forces_calc_z_x(size1_x,size2_x,d_x,J1_x,J2_x) );
+      rotate_z_to_x( cuboid_force_z_x(size1_x,size2_x,d_x,J1_x,J2_x) );
     
     calc_xyz = swap_x_z(calc_xyz);
     
@@ -379,7 +379,7 @@ end
     
     debug_disp('Forces y-x:')
     force_components(4,:) = ...
-      rotate_z_to_y( forces_calc_z_x(size1_y,size2_y,d_y,J1_y,J2_y) );
+      rotate_z_to_y( cuboid_force_z_x(size1_y,size2_y,d_y,J1_y,J2_y) );
     
     debug_disp('Forces y-y:')
     force_components(5,:) = ...
@@ -399,7 +399,7 @@ end
     force_components(8,:) = cuboid_force_z_y( size1,size2,displ,J1,J2 );
     
     debug_disp('z-x force:')
-    force_components(7,:) = forces_calc_z_x( size1,size2,displ,J1,J2 );
+    force_components(7,:) = cuboid_force_z_x( size1,size2,displ,J1,J2 );
     
     
     force_out = sum(force_components);
@@ -557,22 +557,7 @@ end
 
 
 
-% \begin{mfunction}{forces_calc_z_x}
-
-  function calc_out = forces_calc_z_x(size1,size2,offset,J1,J2)
-    
-    calc_xyz = swap_x_y(calc_xyz);
-    
-    forces_xyz = cuboid_force_z_y(...
-      swap_x_y(size1), swap_x_y(size2), rotate_x_to_y(offset),...
-      J1, rotate_x_to_y(J2) );
-    
-    calc_xyz = swap_x_y(calc_xyz);
-    calc_out = rotate_y_to_x( forces_xyz );
-    
-  end
-
-
+% \begin{mfunction}{stiffnesses_calc_z_z}
 
   function calc_out = stiffnesses_calc_z_z(size1,size2,offset,J1,J2)
     
