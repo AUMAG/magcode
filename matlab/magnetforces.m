@@ -366,7 +366,7 @@ end
     
     debug_disp('Forces x-y:')
     force_components(2,:) = ...
-      rotate_z_to_x( forces_calc_z_y(size1_x,size2_x,d_x,J1_x,J2_x) );
+      rotate_z_to_x( cuboid_force_z_y(size1_x,size2_x,d_x,J1_x,J2_x) );
     
     debug_disp('Forces x-z:')
     force_components(3,:) = ...
@@ -387,7 +387,7 @@ end
     
     debug_disp('Forces y-z:')
     force_components(6,:) = ...
-      rotate_z_to_y( forces_calc_z_y(size1_y,size2_y,d_y,J1_y,J2_y) );
+      rotate_z_to_y( cuboid_force_z_y(size1_y,size2_y,d_y,J1_y,J2_y) );
     
     calc_xyz = swap_y_z(calc_xyz);
     
@@ -396,7 +396,7 @@ end
     force_components(9,:) = cuboid_force_z_z( size1,size2,displ,J1,J2 );
     
     debug_disp('z-y force:')
-    force_components(8,:) = forces_calc_z_y( size1,size2,displ,J1,J2 );
+    force_components(8,:) = cuboid_force_z_y( size1,size2,displ,J1,J2 );
     
     debug_disp('z-x force:')
     force_components(7,:) = forces_calc_z_x( size1,size2,displ,J1,J2 );
@@ -557,99 +557,13 @@ end
 
 
 
-% \begin{mfunction}{forces_calc_z_y}
-%
-%  Orthogonal magnets forces given by \textcite{yonnet2009-ldia}.
-%  Note those equations seem to be written to calculate the force on the first
-%  magnet due to the second, so we negate all the values to get the force on
-%  the latter instead.
-
-  function calc_out = forces_calc_z_y(size1,size2,offset,J1,J2)
-    
-    J1 = J1(3);
-    J2 = J2(2);
-    
-    if (J1==0 || J2==0)
-      debug_disp('Zero magnetisation.')
-      calc_out  =  [0; 0; 0];
-      return;
-    end
-    
-    u = offset(1) + size2(1)*(-1).^index_j - size1(1)*(-1).^index_i;
-    v = offset(2) + size2(2)*(-1).^index_l - size1(2)*(-1).^index_k;
-    w = offset(3) + size2(3)*(-1).^index_q - size1(3)*(-1).^index_p;
-    r = sqrt(u.^2+v.^2+w.^2);
-    
-    
-    allag_correction = -1;
-    
-    if calc_xyz(1)
-      component_x = ...
-        - multiply_x_log_y ( v .* w , r-u ) ...
-        + multiply_x_log_y ( v .* u , r+w ) ...
-        + multiply_x_log_y ( u .* w , r+v ) ...
-        - 0.5 * u.^2 .* atan1( v .* w , u .* r ) ...
-        - 0.5 * v.^2 .* atan1( u .* w , v .* r ) ...
-        - 0.5 * w.^2 .* atan1( u .* v , w .* r );
-      component_x = allag_correction*component_x;
-    end
-    
-    if calc_xyz(2)
-      component_y = ...
-        0.5 * multiply_x_log_y( u.^2 - v.^2 , r+w ) ...
-        - multiply_x_log_y( u .* w , r-u ) ...
-        - u .* v .* atan1( u .* w , v .* r ) ...
-        - 0.5 * w .* r;
-      component_y = allag_correction*component_y;
-    end
-    
-    if calc_xyz(3)
-      component_z = ...
-        0.5 * multiply_x_log_y( u.^2 - w.^2 , r+v ) ...
-        - multiply_x_log_y( u .* v , r-u ) ...
-        - u .* w .* atan1( u .* v , w .* r ) ...
-        - 0.5 * v .* r;
-      component_z = allag_correction*component_z;
-    end
-    
-    
-    if calc_xyz(1)
-      component_x = index_sum.*component_x;
-    else
-      component_x = 0;
-    end
-    
-    if calc_xyz(2)
-      component_y = index_sum.*component_y;
-    else
-      component_y = 0;
-    end
-    
-    if calc_xyz(3)
-      component_z = index_sum.*component_z;
-    else
-      component_z = 0;
-    end
-    
-    calc_out = J1*J2*magconst .* ...
-      [ sum(component_x(:)) ;
-        sum(component_y(:)) ;
-        sum(component_z(:)) ] ;
-    
-    debug_disp(calc_out')
-    
-  end
-
-% \end{mfunction}
-
-
 % \begin{mfunction}{forces_calc_z_x}
 
   function calc_out = forces_calc_z_x(size1,size2,offset,J1,J2)
     
     calc_xyz = swap_x_y(calc_xyz);
     
-    forces_xyz = forces_calc_z_y(...
+    forces_xyz = cuboid_force_z_y(...
       swap_x_y(size1), swap_x_y(size2), rotate_x_to_y(offset),...
       J1, rotate_x_to_y(J2) );
     
@@ -739,7 +653,6 @@ end
     w = offset(3) + size2(3)*(-1).^index_q - size1(3)*(-1).^index_p;
     r = sqrt(u.^2+v.^2+w.^2);
     
-    
     if calc_xyz(1) || calc_xyz(3)
       component_x =  ((u.^2 .*v)./(u.^2 + v.^2)) + (u.^2 .*w)./(u.^2 + w.^2) ...
         - u.*atan1(v.*w,r.*u) + multiply_x_log_y( w , r + v ) + ...
@@ -781,6 +694,32 @@ end
     
     debug_disp(calc_out')
     
+    
+    % \subsubsection{Helpers}
+    %  The equations contain two singularities. Specifically, the equations
+    %  contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
+    %  and $y$ are zero since $\log(0)$ is negative infinity.
+    %
+    % \begin{mfunction}{multiply_x_log_y}
+    %  This function computes $x \log(y)$, special-casing the singularity to output
+    %  zero, instead. (This is indeed the value of the limit.)
+    function out = multiply_x_log_y(x,y)
+      out = x.*log(y);
+      out(~isfinite(out))=0;
+    end
+    % \end{mfunction}
+    
+    % \begin{mfunction}{atan1}
+    % We're using |atan| instead of |atan2| (otherwise the wrong results
+    %	are calculated --- I guess I don't totally understand that), which becomes
+    %	a problem when trying to compute |atan(0/0)| since |0/0| is |NaN|.
+    function out = atan1(x,y)
+      out = zeros(size(x));
+      ind = x~=0 & y~=0;
+      out(ind) = atan(x(ind)./y(ind));
+    end
+    % \end{mfunction}
+
   end
 
 % \end{mfunction}
@@ -848,29 +787,5 @@ end
   end
 % \end{mfunction}
 
-% \subsubsection{Helpers}
-%  The equations contain two singularities. Specifically, the equations
-%  contain terms of the form $x \log(y)$, which becomes |NaN| when both $x$
-%  and $y$ are zero since $\log(0)$ is negative infinity.
-%
-% \begin{mfunction}{multiply_x_log_y}
-%  This function computes $x \log(y)$, special-casing the singularity to output
-%  zero, instead. (This is indeed the value of the limit.)
-  function out = multiply_x_log_y(x,y)
-    out = x.*log(y);
-    out(~isfinite(out))=0;
-  end
-% \end{mfunction}
-
-% \begin{mfunction}{atan1}
-% We're using |atan| instead of |atan2| (otherwise the wrong results
-%	are calculated --- I guess I don't totally understand that), which becomes
-%	a problem when trying to compute |atan(0/0)| since |0/0| is |NaN|.
-  function out = atan1(x,y)
-    out = zeros(size(x));
-    ind = x~=0 & y~=0;
-    out(ind) = atan(x(ind)./y(ind));
-  end
-% \end{mfunction}
 
 end
