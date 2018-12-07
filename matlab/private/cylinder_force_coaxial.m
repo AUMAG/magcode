@@ -17,7 +17,6 @@
     C_d = zeros(size(h_gap));
     
     for ii = [1 2]
-      
       for jj = [3 4]
         
         a1 = z(ii,:) - z(jj,:);
@@ -44,7 +43,6 @@
         C_d = C_d + (-1)^(ii+jj).*f_z;
         
       end
-      
     end
     
     calc_out = J1*J2/(8*pi*1e-7)*C_d;
@@ -66,10 +64,10 @@
     
     p0 = sqrt(1-a);
     Q0 = 1;
-    Q1 = 1;
+    w1 = 1;
     QQ = Q0;
     
-    while max(Q1(:)) > eps
+    while max(w1(:)) > eps
       
       % for Elliptic I
       a1 = (a0+g0)/2;
