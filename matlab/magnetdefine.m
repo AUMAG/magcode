@@ -62,7 +62,9 @@ if strcmp(mag.type,'cylinder')
   
   % convert from current/turns to equiv magnetisation:
   if ~isfield(mag,'magn')
-    mag.magn = 4*pi*1e-7*mag.turns*mag.current/mag.dim(2);
+    if isfield(mag,'turns') && isfield(mag,'current')
+      mag.magn = 4*pi*1e-7*mag.turns*mag.current/mag.dim(2);
+    end
   end
   
 else
