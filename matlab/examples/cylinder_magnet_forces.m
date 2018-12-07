@@ -14,8 +14,7 @@ h1 = 0.02; % metres
 
 Nturns = 100;
 current = 1; % Amperes
-mu0 = 4*pi*10^(-7);
-J1 = mu0*Nturns*current/h1;
+% J1 = 4*pi*10^(-7)*Nturns*current/h1; % <- "equivalent magnetisation"
 
 coil_cyl_z = magnetdefine('type','cylinder','turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]);
 
@@ -23,7 +22,7 @@ coil_cyl_z = magnetdefine('type','cylinder','turns',Nturns,'current',current,'di
 
 r2 = 0.015; % metres
 h2 = 0.015; % metres
-J2 = 1; % Tesla
+J2 = 1.3; % Tesla
 
 mag_cyl_z = magnetdefine('type','cylinder','magn',J2,'dim',[r2 h2],'dir',[0 0 1]);
 
@@ -54,6 +53,7 @@ displ_range = linspace(-displ_max,displ_max,NN);
 displ = displ_range'*[0 0 1];
 
 % Calculate forces:
+disp('Calculating forces for coaxial cylinders')
 tic
 fcyl = magnetforces(coil_cyl_z,mag_cyl_z,displ);
 toc
@@ -75,19 +75,21 @@ ylabel('Force, N')
 % Displacement:
 NN = 50;
 displ_max = 0.045;
-ecc_offset = (r1-r2)/2;
+ecc_offset = (r1-r2)/5;
 displ_range = linspace(-displ_max,displ_max,NN);
 displ = displ_range'*[0 0 1];
 ecc = repmat(ecc_offset,[NN,1])*[1 0 0];
 
 % Calculate forces:
+disp('Calculating forces for eccentric cylinders')
 tic
 fcyl2 = magnetforces(coil_cyl_z,mag_cyl_z,displ+ecc);
 toc
 
 % Plot output
-figure(1);
-plot(1000*displ_range,fcyl2(3,:))
+figure(1); clf; hold on
+plot(1000*displ_range,fcyl(3,:))
+plot(1000*displ_range,fcyl2(3,:),'.','markersize',10)
 plot(1000*displ_range,fcyl2(1,:))
 box on
 xlabel('Z displacement, mm')
