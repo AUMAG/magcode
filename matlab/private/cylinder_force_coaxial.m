@@ -23,22 +23,21 @@
         a2 = 1 + ( (r1-r2)./a1 ).^2;
         a3 = sqrt( (r1+r2).^2 + a1.^2 );
         a4 = 4*r1.*r2./( (r1+r2).^2 + a1.^2 );
-        
-        [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
-        
+                
         a2_ind = ( a2 == 1 | isnan(a2) );
-        if all(a2_ind)% singularity at a2=1 (i.e., equal radii)
-          PI_term(a2_ind) = 0;
-        elseif all(~a2_ind)
+        if a2_ind % singularity at a2=1 (i.e., equal radii)
+          [K, E] = ellipkepi( a4./(1-a2) , a4 );
+          PI_term = 0;
+        else
+          [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
           PI_term = (1-a1.^2./a3.^2).*PI;
-        else % this branch just for completeness
-          PI_term = zeros(size(a2));
-          PI_term(~a2_ind) = (1-a1.^2/a3.^2).*PI;
         end
         
-        f_z = a1.*a2.*a3.*( K - E./a2 - PI_term );
-        
-        f_z(abs(a1)<eps)=0; % singularity at a1=0 (i.e., coincident faces)
+        if abs(a1)<eps
+          f_z = 0; % singularity at a1=0 (i.e., coincident faces)
+        else
+          f_z = a1.*a2.*a3.*( K - E./a2 - PI_term );
+        end        
         
         C_d = C_d + (-1)^(ii+jj).*f_z;
         
@@ -64,10 +63,12 @@
     
     p0 = sqrt(1-a);
     Q0 = 1;
-    w1 = 1;
     QQ = Q0;
     
-    while max(w1(:)) > eps
+    Q1 = 1;
+    w1 = 1;
+    
+    while max(w1(:)) > eps % || max(Q1(:)) > eps %% <- this is probably correct but I need to test more thoroughly
       
       % for Elliptic I
       a1 = (a0+g0)/2;
