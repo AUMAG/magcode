@@ -41,8 +41,14 @@ alpha  = p.Results.alpha;
 if all(isnan(color2))
   color2 = color1/2;
 end
-patch_opts1 = {'FaceColor',color1,'FaceAlpha',alpha,'EdgeColor','none'};
-patch_opts2 = {'FaceColor',color2,'FaceAlpha',alpha,'EdgeColor','none'};
+patch_opts1 = {'FaceColor',color1,'FaceAlpha',alpha,'EdgeColor',color1/4};
+patch_opts2 = {'FaceColor',color2,'FaceAlpha',alpha,'EdgeColor',color1/4};
+patch_opts3 = {'FaceColor',color1,'FaceAlpha',alpha,'EdgeColor','none'};
+patch_opts4 = {'FaceColor',color2,'FaceAlpha',alpha,'EdgeColor','none'};
+
+if ~isfield(magnet,'fndefined')
+  magnet = magnetdefine(magnet);
+end
 
 switch magnet.type
   case 'cuboid',  draw_cube(magnet,pos);
@@ -102,8 +108,8 @@ end
     % Sides
     [vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
     [vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
-    patch('Faces',faces_p,'Vertices',vrtc_p+pos,patch_opts1{:})
-    patch('Faces',faces_n,'Vertices',vrtc_n+pos,patch_opts2{:})
+    patch('Faces',faces_p,'Vertices',vrtc_p+pos,patch_opts3{:})
+    patch('Faces',faces_n,'Vertices',vrtc_n+pos,patch_opts4{:})
     
     % Bottom & Top cover
     faces = [1:2:2*(n+1);2:2:2*(n+1)];
