@@ -17,11 +17,13 @@ test002d
 
 test003a
 
-return
+testcyl01
+testcyl02
 
 testcuboidtorque01
 
-testcyl01
-testcyl02
+return
+
+
 
 
