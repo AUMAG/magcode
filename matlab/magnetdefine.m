@@ -67,6 +67,10 @@ if strcmp(mag.type,'cylinder')
     end
   end
   
+  if isfield(mag,'radius') && isfield(mag,'height')
+    mag.dim = [mag.radius, mag.height];
+  end
+  
 else
   
   if ~isfield(mag,'magdir')
