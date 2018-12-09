@@ -7,13 +7,13 @@ function [K,E,PI] = ellipkepi(a,m)
 
 a1 = 1;
 g1 = sqrt(1-m);
-s1 = m;
-nn = 0;
-
 p1 = sqrt(1-a);
 q1 = 1;
-qq = 1;
 w1 = 1;
+
+nn = 0;
+qq = 1;
+ww = m;
 
 while max(w1(:)) > eps || max(q1(:)) > eps
   
@@ -29,9 +29,9 @@ while max(w1(:)) > eps || max(q1(:)) > eps
   
   % for Elliptic II
   nn = nn + 1;
-  c1 = (a0-g0)/2;
-  w1 = 2^nn*c1.^2;
-  s1 = s1 + w1;
+  d1 = (a0-g0)/2;
+  w1 = 2^nn*d1.^2;
+  ww = ww + w1;
   
   % for Elliptic III
   rr = p0.^2+a0.*g0;
@@ -42,7 +42,7 @@ while max(w1(:)) > eps || max(q1(:)) > eps
 end
 
 K  = 1./a1*pi/2;
-E  = K.*(1-s1/2);
+E  = K.*(1-ww/2);
 PI = K.*(1+a./(2-2*a).*qq);
 
 im = find(m == 1);
