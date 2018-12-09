@@ -320,7 +320,7 @@ end
       debug_disp('Coaxial')
       magdir = [0;0;0];
       magdir(cyldir) = 1;
-      forces_out = magdir*cylinder_force_coaxial(size1, size2, displ(cyldir), J1(cyldir), J2(cyldir)).';    
+      forces_out = magdir*cylinder_force_coaxial(J1(cyldir), J2(cyldir), size1(1), size2(1), size1(2), size2(2), displ(cyldir)).';    
     else
       debug_disp('Non-coaxial')
       ecc_forces = cylinder_force_eccentric(size1, size2, displ(cyldir), ecc, J1(cyldir), J2(cyldir)).';  

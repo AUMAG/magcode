@@ -1,49 +1,52 @@
 % \begin{mfunction}{cylinder_force_coaxial}
-  function force_axial = cylinder_force_coaxial(size1,size2,h_gap,J1,J2)
-    
-    % inputs
-    
-    r1 = size1(1);
-    r2 = size2(1);
-    
-    % implicit
-    
-    z(4,:) = h_gap + size2(2)/2;
-    z(3,:) = h_gap - size2(2)/2;
-    z(2,:) =  size1(2)/2;
-    z(1,:) = -size1(2)/2;
-    
-    C_d = zeros(size(h_gap));
-    
-    for ii = [1 2]
-      for jj = [3 4]
-        
-        a1 = z(ii,:) - z(jj,:);
-        
-        if abs(a1)<eps
-          continue % singularity at a1=0 (i.e., f_z = 0 for coincident faces)
-        end
-        
-        a2 = 1 + ( (r1-r2)./a1 ).^2;
-        a3 = sqrt( (r1+r2).^2 + a1.^2 );
-        a4 = 4*r1.*r2./( (r1+r2).^2 + a1.^2 );
-                
-        if ( a2 == 1 || isnan(a2) ) % singularity at a2=1 (i.e., equal radii)
-          [K, E] = ellipke(a4);
-          PI_term = 0;
-        else
-          [K, E, PI] = ellipkepi( a4./(1-a2) , a4 );
-          PI_term = (1-a1.^2./a3.^2).*PI;
-        end
-               
-        f_z = a1.*a2.*a3.*( K - E./a2 - PI_term );
-        
-        C_d = C_d + (-1)^(ii+jj).*f_z;
-        
-      end
-    end
-    
-    force_axial = J1*J2/(8*pi*1e-7)*C_d;
-    
-  end
+
+function force_axial = cylinder_force_coaxial(J1,J2,r1,r2,h1,h2,displ_input)
+
+displ    = displ_input(:);
+K        = zeros(numel(displ),4);
+E        = zeros(numel(displ),4);
+PI_term  = zeros(numel(displ),4);
+
+z = [h1 -h1 h2 -h2]/2;
+ii = [1, 2, 1, 2];
+jj = [3, 3, 4, 4];
+
+a1 = z(ii)-z(jj)-displ;
+a2 = 1+((r2-r1)./a1).^2;
+a3sq = (r1+r2).^2 + a1.^2 ;
+a3 = sqrt(a3sq);
+a4 = 4*r1.*r2./a3sq;
+
+% singularity at a1=0 (i.e., f_z = 0 for coincident faces)
+ind_zero = abs(a1)<eps;
+if any(ind_zero(:))
+  a2(ind_zero) = eps; % need to ensure E/a2 = 0
+  K(ind_zero) = 0;
+  E(ind_zero) = 0;
+  PI_term(ind_zero) = 0;
+end
+
+% singularity at a2=1 (i.e., equal radii)
+ind_singu = ( a2 == 1 | isnan(a2) );
+if any(ind_singu(:))
+  [K(ind_singu), E(ind_singu)] = ellipke(a4(ind_singu));
+  PI_term(ind_singu) = 0;
+end
+
+% all remaining cases
+ind = ~ind_zero & ~ind_singu;
+if any(ind(:))
+  [K(ind), E(ind), PI] = ellipkepi( a4(ind)./(1-a2(ind)) , a4(ind) );
+  PI_term(ind) = (1-a1(ind).^2./a3sq(ind)).*PI;
+end
+
+C_d = (-1).^(ii+jj).*a1.*a2.*a3.*(K-E./a2-PI_term);
+f_z = sum(C_d,2);
+
+force_axial = J1*J2/(8*pi*1e-7)*f_z;
+force_axial = reshape(force_axial,size(displ));
+
+end
+
 % \end{mfunction}
+
