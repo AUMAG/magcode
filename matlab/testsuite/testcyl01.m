@@ -39,7 +39,7 @@ magnet_float.height = 0.03;
 
 F = magnetforces(magnet_fixed,magnet_float,[0; 0; 0.05]);
 
-check = [round(1000*F(3)) 111488];
+check = [round(1000*F(3)) 111490];
 assert( check(1) == check(2) , 'Incorrect reference force between cylindrical magnets (calc %i ~= ref %i)',check(1),check(2));
 
 fprintf('passed\n')
