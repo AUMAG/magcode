@@ -19,6 +19,7 @@ r2 = rand(1);
 h2 = rand(1);
 displ = h1/2+h2/2;
 
+fz1 = cylinder_force_coaxial(J1,J2,r1,r2,h1,h2,displ)
 fz1 = cylinder_force_coaxial(J1,J2,r1,r2,h1,h2,[0 displ])
 
 

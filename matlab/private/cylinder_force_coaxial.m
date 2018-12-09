@@ -24,11 +24,12 @@ z = [h1 -h1 h2 -h2]/2;
 ii = [1, 2, 1, 2];
 jj = [3, 3, 4, 4];
 
-a1 = z(ii)-z(jj)-displ;
-a2 = 1+((r2-r1)./a1).^2;
-a3sq = (r1+r2).^2 + a1.^2 ;
-a3 = sqrt(a3sq);
-a4 = 4*r1.*r2./a3sq;
+a1   = z(ii)-z(jj)-displ;
+a1sq = a1.^2;
+a2   = 1+(r2-r1).^2./a1sq;
+a3sq = (r1+r2).^2 + a1sq ;
+a3   = sqrt(a3sq);
+a4   = 4*r1.*r2./a3sq;
 
 % singularity at a1=0 (i.e., f_z = 0 for coincident faces)
 ind_zero = abs(a1)<eps;
@@ -50,7 +51,7 @@ end
 ind = ~ind_zero & ~ind_singu;
 if any(ind(:))
   [K(ind), E(ind), PI] = ellipkepi( a4(ind)./(1-a2(ind)) , a4(ind) );
-  PI_term(ind) = (1-a1(ind).^2./a3sq(ind)).*PI;
+  PI_term(ind) = (1-a1sq(ind)./a3sq(ind)).*PI;
 end
 
 C_d = (-1).^(ii+jj).*a1.*a2.*a3.*(K-E./a2-PI_term);
