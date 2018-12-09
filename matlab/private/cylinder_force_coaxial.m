@@ -1,4 +1,17 @@
-% \begin{mfunction}{cylinder_force_coaxial}
+%% cylinder_force_coaxial(J1,J2,r1,r2,h1,h2,displ)
+%
+% Calculates axial force between two cylindrical coaxial magnets.
+%
+% INPUTS
+%        J = magnetisation strength [T]
+%        r = magnet radii [m]
+%        h = magnet height [m]
+%    displ = displacement(s) between magnet centres [m]
+%
+% OUTPUTS
+%    force = axial force on the second magnet [N]
+%
+% Code is vectorised.
 
 function force_axial = cylinder_force_coaxial(J1,J2,r1,r2,h1,h2,displ_input)
 
@@ -47,6 +60,4 @@ force_axial = J1*J2/(8*pi*1e-7)*f_z;
 force_axial = reshape(force_axial,size(displ));
 
 end
-
-% \end{mfunction}
 
