@@ -1,7 +1,7 @@
 % \begin{mfunction}{ellipkepi}
 % Complete elliptic integrals calculated with the arithmetric-geometric mean
 % algorithms contained here: \url{http://dlmf.nist.gov/19.8}.
-% Valid for $a<=1$ and $m<=1$.
+% Valid for $0<=a<=1$ and $0<=m<=1$.
 
 function [K,E,PI] = ellipkepi(a,m)
 
@@ -15,7 +15,7 @@ nn = 0;
 qq = 1;
 ww = m;
 
-while max(w1(:)) > eps || max(q1(:)) > eps
+while max(abs(w1(:))) > eps || max(abs(q1(:))) > eps
   
   % Update from previous loop
   a0 = a1;
@@ -35,8 +35,8 @@ while max(w1(:)) > eps || max(q1(:)) > eps
   
   % for Elliptic III
   rr = p0.^2+a0.*g0;
-  p1 = rr./(2.*p0);
-  q1 = 0.5*q0.*(p0.^2-a0.*g0)./rr;
+  p1 = rr./p0/2;
+  q1 = q0.*(p0.^2-a0.*g0)./rr/2;
   qq = qq + q1;
   
 end
