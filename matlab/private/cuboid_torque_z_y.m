@@ -1,4 +1,4 @@
-function torque_zy = cuboid_torque_z_y(size1, size2, offset, lever, Bzr1, Byr2)
+function torque_zy = cuboid_torque_z_y(size1, size2, offset, lever, J1, J2)
 % cuboid_torque_z_y calculates the torque on a cuboid magnet in the presence 
 % of another cuboid magnet, using theory described in Janssen 2011
 % this code assumes magnet 1 is magnetised along the z-axis and magnet 2 is
@@ -12,8 +12,8 @@ function torque_zy = cuboid_torque_z_y(size1, size2, offset, lever, Bzr1, Byr2)
 % of magnet 2
 % lever = [delta; epsilon; zeta] - vector from centre of magnet 1 to torque
 % reference point
-% Bzr1 - remanent flux density along z axis of magnet 1
-% Byr2 - remanent flux density along y axis of magnet 2
+% J1 - flux density of magnet 1
+% J2 - flux density of magnet 2
 % Outputs
 % torque_zy = [Tx; Ty; Tz] - torques on magnet 2 in x, y and z directions
 % 6/12 Sean McGowan a1705690
@@ -22,6 +22,16 @@ function torque_zy = cuboid_torque_z_y(size1, size2, offset, lever, Bzr1, Byr2)
 sumx = zeros([1 size(offset,2)]);
 sumy = zeros([1 size(offset,2)]);
 sumz = zeros([1 size(offset,2)]);
+
+% remanent flux density
+bzr1 = J1(3);
+byr2 = J2(2);
+% if the remanent flux densities along z axis for magnet 1 and y axis for
+% magnet 2 are 0, torque will be 0
+if bzr1==0 || byr2==0
+  torque_zy = 0*offset;
+  return
+end
 
 % calculate sums as described in Janssen, 2011
 for i = 0:1
@@ -130,5 +140,5 @@ end
 muo = 4*pi*10^-7;
 
 % calculate torques from sums
-torque_zy = ((Bzr1*Byr2)/(4*pi*muo)).*real([sumx; sumy; sumz]);
+torque_zy = ((bzr1*byr2)/(4*pi*muo)).*real([sumx; sumy; sumz]);
 end
