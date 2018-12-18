@@ -18,20 +18,13 @@ magnet_float.magdir = [60  45];
 displ = [0.1 0.09 0.11];
 
 f_all = magnetforces(magnet_fixed,magnet_float,displ);
-f_x = magnetforces(magnet_fixed,magnet_float,displ,'x');
-f_y = magnetforces(magnet_fixed,magnet_float,displ,'y');
-f_z = magnetforces(magnet_fixed,magnet_float,displ,'z');
-
-assert( all(f_all==[f_x(1); f_y(2); f_z(3)]) , ...
-  'Forces components calculated separately shouldn''t change.')
-
 k_all = magnetforces(magnet_fixed,magnet_float,displ,'stiffness');
-k_x = magnetforces(magnet_fixed,magnet_float,displ,'stiffness','x');
-k_y = magnetforces(magnet_fixed,magnet_float,displ,'stiffness','y');
-k_z = magnetforces(magnet_fixed,magnet_float,displ,'stiffness','z');
 
-assert( all(k_all==[k_x(1); k_y(2); k_z(3)]) , ...
-  'Stiffness components calculated separately shouldn''t change.')
+assert( all( round(f_all*1e6) == [-1391969;    -1140254;    -1042102]) , ...
+  'Forces components appear incorrect.')
+
+assert( all( round(k_all*1e6) == [ -5424370 ;    2953150 ;    2471220]) , ...
+  'Stiffness components appear incorrect.')
 
 fprintf('passed\n')
 disp('=================')

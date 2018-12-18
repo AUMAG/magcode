@@ -28,26 +28,18 @@ calc_force_bool     = false;
 calc_stiffness_bool = false;
 calc_torque_bool    = false;
 
-% Undefined calculation flags for the three directions:
-calc_xyz = [false; false; false];
-
 for iii = 1:length(varargin)
   switch varargin{iii}
     case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
     case 'stiffness',  calc_stiffness_bool = true;
     case 'torque',     calc_torque_bool    = true;
-    case 'x',  calc_xyz(1) = true;
-    case 'y',  calc_xyz(2) = true;
-    case 'z',  calc_xyz(3) = true;
+    case 'x',  warning("Options 'x','y','z' are no longer supported.");
+    case 'y',  warning("Options 'x','y','z' are no longer supported.");
+    case 'z',  warning("Options 'x','y','z' are no longer supported.");
     otherwise
       error(['Unknown calculation option ''',varargin{iii},''''])
   end
-end
-
-% If none of |'x'|, |'y'|, |'z'| are specified, calculate all.
-if all( ~calc_xyz )
-  calc_xyz = [true; true; true];
 end
 
 if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
@@ -357,9 +349,7 @@ end
     debug_disp('Magnetisations:')
     debug_disp(J1')
     debug_disp(J2')
-    
-    calc_xyz = swap_x_z(calc_xyz);
-    
+        
     debug_disp('Forces x-x:')
     force_components(1,:) = ...
       rotate_z_to_x( cuboid_force_z_z(size1_x,size2_x,d_x,J1_x,J2_x) );
@@ -371,12 +361,7 @@ end
     debug_disp('Forces x-z:')
     force_components(3,:) = ...
       rotate_z_to_x( cuboid_force_z_x(size1_x,size2_x,d_x,J1_x,J2_x) );
-    
-    calc_xyz = swap_x_z(calc_xyz);
-    
-    
-    calc_xyz = swap_y_z(calc_xyz);
-    
+     
     debug_disp('Forces y-x:')
     force_components(4,:) = ...
       rotate_z_to_y( cuboid_force_z_x(size1_y,size2_y,d_y,J1_y,J2_y) );
@@ -388,10 +373,7 @@ end
     debug_disp('Forces y-z:')
     force_components(6,:) = ...
       rotate_z_to_y( cuboid_force_z_y(size1_y,size2_y,d_y,J1_y,J2_y) );
-    
-    calc_xyz = swap_y_z(calc_xyz);
-    
-    
+        
     debug_disp('z-z force:')
     force_components(9,:) = cuboid_force_z_z( size1,size2,displ,J1,J2 );
     
@@ -440,10 +422,7 @@ end
     
     debug_disp('Torque z-x:')
     torque_components(:,:,7) = torques_calc_z_x( size1,size2,displ,lever,J1,J2 );
-    
-    
-    calc_xyz = swap_x_z(calc_xyz);
-    
+        
     debug_disp('Torques x-x:')
     torque_components(:,:,1) = ...
       rotate_z_to_x( cuboid_torque_z_z(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
@@ -455,12 +434,7 @@ end
     debug_disp('Torques x-z:')
     torque_components(:,:,3) = ...
       rotate_z_to_x( torques_calc_z_x(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
-    
-    calc_xyz = swap_x_z(calc_xyz);
-    
-    
-    calc_xyz = swap_y_z(calc_xyz);
-    
+        
     debug_disp('Torques y-x:')
     torque_components(:,:,4) = ...
       rotate_z_to_y( torques_calc_z_x(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
@@ -471,10 +445,7 @@ end
     
     debug_disp('Torques y-z:')
     torque_components(:,:,6) = ...
-      rotate_z_to_y( torques_calc_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
-    
-    calc_xyz = swap_y_z(calc_xyz);
-    
+      rotate_z_to_y( torques_calc_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );    
     
     torques_out = sum(torque_components,3);
   end
@@ -513,9 +484,7 @@ end
     debug_disp('z-z stiffness:')
     stiffness_components(9,:) = ...
       stiffnesses_calc_z_z( size1,size2,displ,J1,J2 );
-    
-    calc_xyz = swap_x_z(calc_xyz);
-    
+        
     debug_disp('x-x stiffness:')
     stiffness_components(1,:) = ...
       swap_x_z( stiffnesses_calc_z_z( size1_x,size2_x,d_x,J1_x,J2_x ) );
@@ -527,11 +496,7 @@ end
     debug_disp('x-z stiffness:')
     stiffness_components(3,:) = ...
       swap_x_z( stiffnesses_calc_z_x( size1_x,size2_x,d_x,J1_x,J2_x ) );
-    
-    calc_xyz = swap_x_z(calc_xyz);
-    
-    calc_xyz = swap_y_z(calc_xyz);
-    
+        
     debug_disp('y-x stiffness:')
     stiffness_components(4,:) = ...
       swap_y_z( stiffnesses_calc_z_x( size1_y,size2_y,d_y,J1_y,J2_y ) );
@@ -543,12 +508,7 @@ end
     debug_disp('y-z stiffness:')
     stiffness_components(6,:) = ...
       swap_y_z( stiffnesses_calc_z_y( size1_y,size2_y,d_y,J1_y,J2_y ) );
-    
-    calc_xyz = swap_y_z(calc_xyz);
-    
-    
-    
-    
+         
     stiffness_out = sum(stiffness_components);
   end
 
@@ -576,37 +536,15 @@ end
     w = offset(3) + size2(3)*(-1).^index_q - size1(3)*(-1).^index_p;
     r = sqrt(u.^2+v.^2+w.^2);
     
+    component_x = - r - (u.^2 .*v)./(u.^2+w.^2) - v.*log(r-v) ;
     
-    if calc_xyz(1) || calc_xyz(3)
-      component_x = - r - (u.^2 .*v)./(u.^2+w.^2) - v.*log(r-v) ;
-    end
+    component_y = - r - (v.^2 .*u)./(v.^2+w.^2) - u.*log(r-u) ;
     
-    if calc_xyz(2) || calc_xyz(3)
-      component_y = - r - (v.^2 .*u)./(v.^2+w.^2) - u.*log(r-u) ;
-    end
+    component_z = - component_x - component_y;
     
-    if calc_xyz(3)
-      component_z = - component_x - component_y;
-    end
-    
-    
-    if calc_xyz(1)
-      component_x = index_sum.*component_x;
-    else
-      component_x = 0;
-    end
-    
-    if calc_xyz(2)
-      component_y = index_sum.*component_y;
-    else
-      component_y = 0;
-    end
-    
-    if calc_xyz(3)
-      component_z = index_sum.*component_z;
-    else
-      component_z = 0;
-    end
+    component_x = index_sum.*component_x;
+    component_y = index_sum.*component_y;
+    component_z = index_sum.*component_z;
     
     calc_out = J1*J2*magconst .* ...
       [ sum(component_x(:)) ;
@@ -638,39 +576,16 @@ end
     w = offset(3) + size2(3)*(-1).^index_q - size1(3)*(-1).^index_p;
     r = sqrt(u.^2+v.^2+w.^2);
     
-    if calc_xyz(1) || calc_xyz(3)
-      component_x =  ((u.^2 .*v)./(u.^2 + v.^2)) + (u.^2 .*w)./(u.^2 + w.^2) ...
-        - u.*atan1(v.*w,r.*u) + multiply_x_log_y( w , r + v ) + ...
-        + multiply_x_log_y( v , r + w );
-    end
-    
-    if calc_xyz(2) || calc_xyz(3)
-      component_y = - v/2 + (u.^2 .*v)./(u.^2 + v.^2) - (u.*v.*w)./(v.^2 + w.^2) ...
-        -  u.*atan1(u.*w,r.*v) - multiply_x_log_y( v , r + w );
-    end
-    
-    if calc_xyz(3)
-      component_z = - component_x - component_y;
-    end
-    
-    
-    if calc_xyz(1)
-      component_x = index_sum.*component_x;
-    else
-      component_x = 0;
-    end
-    
-    if calc_xyz(2)
-      component_y = index_sum.*component_y;
-    else
-      component_y = 0;
-    end
-    
-    if calc_xyz(3)
-      component_z = index_sum.*component_z;
-    else
-      component_z = 0;
-    end
+    component_x =  ((u.^2 .*v)./(u.^2 + v.^2)) + (u.^2 .*w)./(u.^2 + w.^2) ...
+      - u.*atan1(v.*w,r.*u) + multiply_x_log_y( w , r + v ) + ...
+      + multiply_x_log_y( v , r + w );
+    component_y = - v/2 + (u.^2 .*v)./(u.^2 + v.^2) - (u.*v.*w)./(v.^2 + w.^2) ...
+      -  u.*atan1(u.*w,r.*v) - multiply_x_log_y( v , r + w );
+    component_z = - component_x - component_y;
+
+    component_x = index_sum.*component_x;
+    component_y = index_sum.*component_y;
+    component_z = index_sum.*component_z;
     
     calc_out = J1*J2*magconst .* ...
       [ sum(component_x(:)) ;
@@ -712,14 +627,11 @@ end
 % \begin{mfunction}{stiffnesses_calc_z_x}
 
   function calc_out = stiffnesses_calc_z_x(size1,size2,offset,J1,J2)
-    
-    calc_xyz = swap_x_y(calc_xyz);
-    
+        
     stiffnesses_xyz = stiffnesses_calc_z_y(...
       swap_x_y(size1), swap_x_y(size2), rotate_x_to_y(offset),...
       J1, rotate_x_to_y(J2) );
     
-    calc_xyz = swap_x_y(calc_xyz);
     calc_out = swap_x_y(stiffnesses_xyz);
     
   end

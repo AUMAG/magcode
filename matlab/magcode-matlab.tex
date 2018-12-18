@@ -310,13 +310,10 @@ between magnets. The syntax is as follows:
         ... = magnetforces( ... , 'force');
         ... = magnetforces( ... , 'stiffness');
         ... = magnetforces( ... , 'torque');
-        ... = magnetforces( ... , 'x');
-        ... = magnetforces( ... , 'y');
-        ... = magnetforces( ... , 'z');
 \end{verbatim}
 
 |magnetforces| takes three mandatory inputs to specify `fixed' and `floating' magnets and the displacement between them.
-Optional arguments appended indicate whether to calculate force and/or torque and/or stiffness and whether to calculate components in $x$- and/or $y$- and/or $z$- components respectively.
+Optional arguments appended indicate whether to calculate force and/or torque and/or stiffness respectively.
 The force\footnote{From now I will omit most mention of calculating torques and stiffnesses; assume whenever I say `force' I mean `force \emph{and/or} stiffness \emph{and/or} torque'} is calculated as that imposed on the second magnet; for this reason, I often call the first magnet the `fixed' magnet and the second `floating'.
 
 \paragraph{Outputs}
@@ -368,9 +365,6 @@ The syntax for calculating forces between multipole arrays follows the same styl
      forces = multipoleforces(array_fixed, array_float, displ);
 stiffnesses = multipoleforces( ... , 'stiffness');
       [f s] = multipoleforces( ... , 'force', 'stiffness');
-      ... = multipoleforces( ... , 'x');
-      ... = multipoleforces( ... , 'y');
-      ... = multipoleforces( ... , 'z');
 \end{verbatim}
 
 Because multipole arrays can be defined in various ways, there are several
