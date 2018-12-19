@@ -84,8 +84,6 @@ end
 % The input variables |magnet.dim| should be the entire side lengths of the
 % magnets; these dimensions are halved when performing all of the calculations.
 % (Because that's just how the maths is.)
-%
-% |J1| and |J2| are made into the magnetisation vectors in cartesian coordindates.
 
 if ~isfield(magnet_fixed,'fndefined')
   magnet_fixed = magnetdefine(magnet_fixed);
@@ -136,9 +134,6 @@ if strcmp(magtype,'cuboid')
   size1 = magnet_fixed.dim(:)/2;
   size2 = magnet_float.dim(:)/2;
 
-  J1 = magnet_fixed.magn*magnet_fixed.magdir;
-  J2 = magnet_float.magn*magnet_float.magdir;
-
   swap_x_y = @(vec) vec([2 1 3],:);
   swap_x_z = @(vec) vec([3 2 1],:);
   swap_y_z = @(vec) vec([1 3 2],:);
@@ -154,13 +149,13 @@ if strcmp(magtype,'cuboid')
 
   size1_x = swap_x_z(size1);
   size2_x = swap_x_z(size2);
-  J1_x    = rotate_x_to_z(J1);
-  J2_x    = rotate_x_to_z(J2);
+  J1_x    = rotate_x_to_z(magnet_fixed.magM);
+  J2_x    = rotate_x_to_z(magnet_float.magM);
 
   size1_y = swap_y_z(size1);
   size2_y = swap_y_z(size2);
-  J1_y    = rotate_y_to_z(J1);
-  J2_y    = rotate_y_to_z(J2);
+  J1_y    = rotate_y_to_z(magnet_fixed.magM);
+  J2_y    = rotate_y_to_z(magnet_float.magM);
   
   if calc_force_bool
     for iii = 1:Ndispl
@@ -222,7 +217,7 @@ elseif strcmp(magtype,'coil')
         magnet.dim, ...
         coil.dim, ...
         squeeze(displ(cyldir,:)), ...
-        J1(cyldir), ...
+        magnet.magM(cyldir), ...
         coil.current, ...
         coil.turns);
   end
