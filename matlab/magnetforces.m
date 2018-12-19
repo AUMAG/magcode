@@ -75,7 +75,8 @@ if calc_torque_bool
   torques_out = nan([3 Ndispl]);
 end
 
-%% \subsubsection{Variables and data structures}
+%% \subsubsection{Set up magnets}
+%
 % First of all, address the data structures required for the input and output.
 % Because displacement of a single magnet has three components, plus sizes of
 % the faces another three, plus magnetisation strength and direction (two) makes
@@ -86,20 +87,7 @@ end
 % magnets; these dimensions are halved when performing all of the calculations.
 % (Because that's just how the maths is.)
 %
-% We use spherical coordinates to represent magnetisation angle, where |phi| is
-% the angle from the horizontal plane ($-\pi/2\le \phi \le\pi/2$) and |theta|
-% is the angle around the horizontal plane ($0\le\theta\le2\pi$). This follows
-% Matlab's definition; other conventions are commonly used as well. Remember:
-% \begin{quote}
-% $(1,0,0)_{\text{cartesian}} \equiv (0,0,1)_{\text{spherical}}$\\
-% $(0,1,0)_{\text{cartesian}} \equiv (\pi/2,0,1)_{\text{spherical}}$\\
-% $(0,0,1)_{\text{cartesian}} \equiv (0,\pi/2,1)_{\text{spherical}}$
-% \end{quote}
-% Cartesian components can also be used as input as well, in which case they
-% are made into a unit vector before multiplying it by the magnetisation
-% magnitude.
-% Either way (between spherical or cartesian input), |J1| and |J2| are made into
-% the magnetisation vectors in cartesian coordindates.
+% |J1| and |J2| are made into the magnetisation vectors in cartesian coordindates.
 
 if ~isfield(magnet_fixed,'fndefined')
   magnet_fixed = magnetdefine(magnet_fixed);
@@ -138,10 +126,12 @@ end
 
 
 if ~strcmp(magnet_fixed.type, magnet_float.type)
-  error('Magnets must be of same type')
+  error('Magnets must be of same type (cuboid/cuboid or cylinder/cylinder)')
 end
 magtype = magnet_fixed.type;
 
+
+%% \subsubsection{Magnet calculations}
 
 if strcmp(magtype,'cuboid')
 
@@ -173,65 +163,7 @@ if strcmp(magtype,'cuboid')
   size2_y = swap_y_z(size2);
   J1_y    = rotate_y_to_z(J1);
   J2_y    = rotate_y_to_z(J2);
-
-elseif strcmp(magtype,'cylinder')
-
-  size1 = magnet_fixed.dim(:);
-  size2 = magnet_float.dim(:);
-
-  if any(abs(magnet_fixed.dir) ~= abs(magnet_float.dir))
-    error('Cylindrical magnets must be oriented in the same direction')
-  end
-  if any(abs(magnet_fixed.magdir) ~= abs(magnet_float.magdir))
-    error('Cylindrical magnets must be oriented in the same direction')
-  end
-  if any(abs(magnet_fixed.dir) ~= abs(magnet_fixed.magdir))
-    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
-  end
-  if any(abs(magnet_float.dir) ~= abs(magnet_float.magdir))
-    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
-  end
-
-  cyldir = find(magnet_float.magdir ~= 0);
-  cylnotdir = find(magnet_float.magdir == 0);
-  if length(cyldir) ~= 1
-    error('Cylindrical magnets must be aligned in one of the x, y or z directions')
-  end
-
-  magnet_float.magdir = magnet_float.magdir(:);
-  magnet_fixed.magdir = magnet_fixed.magdir(:);
-  magnet_float.dir = magnet_float.dir(:);
-  magnet_fixed.dir = magnet_fixed.dir(:);
-
-  J1 = magnet_fixed.magn*magnet_fixed.magdir;
-  J2 = magnet_float.magn*magnet_float.magdir;
-  debug_disp('Magnetisation vectors:')
-  debug_disp(J1)
-  debug_disp(J2)
-
-end
-
-
-%% \subsubsection{Calculate for each displacement}
-% The actual mechanics.
-% The idea is that a multitude of displacements can be passed to the
-% function and we iterate to generate a matrix of vector outputs.
-
-if strcmp(magtype,'coil')
-
-  for iii = 1:Ndispl
-    forces_out(:,iii) = coil_sign*coil.dir*...
-      forces_magcyl_shell_calc(...
-        magnet.dim, ...
-        coil.dim, ...
-        squeeze(displ(cyldir,:)), ...
-        J1(cyldir), ...
-        coil.current, ...
-        coil.turns);
-  end
-
-elseif strcmp(magtype,'cuboid')
-
+  
   if calc_force_bool
     for iii = 1:Ndispl
       forces_out(:,iii) = single_magnet_force(displ(:,iii));
@@ -250,6 +182,25 @@ elseif strcmp(magtype,'cuboid')
 
 elseif strcmp(magtype,'cylinder')
 
+  if any(abs(magnet_fixed.dir) ~= abs(magnet_float.dir))
+    error('Cylindrical magnets must be oriented in the same direction')
+  end
+  if any(abs(magnet_fixed.magdir) ~= abs(magnet_float.magdir))
+    error('Cylindrical magnets must be oriented in the same direction')
+  end
+  if any(abs(magnet_fixed.dir) ~= abs(magnet_fixed.magdir))
+    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
+  end
+  if any(abs(magnet_float.dir) ~= abs(magnet_float.magdir))
+    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
+  end
+
+  cyldir    = find(magnet_float.magdir ~= 0);
+  cylnotdir = find(magnet_float.magdir == 0);
+  if length(cyldir) ~= 1
+    error('Cylindrical magnets must be aligned in one of the x, y or z directions')
+  end
+
   if calc_force_bool
     for iii = 1:Ndispl
       forces_out(:,iii)  =  single_magnet_cyl_force(displ(:,iii));
@@ -263,12 +214,30 @@ elseif strcmp(magtype,'cylinder')
   if calc_torque_bool
     error('Torques cannot be calculated for cylindrical magnets yet.')
   end
+  
+
+elseif strcmp(magtype,'coil')
+
+  for iii = 1:Ndispl
+    forces_out(:,iii) = coil_sign*coil.dir*...
+      forces_magcyl_shell_calc(...
+        magnet.dim, ...
+        coil.dim, ...
+        squeeze(displ(cyldir,:)), ...
+        J1(cyldir), ...
+        coil.current, ...
+        coil.turns);
+  end
 
 end
 
+
+
+
 %% \subsubsection{Return all results}
+%
 % After all of the calculations have occured, they're placed back into
-% |varargout|. (This happens at the very end, obviously.)
+% |varargout|.
 % Outputs are ordered in the same order as the inputs are specified, which
 % makes the code a bit uglier but is presumably a bit nicer for the user
 % and/or just a bit more flexible.
@@ -312,10 +281,10 @@ end
       debug_disp('Coaxial')
       magdir = [0;0;0];
       magdir(cyldir) = 1;
-      forces_out = magdir*cylinder_force_coaxial(J1(cyldir), J2(cyldir), size1(1), size2(1), size1(2), size2(2), displ(cyldir)).';
+      forces_out = magdir*cylinder_force_coaxial(magnet_fixed.magM(cyldir), magnet_float.magM(cyldir), magnet_fixed.dim(1), magnet_float.dim(1), magnet_fixed.dim(2), magnet_float.dim(2), displ(cyldir)).';
     else
       debug_disp('Non-coaxial')
-      ecc_forces = cylinder_force_eccentric(size1, size2, displ(cyldir), ecc, J1(cyldir), J2(cyldir)).';
+      ecc_forces = cylinder_force_eccentric(magnet_fixed.dim, magnet_float.dim, displ(cyldir), ecc, magnet_fixed.magM(cyldir), magnet_float.magM(cyldir)).';
       forces_out(cyldir) = ecc_forces(2);
       forces_out(cylnotdir(1)) = displ(cylnotdir(1))/ecc*ecc_forces(1);
       forces_out(cylnotdir(2)) = displ(cylnotdir(2))/ecc*ecc_forces(1);
@@ -375,13 +344,13 @@ end
       rotate_z_to_y( cuboid_force_z_y(size1_y,size2_y,d_y,J1_y,J2_y) );
 
     debug_disp('z-z force:')
-    force_components(9,:) = cuboid_force_z_z( size1,size2,displ,J1,J2 );
+    force_components(9,:) = cuboid_force_z_z( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
     debug_disp('z-y force:')
-    force_components(8,:) = cuboid_force_z_y( size1,size2,displ,J1,J2 );
+    force_components(8,:) = cuboid_force_z_y( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
     debug_disp('z-x force:')
-    force_components(7,:) = cuboid_force_z_x( size1,size2,displ,J1,J2 );
+    force_components(7,:) = cuboid_force_z_x( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
 
     force_out = sum(force_components);
@@ -415,13 +384,13 @@ end
 
 
     debug_disp('Torque: z-z:')
-    torque_components(:,:,9) = cuboid_torque_z_z( size1,size2,displ,lever,J1,J2 );
+    torque_components(:,:,9) = cuboid_torque_z_z( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
     debug_disp('Torque z-y:')
-    torque_components(:,:,8) = torques_calc_z_y( size1,size2,displ,lever,J1,J2 );
+    torque_components(:,:,8) = torques_calc_z_y( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
     debug_disp('Torque z-x:')
-    torque_components(:,:,7) = torques_calc_z_x( size1,size2,displ,lever,J1,J2 );
+    torque_components(:,:,7) = torques_calc_z_x( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
     debug_disp('Torques x-x:')
     torque_components(:,:,1) = ...
@@ -475,15 +444,15 @@ end
 
     debug_disp('z-x stiffness:')
     stiffness_components(7,:) = ...
-      stiffnesses_calc_z_x( size1,size2,displ,J1,J2 );
+      stiffnesses_calc_z_x( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
     debug_disp('z-y stiffness:')
     stiffness_components(8,:) = ...
-      stiffnesses_calc_z_y( size1,size2,displ,J1,J2 );
+      stiffnesses_calc_z_y( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
     debug_disp('z-z stiffness:')
     stiffness_components(9,:) = ...
-      stiffnesses_calc_z_z( size1,size2,displ,J1,J2 );
+      stiffnesses_calc_z_z( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
     debug_disp('x-x stiffness:')
     stiffness_components(1,:) = ...

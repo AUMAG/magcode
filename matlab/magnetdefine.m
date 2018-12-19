@@ -42,6 +42,15 @@ else
   end
 end
 
+if isfield(mag,'magdir')
+  mag.magdir = mag.magdir(:);
+end
+if isfield(mag,'dir')
+  mag.dir = mag.dir(:);
+end
+if isfield(mag,'dim')
+  mag.dim = mag.dim(:);
+end
 
 
 if strcmp(mag.type,'cylinder')
@@ -49,8 +58,8 @@ if strcmp(mag.type,'cylinder')
   % default to +Z magnetisation
   if ~isfield(mag,'dir')
     if ~isfield(mag,'magdir')
-      mag.dir    = [0 0 1];
-      mag.magdir = [0 0 1];
+      mag.dir    = [0; 0; 1];
+      mag.magdir = [0; 0; 1];
     else
       mag.dir = mag.magdir;
     end
@@ -80,6 +89,10 @@ else
     mag.magdir = resolve_magdir(mag.magdir);
   end
 
+end
+
+if isfield(mag,'magdir') && isfield(mag,'magn')
+  mag.magM = mag.magdir*mag.magn;
 end
 
 mag.fndefined = true;
