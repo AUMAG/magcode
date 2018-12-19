@@ -5,7 +5,7 @@
 
 % \START
 
-% \section{The \texttt{multipoleforces} function}
+% \begin{mfunction}{multipoleforces}
 
 function [varargout] = multipoleforces(fixed_array, float_array, displ, varargin)
 
@@ -648,4 +648,6 @@ end
 
 
 end
+
+% \end{mfunction}
 

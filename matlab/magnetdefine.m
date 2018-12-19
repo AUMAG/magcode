@@ -4,7 +4,7 @@
 
 % \START
 
-% \section{The \texttt{magnetdefine()} function}
+% \begin{mfunction}{magnetdefine}
 
 function [mag] = magnetdefine(varargin)
 
@@ -45,7 +45,7 @@ end
 
 
 if strcmp(mag.type,'cylinder')
-  
+
   % default to +Z magnetisation
   if ~isfield(mag,'dir')
     if ~isfield(mag,'magdir')
@@ -59,20 +59,20 @@ if strcmp(mag.type,'cylinder')
       mag.magdir = mag.dir;
     end
   end
-  
+
   % convert from current/turns to equiv magnetisation:
   if ~isfield(mag,'magn')
     if isfield(mag,'turns') && isfield(mag,'current')
       mag.magn = 4*pi*1e-7*mag.turns*mag.current/mag.dim(2);
     end
   end
-  
+
   if isfield(mag,'radius') && isfield(mag,'height')
     mag.dim = [mag.radius, mag.height];
   end
-  
+
 else
-  
+
   if ~isfield(mag,'magdir')
     warning('Magnet direction ("magdir") not specified; assuming +z.')
     mag.magdir = [0; 0; 1];
@@ -156,4 +156,6 @@ function magdir = resolve_magdir(magdir)
 
 end
 
-%\end{mfunction}
+% \end{mfunction}
+% \end{mfunction}
+
