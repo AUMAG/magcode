@@ -23,14 +23,12 @@ index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
 % This chunk and the next are used in both \texttt{magnetforces.m} and
 % \texttt{multipoleforces.m}.
 
-debug_disp = @(str) disp([]);
 calc_force_bool     = false;
 calc_stiffness_bool = false;
 calc_torque_bool    = false;
 
 for iii = 1:length(varargin)
   switch varargin{iii}
-    case 'debug',      debug_disp = @(str) disp(str);
     case 'force',      calc_force_bool     = true;
     case 'stiffness',  calc_stiffness_bool = true;
     case 'torque',     calc_torque_bool    = true;
@@ -278,12 +276,10 @@ end
     ecc = sqrt(sum(displ(cylnotdir).^2));
 
     if ecc < eps
-      debug_disp('Coaxial')
       magdir = [0;0;0];
       magdir(cyldir) = 1;
       forces_out = magdir*cylinder_force_coaxial(magnet_fixed.magM(cyldir), magnet_float.magM(cyldir), magnet_fixed.dim(1), magnet_float.dim(1), magnet_fixed.dim(2), magnet_float.dim(2), displ(cyldir)).';
     else
-      debug_disp('Non-coaxial')
       ecc_forces = cylinder_force_eccentric(magnet_fixed.dim, magnet_float.dim, displ(cyldir), ecc, magnet_fixed.magM(cyldir), magnet_float.magM(cyldir)).';
       forces_out(cyldir) = ecc_forces(2);
       forces_out(cylnotdir(1)) = displ(cylnotdir(1))/ecc*ecc_forces(1);
@@ -310,46 +306,28 @@ end
     d_x  = rotate_x_to_z(displ);
     d_y  = rotate_y_to_z(displ);
 
-    debug_disp('  ')
-    debug_disp('CALCULATING THINGS')
-    debug_disp('==================')
-    debug_disp('Displacement:')
-    debug_disp(displ')
-    debug_disp('Magnetisations:')
-    debug_disp(J1')
-    debug_disp(J2')
-
-    debug_disp('Forces x-x:')
     force_components(1,:) = ...
       rotate_z_to_x( cuboid_force_z_z(size1_x,size2_x,d_x,J1_x,J2_x) );
 
-    debug_disp('Forces x-y:')
     force_components(2,:) = ...
       rotate_z_to_x( cuboid_force_z_y(size1_x,size2_x,d_x,J1_x,J2_x) );
 
-    debug_disp('Forces x-z:')
     force_components(3,:) = ...
       rotate_z_to_x( cuboid_force_z_x(size1_x,size2_x,d_x,J1_x,J2_x) );
 
-    debug_disp('Forces y-x:')
     force_components(4,:) = ...
       rotate_z_to_y( cuboid_force_z_x(size1_y,size2_y,d_y,J1_y,J2_y) );
 
-    debug_disp('Forces y-y:')
     force_components(5,:) = ...
       rotate_z_to_y( cuboid_force_z_z(size1_y,size2_y,d_y,J1_y,J2_y) );
 
-    debug_disp('Forces y-z:')
     force_components(6,:) = ...
       rotate_z_to_y( cuboid_force_z_y(size1_y,size2_y,d_y,J1_y,J2_y) );
 
-    debug_disp('z-z force:')
     force_components(9,:) = cuboid_force_z_z( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
-    debug_disp('z-y force:')
     force_components(8,:) = cuboid_force_z_y( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
-    debug_disp('z-x force:')
     force_components(7,:) = cuboid_force_z_x( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
 
@@ -372,47 +350,27 @@ end
     l_x = rotate_x_to_z(lever);
     l_y = rotate_y_to_z(lever);
 
-
-    debug_disp('  ')
-    debug_disp('CALCULATING THINGS')
-    debug_disp('==================')
-    debug_disp('Displacement:')
-    debug_disp(displ')
-    debug_disp('Magnetisations:')
-    debug_disp(J1')
-    debug_disp(J2')
-
-
-    debug_disp('Torque: z-z:')
     torque_components(:,:,9) = cuboid_torque_z_z( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
-    debug_disp('Torque z-y:')
     torque_components(:,:,8) = torques_calc_z_y( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
-    debug_disp('Torque z-x:')
     torque_components(:,:,7) = torques_calc_z_x( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
-    debug_disp('Torques x-x:')
     torque_components(:,:,1) = ...
       rotate_z_to_x( cuboid_torque_z_z(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
 
-    debug_disp('Torques x-y:')
     torque_components(:,:,2) = ...
       rotate_z_to_x( torques_calc_z_y(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
 
-    debug_disp('Torques x-z:')
     torque_components(:,:,3) = ...
       rotate_z_to_x( torques_calc_z_x(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
 
-    debug_disp('Torques y-x:')
     torque_components(:,:,4) = ...
       rotate_z_to_y( torques_calc_z_x(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
-    debug_disp('Torques y-y:')
     torque_components(:,:,5) = ...
       rotate_z_to_y( cuboid_torque_z_z(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
-    debug_disp('Torques y-z:')
     torque_components(:,:,6) = ...
       rotate_z_to_y( torques_calc_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
@@ -427,54 +385,33 @@ end
 
     stiffness_components = nan([9 3]);
 
-
     d_x  = rotate_x_to_z(displ);
     d_y  = rotate_y_to_z(displ);
 
-
-    debug_disp('  ')
-    debug_disp('CALCULATING THINGS')
-    debug_disp('==================')
-    debug_disp('Displacement:')
-    debug_disp(displ')
-    debug_disp('Magnetisations:')
-    debug_disp(J1')
-    debug_disp(J2')
-
-
-    debug_disp('z-x stiffness:')
     stiffness_components(7,:) = ...
       stiffnesses_calc_z_x( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
-    debug_disp('z-y stiffness:')
     stiffness_components(8,:) = ...
       stiffnesses_calc_z_y( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
-    debug_disp('z-z stiffness:')
     stiffness_components(9,:) = ...
       stiffnesses_calc_z_z( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
-    debug_disp('x-x stiffness:')
     stiffness_components(1,:) = ...
       swap_x_z( stiffnesses_calc_z_z( size1_x,size2_x,d_x,J1_x,J2_x ) );
 
-    debug_disp('x-y stiffness:')
     stiffness_components(2,:) = ...
       swap_x_z( stiffnesses_calc_z_y( size1_x,size2_x,d_x,J1_x,J2_x ) );
 
-    debug_disp('x-z stiffness:')
     stiffness_components(3,:) = ...
       swap_x_z( stiffnesses_calc_z_x( size1_x,size2_x,d_x,J1_x,J2_x ) );
 
-    debug_disp('y-x stiffness:')
     stiffness_components(4,:) = ...
       swap_y_z( stiffnesses_calc_z_x( size1_y,size2_y,d_y,J1_y,J2_y ) );
 
-    debug_disp('y-y stiffness:')
     stiffness_components(5,:) = ...
       swap_y_z( stiffnesses_calc_z_z( size1_y,size2_y,d_y,J1_y,J2_y ) );
 
-    debug_disp('y-z stiffness:')
     stiffness_components(6,:) = ...
       swap_y_z( stiffnesses_calc_z_y( size1_y,size2_y,d_y,J1_y,J2_y ) );
 
@@ -495,7 +432,6 @@ end
 
 
     if (J1==0 || J2==0)
-      debug_disp('Zero magnetisation.')
       calc_out  =  [0; 0; 0];
       return;
     end
@@ -520,8 +456,6 @@ end
       sum(component_y(:)) ;
       sum(component_z(:)) ] ;
 
-    debug_disp(calc_out')
-
   end
 
 % \end{mfunction}
@@ -535,7 +469,6 @@ end
 
 
     if (J1==0 || J2==0)
-      debug_disp('Zero magnetisation.')
       calc_out  =  [0; 0; 0];
       return;
     end
@@ -560,8 +493,6 @@ end
       [ sum(component_x(:)) ;
       sum(component_y(:)) ;
       sum(component_z(:)) ] ;
-
-    debug_disp(calc_out')
 
 
 % \subsubsection{Helpers}
