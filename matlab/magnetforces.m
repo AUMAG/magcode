@@ -285,7 +285,7 @@ end
   end
 % \end{mfunction}
 
-%\begin{mfunction}{single_magnet_force}
+% \begin{mfunction}{single_magnet_force}
 
 % The |x| and |y| forces require a rotation to get
 % the magnetisations correctly aligned.
@@ -372,9 +372,10 @@ end
     torques_out = sum(torque_components,3);
   end
 
-%\end{mfunction}
+% \end{mfunction}
 
 
+% \begin{mfunction}{single_magnet_stiffness}
 
   function stiffness_out = single_magnet_stiffness(displ)
 
@@ -413,6 +414,7 @@ end
     stiffness_out = sum(stiffness_components);
   end
 
+% \end{mfunction}
 
 
 
