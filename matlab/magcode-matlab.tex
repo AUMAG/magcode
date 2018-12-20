@@ -32,7 +32,7 @@
   \or
     \expandafter\subparagraph
   \fi
-    {\texttt{#1}}%
+    {The \texttt{#1()} function}%
 }{\addtocounter{mfunction}{-1}}
 
 
@@ -118,6 +118,7 @@
                 { \bool_set_true:N \l_pprint_start_bool }
             }
         }
+    \pprint_flush_codelines:
     \group_end:
   }
 
@@ -310,13 +311,10 @@ between magnets. The syntax is as follows:
         ... = magnetforces( ... , 'force');
         ... = magnetforces( ... , 'stiffness');
         ... = magnetforces( ... , 'torque');
-        ... = magnetforces( ... , 'x');
-        ... = magnetforces( ... , 'y');
-        ... = magnetforces( ... , 'z');
 \end{verbatim}
 
 |magnetforces| takes three mandatory inputs to specify `fixed' and `floating' magnets and the displacement between them.
-Optional arguments appended indicate whether to calculate force and/or torque and/or stiffness and whether to calculate components in $x$- and/or $y$- and/or $z$- components respectively.
+Optional arguments appended indicate whether to calculate force and/or torque and/or stiffness respectively.
 The force\footnote{From now I will omit most mention of calculating torques and stiffnesses; assume whenever I say `force' I mean `force \emph{and/or} stiffness \emph{and/or} torque'} is calculated as that imposed on the second magnet; for this reason, I often call the first magnet the `fixed' magnet and the second `floating'.
 
 \paragraph{Outputs}
@@ -368,9 +366,6 @@ The syntax for calculating forces between multipole arrays follows the same styl
      forces = multipoleforces(array_fixed, array_float, displ);
 stiffnesses = multipoleforces( ... , 'stiffness');
       [f s] = multipoleforces( ... , 'force', 'stiffness');
-      ... = multipoleforces( ... , 'x');
-      ... = multipoleforces( ... , 'y');
-      ... = multipoleforces( ... , 'z');
 \end{verbatim}
 
 Because multipole arrays can be defined in various ways, there are several
@@ -484,16 +479,31 @@ Please report problems and suggestions at the GitHub issue tracker.%
 
 \clearpage
 \part{Typeset code / implementation}
-\PrettyPrintFile{magnetdefine.m}
 
+\section{Magnets setup}
+
+\PrettyPrintFile{magnetdefine.m}
+\PrettyPrintFile{magnetdraw.m}
 \PrettyPrintFile{magnetforces.m}
 
-\PrettyPrintFile{multipoleforces.m}
+\section{Magnet interactions}
 
-\section{Magnetic calculations}
+The functions described in this section are translations of specific cases from the literature. They have been written to be somewhat self-contained from the main code so they can be used directly for translation into other programming languages, or in applications where speed is important (such as for dynamic simulations).
 
 \PrettyPrintFile{cuboid_force_z_z.m}
+\PrettyPrintFile{cuboid_force_z_y.m}
+\PrettyPrintFile{cuboid_force_z_x.m}
+
 \PrettyPrintFile{cylinder_force_coaxial.m}
 \PrettyPrintFile{cylinder_force_eccentric.m}
 
+\section{Mathematical functions}
+
+\PrettyPrintFile{ellipkepi.m}
+
+\section{Magnet arrays}
+
+\PrettyPrintFile{multipoleforces.m}
+
 \end{document}
+

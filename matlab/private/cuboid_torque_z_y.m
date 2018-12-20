@@ -140,4 +140,5 @@ muo = 4*pi*10^-7;
 
 % calculate torques from sums
 torque_zy = ((bzr1*byr2)/(4*pi*muo)).*[sumx; sumy; sumz];
+
 end

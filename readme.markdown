@@ -13,10 +13,15 @@ In addition, please cite this code repository as:
 
 * Title: ‘MAGCODE: framework of models for calculating magnetic fields and interactions’
 * Author: William S. P. Robertson
-* DOI: 10.5281/zenodo.1491206
+* DOI for the repository: 10.5281/zenodo.1491206
 
-DOI for the latest release: [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
+DOI for the current release: [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
 
+## [Releases](https://github.com/wspr/magcode/releases)
+
+v0.1:
+* First release with a DOI, covering the code base up to 2018 before some significant rework
+* DOI: 10.5281/zenodo.1491207
 
 
 
