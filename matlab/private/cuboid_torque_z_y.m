@@ -1,3 +1,10 @@
+%% cuboid_torque_z_y
+%
+% Calculate the forces between two parallel cuboid magnets,  magnetised in the
+% z- and y-directions respectively.
+
+% \START
+
 function torque_zy = cuboid_torque_z_y(size1, size2, offset, lever, J1, J2)
 % cuboid_torque_z_y calculates the torque on a cuboid magnet in the presence 
 % of another cuboid magnet, using theory described in Janssen 2011

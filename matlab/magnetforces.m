@@ -347,7 +347,7 @@ end
 
     torque_components(:,:,9) = cuboid_torque_z_z( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
-    torque_components(:,:,8) = torques_calc_z_y( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
+    torque_components(:,:,8) = cuboid_torque_z_y( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
     torque_components(:,:,7) = torques_calc_z_x( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
 
@@ -355,7 +355,7 @@ end
       rotate_z_to_x( cuboid_torque_z_z(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
 
     torque_components(:,:,2) = ...
-      rotate_z_to_x( torques_calc_z_y(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
+      rotate_z_to_x( cuboid_torque_z_y(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
 
     torque_components(:,:,3) = ...
       rotate_z_to_x( torques_calc_z_x(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
@@ -367,7 +367,7 @@ end
       rotate_z_to_y( cuboid_torque_z_z(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
     torque_components(:,:,6) = ...
-      rotate_z_to_y( torques_calc_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
+      rotate_z_to_y( cuboid_torque_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
     torques_out = sum(torque_components,3);
   end

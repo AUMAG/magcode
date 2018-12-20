@@ -1,3 +1,9 @@
+%% cuboid_torque_z_z
+%
+% Calculate the torques between two parallel cuboid magnets, both magnetised in the
+% z-direction.
+
+% \START
 
 % \begin{mfunction}{cuboid_torque_z_z}
 %
