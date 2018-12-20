@@ -68,6 +68,7 @@ The following students have contributed to this work over the years:
 * Allan Liu
 * Matthew Forbes
 * James O'Connell
+* Sean McGowan
 
 Thanks!
 
