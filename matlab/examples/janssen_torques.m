@@ -69,6 +69,8 @@ alpha = 0;
 beta  = -0.008;
 gamma = 0.015;
 
+lever  = [0; 0; -0.047];
+
 magnet_fixed.type = 'cuboid';
 magnet_float.type = 'cuboid';
 
@@ -83,12 +85,10 @@ magnet_float.magdir = [0 1 0];
 
 N = 51;
 offset = repmat([alpha; beta; gamma],[1 N]);
-lever  = repmat([0; 0; -0.047],[1 N]);
 displ = linspace(0, 0.05, N);
 displ_range = offset+[1; 0; 0]*displ;
-lever_range = lever-displ_range;
 
-magnet_float.lever = lever_range;
+magnet_float.lever = lever;
 
 torque_xyz = magnetforces(magnet_fixed,magnet_float,displ_range,'torque');
 
