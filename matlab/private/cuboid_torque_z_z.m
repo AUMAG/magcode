@@ -51,9 +51,9 @@ a = offset(1,:);
 b = offset(2,:);
 c = offset(3,:);
 
-d = a+lever(1,:);
-e = b+lever(2,:);
-f = c+lever(3,:);
+d = lever(1,:);
+e = lever(2,:);
+f = lever(3,:);
 
 Tx = zeros([1 size(offset,2)]);
 Ty = Tx;
