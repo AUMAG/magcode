@@ -42,22 +42,6 @@ if br1==0 || br2==0
   return
 end
 
-a1 = size1(1);
-b1 = size1(2);
-c1 = size1(3);
-
-a2 = size2(1);
-b2 = size2(2);
-c2 = size2(3);
-
-a = offset(1,:);
-b = offset(2,:);
-c = offset(3,:);
-
-d = lever(1,:);
-e = lever(2,:);
-f = lever(3,:);
-
 Tx = zeros([1 size(offset,2)]);
 Ty = Tx;
 Tz = Tx;
@@ -69,28 +53,28 @@ for ii=[0,1]
         for mm=[0,1]
           for nn=[0,1]
             
-            Cu = (-1)^ii.*a1 - d;
-            Cv = (-1)^kk.*b1 - e;
-            Cw = (-1)^mm.*c1 - f;
+            Cu = (-1)^ii.*size1(1) - lever(1,:);
+            Cv = (-1)^kk.*size1(2) - lever(2,:);
+            Cw = (-1)^mm.*size1(3) - lever(3,:);
             
-            u = a-(-1)^ii.*a1 + (-1)^jj.*a2;
-            v = b-(-1)^kk.*b1 + (-1)^ll.*b2;
-            w = c-(-1)^mm.*c1 + (-1)^nn.*c2;
+            u = offset(1,:) - (-1)^ii.*size1(1) + (-1)^jj.*size2(1);
+            v = offset(2,:) - (-1)^kk.*size1(2) + (-1)^ll.*size2(2);
+            w = offset(3,:) - (-1)^mm.*size1(3) + (-1)^nn.*size2(3);
             
-            s=sqrt(u.^2+v.^2+w.^2);
+            s = sqrt(u.^2+v.^2+w.^2);
             
             Ex=(1/8).*(...
-              -2.*Cw.*(-4.*v.*u+s.^2+2.*v.*s)-...
+              Cw.*(8.*v.*u-2*s.^2-4.*v.*s)-...
               w.*(-8.*v.*u+s.^2+8.*Cv.*s+6.*v.*s)+...
               2.*(2.*Cw+w).*(u.^2+w.^2).*log(v+s)+...
               4.*(...
-              2.*Cv.*u.*w.*acoth(u./s) + ...
-              w.*(v.^2+2.*Cv.*v-w.*(2.*Cw+w)).*acoth(v./s) - ...
-              u.*(...
-              2*w.*(Cw+w).*atan(v./w) + ...
-              2*v.*(Cw+w).*log(s-u) + ...
-              (w.^2+2.*Cw.*w-v.*(2.*Cv+v)).*atan( u.*v./(w.*s) ) ...
-              )...
+                2.*Cv.*u.*w.*acoth(u./s) + ...
+                w.*(v.^2+2.*Cv.*v-w.*(2.*Cw+w)).*acoth(v./s) - ...
+                u.*(...
+                  2*w.*(Cw+w).*atan(v./w) + ...
+                  2*v.*(Cw+w).*log(s-u) + ...
+                  (w.^2+2.*Cw.*w-v.*(2.*Cv+v)).*atan( u.*v./(w.*s) ) ...
+                )...
               )...
               );
             
@@ -111,9 +95,9 @@ for ii=[0,1]
               .*log(u+s)+2.*u.*v.*(2.*Cv+v).*log(s-v)+(2.*Cu+...
               u).*(u.^2-w.^2).*log(v+s)));
             
-            Tx=Tx+(-1)^(ii+jj+kk+ll+mm+nn)*Ex;
-            Ty=Ty+(-1)^(ii+jj+kk+ll+mm+nn)*Ey;
-            Tz=Tz+(-1)^(ii+jj+kk+ll+mm+nn)*Ez;
+            Tx = Tx + (-1)^(ii+jj+kk+ll+mm+nn)*Ex;
+            Ty = Ty + (-1)^(ii+jj+kk+ll+mm+nn)*Ey;
+            Tz = Tz + (-1)^(ii+jj+kk+ll+mm+nn)*Ez;
             
           end
         end
