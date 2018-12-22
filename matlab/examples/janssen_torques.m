@@ -57,31 +57,23 @@ grid on
 
 clear all
 
-a1 = 0.010/2;
-b1 = 0.026/2;
-c1 = 0.014/2;
-
-a2 = 0.014/2;
-b2 = 0.026/2;
-c2 = 0.010/2;
-
-alpha = 0;
+alpha =  0;
 beta  = -0.008;
-gamma = 0.015;
+gamma =  0.015;
 
 lever  = [0; 0; -0.047];
 
 magnet_fixed.type = 'cuboid';
 magnet_float.type = 'cuboid';
 
-magnet_fixed.dim = [2*a1 2*b1 2*c1];
-magnet_float.dim = [2*a2 2*b2 2*c2];
+magnet_float.dim = [0.010 0.026 0.014];
+magnet_fixed.dim = [0.014 0.026 0.010];
 
 magnet_fixed.magn = 1.23;
 magnet_float.magn = 1.23;
 
-magnet_fixed.magdir = [0 0 1];
-magnet_float.magdir = [0 1 0];
+magnet_fixed.magdir = [0 1 0];
+magnet_float.magdir = [0 0 1];
 
 N = 51;
 offset = repmat([alpha; beta; gamma],[1 N]);
@@ -90,7 +82,7 @@ displ_range = offset+[1; 0; 0]*displ;
 
 magnet_float.lever = lever;
 
-torque_xyz = magnetforces(magnet_fixed,magnet_float,displ_range,'torque');
+torque_xyz = -magnetforces(magnet_fixed,magnet_float,displ_range,'torque');
 
 figure(2); clf; hold on
 plot(displ,torque_xyz(1,:))
