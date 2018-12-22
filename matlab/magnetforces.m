@@ -333,23 +333,29 @@ end
 
 
 % \begin{mfunction}{single_magnet_torque}
+%
+% For the magnetforces code we always assume the first magnet is fixed.
+% But the Janssen code assumes the torque is calculated on the first magnet
+% and defines the lever arm for that first magnet. Therefore we need to
+% flip the definitions a bit.
 
   function torques_out = single_magnet_torque(displ,lever)
 
     torque_components = nan([size(displ) 9]);
 
-
-    d_x  = rotate_x_to_z(displ);
-    d_y  = rotate_y_to_z(displ);
+    d_x  = rotate_x_to_z(-displ);
+    d_y  = rotate_y_to_z(-displ);
+    d_z  = -displ;
 
     l_x = rotate_x_to_z(lever);
     l_y = rotate_y_to_z(lever);
+    l_z = lever;
 
-    torque_components(:,:,9) = cuboid_torque_z_z( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
+    torque_components(:,:,9) = cuboid_torque_z_z( size1,size2,d_z,l_z,magnet_fixed.magM,magnet_float.magM );
 
-    torque_components(:,:,8) = cuboid_torque_z_y( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
+    torque_components(:,:,8) = cuboid_torque_z_y( size1,size2,d_z,l_z,magnet_fixed.magM,magnet_float.magM );
 
-    torque_components(:,:,7) = torques_calc_z_x( size1,size2,displ,lever,magnet_fixed.magM,magnet_float.magM );
+    torque_components(:,:,7) = torques_calc_z_x( size1,size2,d_z,l_z,magnet_fixed.magM,magnet_float.magM );
 
     torque_components(:,:,1) = ...
       rotate_z_to_x( cuboid_torque_z_z(size1_x,size2_x,d_x,l_x,J1_x,J2_x) );
@@ -369,7 +375,7 @@ end
     torque_components(:,:,6) = ...
       rotate_z_to_y( cuboid_torque_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
-    torques_out = sum(torque_components,3);
+    torques_out = -sum(torque_components,3);
   end
 
 % \end{mfunction}
