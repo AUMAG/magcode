@@ -2,6 +2,9 @@
 %
 % Calculate the torques between two parallel cuboid magnets, both magnetised in the
 % z-direction.
+%
+% In the Janssen code, the torque is calculated on the first magnet and the
+% lever arm ("torque reference point") is also w.r.t. the first magnet.
 
 % \START
 
