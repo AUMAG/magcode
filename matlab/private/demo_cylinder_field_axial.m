@@ -32,26 +32,20 @@ ylabel('Z')
 plot([-R -R R R -R],[L -L -L L L],'k-','linewidth',3)
 
 
-%% Magnetic field lines (example only!)
+%% Evenly spaced streamlines to visual flux lines
+%
+% See: <https://github.com/keithfma/evenly_spaced_streamlines>
 
-% non-connected
-N = 50;
-t = linspace(pi,2*pi,N);
-xx = W*cos(t);
-yy = H*sin(t);
+figure(4); clf; hold on
 
-%plot(xx,yy,'.','markersize',20)
+h = surf(rho_range,z_range,Bmag);
+h.EdgeColor = 'none';
+view(2)
+axis equal
+pbaspect([1 1 1])
+xlabel('RHO')
+ylabel('Z')
 
-XY = stream2(rr,zz,B_rho,B_z,xx,yy,[1,10000]);
-h = streamline(XY);
-set(h(:),'color','white','linewidth',1)
+plot([-R -R R R -R],[L -L -L L L],'k-','linewidth',3)
 
-axis([-W W -H H]/1.5)
-
-
-% connected
-startx2 = linspace(-0.9*W,-1.1*R,5);
-starty2 = zeros(size(startx2));
-XY = stream2(rr,zz,B_rho,B_z,startx2,starty2,[1,5000]);
-h = streamline(XY);
-set(h(:),'color','white','linewidth',1)
+even_stream_arrow(rr,zz,B_rho,B_z,0.5,10,'Color','w','lineWidth',1,'ArrowLength',7);
