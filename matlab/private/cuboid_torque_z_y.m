@@ -33,10 +33,11 @@ sumz = zeros([1 size(offset,2)]);
 % remanent flux density
 bzr1 = J1(3);
 byr2 = J2(2);
+
 % if the remanent flux densities along z axis for magnet 1 and y axis for
 % magnet 2 are 0, torque will be 0
-if bzr1==0 || byr2==0
-  torque_zy = 0*offset;
+if abs(bzr1) < eps || abs(byr2) < eps
+  torque_zy = zeros(size(offset));
   return
 end
 
@@ -49,21 +50,21 @@ for i = 0:1
                    for n = 0:1
                        
 % calculate variables
-Cu = ((-1)^i).*(size1(1))-lever(1, :);
-Cv = ((-1)^k).*(size1(2))-lever(2, :);
-Cw = ((-1)^m).*(size1(3))-lever(3, :);
-u = offset(1, :)-((-1)^i).*(size1(1))+((-1)^j).*(size2(1));
-v = offset(2, :)-((-1)^k).*(size1(2))+((-1)^l).*(size2(2));
-w = offset(3, :)-((-1)^m).*(size1(3))+((-1)^n).*(size2(3));
+Cu = ((-1)^i).*(size1(1))-lever(1,:);
+Cv = ((-1)^k).*(size1(2))-lever(2,:);
+Cw = ((-1)^m).*(size1(3))-lever(3,:);
+u = offset(1,:)-((-1)^i).*(size1(1))+((-1)^j).*(size2(1));
+v = offset(2,:)-((-1)^k).*(size1(2))+((-1)^l).*(size2(2));
+w = offset(3,:)-((-1)^m).*(size1(3))+((-1)^n).*(size2(3));
 r = sqrt(u.^2+v.^2+w.^2);
 
 % find indexes where cuboid magnets align
-a = (u==0)&(v==0);
-b = (u==0)&(w==0);
-c = (v==0)&(w==0);
+a = (abs(u)<eps) & (abs(v)<eps);
+b = (abs(u)<eps) & (abs(w)<eps);
+c = (abs(v)<eps) & (abs(w)<eps);
 
 % find indexes where cuboid magnets do not align
-d = ~a&~b&~c;
+d = ~a & ~b & ~c;
 
 % if magnets are aligned in any two directions, use the following limit
 % expressions to calculate the sums
@@ -142,10 +143,6 @@ sumz(d) = sumz(d)+((-1)^(i+j+k+l+m+n)).*((1/36).*(6.*w(d).*(v(d).^2-...
    end
 end
 
-% permeability of free space
-muo = 4*pi*10^-7;
-
-% calculate torques from sums
-torque_zy = ((bzr1*byr2)/(4*pi*muo)).*[sumx; sumy; sumz];
+torque_zy = bzr1*byr2/(16*pi*pi*1e-7).*[sumx; sumy; sumz];
 
 end
