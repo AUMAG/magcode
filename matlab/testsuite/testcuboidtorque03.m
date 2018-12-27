@@ -15,7 +15,7 @@ magnet_float.magn = 1.3;
 magnet_fixed.magdir  = [0 0 1];
 magnet_float.magdir  = [0 0 1];
 
-T1 = magnetforces(magnet_fixed,magnet_float,[0.04 0 0.05; 0.05 0 0; 0 0.05 0],'torque')
+T1 = magnetforces(magnet_fixed,magnet_float,[0.04 0 0.05; 0.05 0 0; 0 0.05 0],'torque');
 
 assert( all(~isnan(T1(:))) , 'no nans' )
 
