@@ -20,7 +20,13 @@ test003a
 testcyl01
 testcyl02
 
+%%
+
 testcuboidtorque01
+testcuboidtorque02
+testcuboidtorque03
+
+%%
 
 return
 
