@@ -26,7 +26,7 @@ T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
 T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
 
 check = round([T1,T2]*prec)
-%assert( all(~isnan(check(:))) , 'UV no nans' )
+assert( all(~isnan(check(:))) , 'UV no nans' )
 %assert( all(check(:,1)==check(:,2)) , 'UV singularity consistent' )
 
 fprintf('passed\n')
