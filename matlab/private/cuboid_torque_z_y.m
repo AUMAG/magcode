@@ -53,16 +53,21 @@ for ii = 0:1
             Cu = ((-1)^ii).*(size1(1))-lever(1,:);
             Cv = ((-1)^kk).*(size1(2))-lever(2,:);
             Cw = ((-1)^mm).*(size1(3))-lever(3,:);
+            
             u = offset(1,:)-((-1)^ii).*(size1(1))+((-1)^jj).*(size2(1));
             v = offset(2,:)-((-1)^kk).*(size1(2))+((-1)^ll).*(size2(2));
             w = offset(3,:)-((-1)^mm).*(size1(3))+((-1)^nn).*(size2(3));
-            r2 = u.^2+v.^2+w.^2;
+            
+            u2 = u.^2;
+            v2 = v.^2;
+            w2 = w.^2;
+            r2 = u2+v2+w2;
             r = sqrt(r2);
             
             % find indexes where cuboid magnets align
-            a = (abs(u)<eps) & (abs(v)<eps);
-            b = (abs(u)<eps) & (abs(w)<eps);
-            c = (abs(v)<eps) & (abs(w)<eps);
+            a = (u2<eps) & (v2<eps);
+            b = (u2<eps) & (w2<eps);
+            c = (v2<eps) & (w2<eps);
             
             % find indexes where cuboid magnets do not align
             d = ~a & ~b & ~c;
