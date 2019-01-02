@@ -1,35 +1,68 @@
+%% Test torque zz singularities
+
+%% Test setup
 
 clear all
-disp('=================')
-fprintf('TEST cuboid torques singularities: ')
+testname = [mfilename,'.m'];
+separator = repmat('=',[1,6+numel(testname)]);
+disp(separator);
+disp(['== ',testname,' =='])
+disp(separator);
 
-magnet_fixed.type = 'cuboid';
-magnet_float.type = 'cuboid';
+%% Magnet setup
 
-magnet_fixed.dim = [0.04 0.04 0.04];
-magnet_float.dim = magnet_fixed.dim;
+magnet_fixed = magnetdefine('type','cuboid','magn',1.3,'magdir',[0 0 1],'dim',[0.03 0.04 0.05]);
+magnet_float = magnetdefine('type','cuboid','magn',1.3,'magdir',[0 0 1],'dim',[0.04 0.05 0.06]);
 
-magnet_fixed.magn = 1.3;
-magnet_float.magn = 1.3;
+smidge = 1e-6;
+prec   = 1e3;
 
-magnet_fixed.magdir  = [0 0 1];
-magnet_float.magdir  = [0 0 1];
+%% Test 1
 
-T1 = magnetforces(magnet_fixed,magnet_float,[0.04 0 0.05; 0.05 0 0; 0 0.05 0],'torque');
+fprintf('TEST cuboid torque zz singularity UV: ')
 
-assert( all(~isnan(T1(:))) , 'no nans' )
+displ = [0.005; 0.005; 0.12];
+T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
+T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
 
-magnet_fixed.magdir  = [0 1 0];
-magnet_float.magdir  = [0 0 1];
-
-T2 = magnetforces(magnet_fixed,magnet_float,[0.04; 0.05; 0],'torque');
-check2 = [ -1582256; 1474241; -3679 ];
-
-assert( all( round(1e6*T2) == check2 ), 'incorrect reference torques between parallel magnets' )
-
+check = round([T1,T2]*prec);
+assert( all(~isnan(check(:))) , 'UV no nans' )
+assert( all(check(:,1)==check(:,2)) , 'UV singularity consistent' )
 
 fprintf('passed\n')
-disp('=================')
+
+%% Test 2
+
+fprintf('TEST cuboid torque zz singularity UW: ')
+
+displ = [0.005; 0.1; 0.005];
+T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
+T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
+
+check = round([T1,T2]*prec);
+assert( all(~isnan(check(:))) , 'UW no nans' )
+assert( all(check(:,1)==check(:,2)) , 'UW singularity consistent' )
+
+fprintf('passed\n')
+
+%% Test 3
+
+fprintf('TEST cuboid torque zz singularity WV: ')
+
+displ = [0.08; 0.005; 0.005];
+T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
+T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
+
+check = round([T1,T2]*prec);
+assert( all(~isnan(check(:))) , 'UW no nans' )
+assert( all(check(:,1)==check(:,2)) , 'UW singularity consistent' )
+
+fprintf('passed\n')
+
+%% End
+
+disp(separator)
+
 
 
 

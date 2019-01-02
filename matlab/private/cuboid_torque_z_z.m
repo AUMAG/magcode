@@ -68,9 +68,9 @@ for ii=[0,1]
             s = sqrt(s2);
             
             % find indexes where cuboid faces align
-            a = (abs(u)<eps) & (abs(v)<eps);
-            b = (abs(u)<eps) & (abs(w)<eps);
-            c = (abs(v)<eps) & (abs(w)<eps);
+            a = (u2<eps) & (v2<eps);
+            b = (u2<eps) & (w2<eps);
+            c = (v2<eps) & (w2<eps);
             
             % and all those that do not
             d = ~a & ~b & ~c;
@@ -80,9 +80,10 @@ for ii=[0,1]
             Ez = nan(1,size(offset,2));
             
             if any(a)
-              Ex(a) = 1/8*w(a).*(-w(a).^2-2*Cw.*w(a)-8*Cv.*abs(w(a))+w(a).*(2*Cw+w(a)).*log(w2(a)));
-              Ey(a) = 1/8*w(a).*(+w(a).^2+2*Cw.*w(a)+8*Cu.*abs(w(a))-w(a).*(2*Cw+w(a)).*log(w2(a)));
-              Ez(a) = 1/8*(Cu-Cv)*w(a).^2.*log(w2(a));
+%              error a
+              Ex(a) = 1/8*w(a).*(-w2(a)-2*Cw.*w(a)-8*Cv.*abs(w(a))+w(a).*(2*Cw+w(a)).*log(w2(a)));
+              Ey(a) = 1/8*w(a).*(+w2(a)+2*Cw.*w(a)+8*Cu.*abs(w(a))-w(a).*(2*Cw+w(a)).*log(w2(a)));
+              Ez(a) = 1/4*(Cu-Cv)*w2(a).*log(w2(a));
             end
             
             if any(b)
@@ -90,11 +91,11 @@ for ii=[0,1]
               Ey(b) = -1/4*Cw*v(b).^2.*(log(v2(b))-1);
               Ez(b) = 1/72*v(b).*(2*v(b).^2+36*Cu*abs(v(b))+9*v(b).*(2*Cv+v(b)).*log(v2(b)));
             end
-            
+                        
             if any(c)
-              Ex(c) = -1/4*Cw*u2(c).*(log(u2(c))-1);
-              Ey(c) = -1/4*Cw.*(u2(c)+2*abs(u(c)).*u(c));
-              Ez(c) = 1/72*u(c).*(2*u2(c)+36*Cv*abs(u(c))+9*u(c).*(2*Cu+u(c)).*log(u2(c)));
+              Ex(c) = 1/4*Cw*u2(c).*(log(u2(c))-1);
+              Ey(c) = 1/4*Cw.*(u2(c)+2*abs(u(c)).*u(c));
+              Ez(c) = -1/72*u(c).*(2*u2(c)+36*Cv*abs(u(c))+9*u(c).*(2*Cu+u(c)).*log(u2(c)));
             end
             
             if any(d)
@@ -128,6 +129,8 @@ for ii=[0,1]
               
             end
             
+                        assert(~any(isnan([Ex(:);Ey(:);Ez(:)])))
+
             Tx = Tx + (-1)^(ii+jj+kk+ll+mm+nn)*Ex;
             Ty = Ty + (-1)^(ii+jj+kk+ll+mm+nn)*Ey;
             Tz = Tz + (-1)^(ii+jj+kk+ll+mm+nn)*Ez;
