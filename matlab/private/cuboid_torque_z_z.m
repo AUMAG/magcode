@@ -42,7 +42,7 @@ if br1==0 || br2==0
   return
 end
 
-Tx = zeros([1 size(offset,2)]);
+Tx = zeros([1, size(offset,2)]);
 Ty = Tx;
 Tz = Tx;
 
@@ -129,8 +129,6 @@ for ii=[0,1]
               
             end
             
-                        assert(~any(isnan([Ex(:);Ey(:);Ez(:)])))
-
             Tx = Tx + (-1)^(ii+jj+kk+ll+mm+nn)*Ex;
             Ty = Ty + (-1)^(ii+jj+kk+ll+mm+nn)*Ey;
             Tz = Tz + (-1)^(ii+jj+kk+ll+mm+nn)*Ez;
