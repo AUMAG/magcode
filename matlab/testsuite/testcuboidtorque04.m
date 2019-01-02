@@ -25,9 +25,9 @@ displ = [0.005; 0.005; 0.12];
 T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
 T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
 
-check = round([T1,T2]*prec)
+check = round([T1,T2]*prec);
 assert( all(~isnan(check(:))) , 'UV no nans' )
-%assert( all(check(:,1)==check(:,2)) , 'UV singularity consistent' )
+assert( all(check(:,1)-check(:,2)<=1) , 'UV singularity consistent' )
 
 fprintf('passed\n')
 
@@ -39,9 +39,9 @@ displ = [0.005; 0.1; 0.005];
 T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
 T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
 
-check = round([T1,T2]*prec)
+check = round([T1,T2]*prec);
 assert( all(~isnan(check(:))) , 'UW no nans' )
-%assert( all(check(:,1)==check(:,2)) , 'UW singularity consistent' )
+assert( all(check(:,1)-check(:,2)<=1) , 'UW singularity consistent' )
 
 fprintf('passed\n')
 
@@ -53,9 +53,9 @@ displ = [0.08; 0.005; 0.005];
 T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
 T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
 
-check = round([T1,T2]*prec)
+check = round([T1,T2]*prec);
 assert( all(~isnan(check(:))) , 'UW no nans' )
-%assert( all(check(:,1)==check(:,2)) , 'UW singularity consistent' )
+assert( all(check(:,1)-check(:,2)<=1) , 'UW singularity consistent' )
 
 fprintf('passed\n')
 
