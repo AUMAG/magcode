@@ -25,6 +25,7 @@ testcyl02
 testcuboidtorque01
 testcuboidtorque02
 testcuboidtorque03
+testcuboidtorque04
 
 %%
 

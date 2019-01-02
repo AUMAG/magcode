@@ -28,8 +28,8 @@ magnet_float.magdir  = [0 0 1];
 
 T2 = magnetforces(magnet_fixed,magnet_float,[0.02; 0.03; 0],'torque');
 
-assert( all( round(1e6*T1) ==  [746760; -1371; -1017634] ), 'incorrect reference torques between parallel magnets' )
-assert( all( round(1e6*T2) == [-746760; 1017634; -1371] ), 'incorrect reference torques between parallel magnets' )
+assert( all( round(1e6*T1) == [ 746760;   -1371; -1017634] ), 'incorrect reference torques between parallel magnets' )
+assert( all( round(1e6*T2) == [-746760; 1017634;    -1371] ), 'incorrect reference torques between parallel magnets' )
 
 fprintf('passed\n')
 disp('=================')
