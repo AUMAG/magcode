@@ -5,7 +5,7 @@
 % Geometries and axis ordering to match Janssen (2010).
 % DOI: 10.1109/TMAG.2010.2043224
 %
-% Note the magnitude and shape of the graphs does not appear to
+% Note the magnitudes and shapes of the graphs do not appear to match
 % published results exactly.
 
 size1  = [ 10;  26;  14 ]/2/1000;
@@ -35,7 +35,7 @@ ylabel('Torque, N.m')
 % Geometries and axis ordering to match Janssen (2011).
 % DOI: 10.1109/TMAG.2011.2154315
 %
-% Note the magnitude and shape of the graphs does not appear to
+% Note the magnitudes and shapes of the graphs do not appear to match
 % published results exactly.
 
 size1  = [ 13;  5;   7 ]/1000;
@@ -52,7 +52,7 @@ displ = [0;1;0]*displ_range;
 
 torque_zy = cuboid_torque_z_y(size1,size2,offset+displ,lever,JZ,JY);
 
-figure(1);
+figure(2);
 plot(displ_range*1000,torque_zy)
 title('ZY')
 legend('TY','TX','TZ')
