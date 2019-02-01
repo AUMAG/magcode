@@ -1,6 +1,15 @@
+%% MAGCODE TEST SUITE
+
+
+%% Start
 
 clear all
 clc
+
+oldpath = path;
+path(oldpath,'..')
+
+%% Cuboids and other basics
 
 test001a
 test001b
@@ -17,20 +26,18 @@ test002d
 
 test003a
 
+%% Cylinders
+
 testcyl01
 testcyl02
 
-%%
+%% Cuboid torques
 
 testcuboidtorque01
 testcuboidtorque02
 testcuboidtorque03
 testcuboidtorque04
 
-%%
+%% End
 
-return
-
-
-
-
+path(oldpath)
