@@ -39,5 +39,8 @@ testcuboidtorque03
 testcuboidtorque04
 
 %% End
+%
+% TODO: make all tests into functions so we don't run `clear all` in them
+% all!
 
-path(oldpath)
+% path(oldpath)
