@@ -6,9 +6,9 @@ Public-facing documentation for this repository is located at: <http://wspr.io/m
 
 ## Development details
 
-* Current release DOI: [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
-* Build status: [![Build Status](https://travis-ci.com/wspr/magcode.svg?branch=master)](https://travis-ci.com/wspr/magcode)
-* Code coverage: [![codecov](https://codecov.io/gh/wspr/magcode/branch/master/graph/badge.svg)](https://codecov.io/gh/wspr/magcode)
+* [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
+* [![Build Status](https://travis-ci.com/wspr/magcode.svg?branch=master)](https://travis-ci.com/wspr/magcode)
+* [![codecov](https://codecov.io/gh/wspr/magcode/branch/master/graph/badge.svg)](https://codecov.io/gh/wspr/magcode)
 
 ## Citation and acknowledgement
 
