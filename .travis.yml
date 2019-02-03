@@ -7,5 +7,5 @@ script: matlab-runner -dao -dai
                       -i "matlab"
                       -xi "matlab/magcode-matlab.pdf"
                       -sd "matlab/testsuite"
-                      "addpath(pwd); runtests testsuite/"
+                      "runtestsuite"
 
