@@ -29,3 +29,5 @@ matlab/magcode-matlab.run.xml
 matlab/magcode-matlab-blx.bib
 
 matlab/CoverageResults\.xml
+
+matlab/coverage\.xml

@@ -29,7 +29,7 @@ if choice == 2
   
   suite  = TestSuite.fromFolder('testsuite/');
   runner = TestRunner.withTextOutput;
-  plugin = CodeCoveragePlugin.forFolder('testsuite/',...
+  plugin = CodeCoveragePlugin.forFolder(pwd,'IncludingSubfolders',true,...
     'Producing',CoberturaFormat('coverage.xml'));
   
   runner.addPlugin(plugin);

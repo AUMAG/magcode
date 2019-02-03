@@ -7,8 +7,8 @@ script:
       - matlab-runner --disableAutoOutfiles
                       --disableAutoInfiles
                       --infile "matlab"
-                      --outfile "coverage.xml"
                       --excludeInfile "matlab/magcode-matlab.pdf"
                       -sd "matlab"
+                      --outfile "coverage.xml"
                       "runtestsuite"
       - cd matlab; bash <(curl -s https://codecov.io/bash)
