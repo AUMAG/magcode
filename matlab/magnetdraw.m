@@ -61,7 +61,7 @@ end
   function draw_cube(magnet,pos)
     
     pos = transpose(pos(:));
-    hdim = magnet.dim/2;
+    hdim = transpose(magnet.dim(:))/2;
     
     vrtc = [-1 -1 +1; % top plate
             +1 -1 +1;
