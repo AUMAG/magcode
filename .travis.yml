@@ -3,9 +3,9 @@ language: java
 
 install: source /dev/stdin <<< "$(curl -sL https://ssd.mathworks.com/supportfiles/matlab-runner/install)"
 
-script: matlab-runner -dao -dai \
-                      -i "matlab" \
-                      -xi "matlab/magcode-matlab.pdf" \
-                      -sd "matlab/testsuite" \
+script: matlab-runner -dao -dai
+                      -i "matlab"
+                      -xi "matlab/magcode-matlab.pdf"
+                      -sd "matlab/testsuite"
                       "addpath(pwd); runtests testsuite/"
 
