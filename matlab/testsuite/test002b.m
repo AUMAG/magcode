@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST 002b: ')
 
 fixed_array = ...
   struct(...
@@ -30,7 +28,4 @@ float_mag = magnetdefine('type','cuboid','dim',[0.01 0.01 0.01],'magn',1,'magdir
 f_mag = magnetforces(fixed_mag,float_mag,displ);
 
 assert( chop(f_total(3),6) == chop(f_mag(3),6) );
-
-fprintf('passed\n')
-disp('=================')
 

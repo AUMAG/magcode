@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST 003a: ')
 
 displ = [0.02 0.02 0.02];
 
@@ -79,7 +77,4 @@ f4 = multipoleforces(fixed_array, float_array, displ);
 assert( all(chop(f3,6)==chop(f4,6)) , ...
   'linear (2mag) and linear-quasi should be equivalent');
 
-fprintf('passed\n')
-
-disp('=================')
 

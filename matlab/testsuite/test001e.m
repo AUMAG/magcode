@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST 001e: ')
 
 magnet_fixed.dim = [0.03 0.04 0.05];
 magnet_float.dim = [0.055 0.045 0.035];
@@ -25,9 +23,6 @@ assert( all( round(f_all*1e6) == [-1391969;    -1140254;    -1042102]) , ...
 
 assert( all( round(k_all*1e6) == [ -5424370 ;    2953150 ;    2471220]) , ...
   'Stiffness components appear incorrect.')
-
-fprintf('passed\n')
-disp('=================')
 
 
 

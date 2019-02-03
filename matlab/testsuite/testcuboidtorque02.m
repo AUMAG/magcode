@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST cuboid torques: ')
 
 
 magnet_fixed.type = 'cuboid';
@@ -47,8 +45,6 @@ T2 = magnetforces(magnet_fixed,magnet_float,[0.02; 0.03; 0],'torque');
 assert( all( round(1e6*T1) == [ 746760;  -1371; -14695] ), 'incorrect reference torques' )
 assert( all( round(1e6*T2) == [-746760;  14695;  -1371] ), 'incorrect reference torques' )
 
-fprintf('passed\n')
-disp('=================')
 
 
 

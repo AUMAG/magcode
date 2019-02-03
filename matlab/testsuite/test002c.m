@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST 002c: ')
 
 % Fixed parameters
 
@@ -81,6 +79,4 @@ f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 assert( all(chop(sum(f),4)==37.31) , ...
   'Arrays aligned in different directions should produce consistent results.');
 
-fprintf('passed\n')
-disp('=================')
 

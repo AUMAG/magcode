@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST 002d: ')
 
 % Fixed parameters
 
@@ -58,6 +56,4 @@ assert( all(round(f(ind) * 100)/100==589.05) ,  ...
 assert( all(f(~ind)<1e-10) ,  ...
   'These forces should all be (essentially) zero.');
 
-fprintf('passed\n')
-disp('=================')
 

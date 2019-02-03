@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST 001d: ')
 
 magnet_fixed.dim = [0.04 0.04 0.04];
 magnet_float.dim =  magnet_fixed.dim;
@@ -73,7 +71,4 @@ assert ( ...
              'Components should sum due to superposition' ...
            )
 
-
-fprintf('passed\n')
-disp('=================')
 

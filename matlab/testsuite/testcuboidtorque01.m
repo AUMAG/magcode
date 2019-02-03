@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST cuboid torques: ')
 
 magnet_fixed.type = 'cuboid';
 magnet_float.type = 'cuboid';
@@ -48,8 +46,6 @@ assert( all(isreal(T1)) ,'T1 not real')
 assert( all(isreal(T2)) ,'T2 not real')
 assert( all(isreal(T3)) ,'T3 not real')
 
-fprintf('passed\n')
-disp('=================')
 
 
 

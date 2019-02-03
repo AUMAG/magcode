@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST ''grade'' specification: ')
 
 displ = [0.03 0.05 0.07];
 magnet_fixed.type = 'cuboid';
@@ -37,8 +35,6 @@ assert( all( round(1e6*F1) == round(1e6*F2) ), 'grade spec should be consistent'
 assert( all( round(1e6*F1) == round(1e6*F3) ), 'grade spec should be consistent' )
 assert( all( round(1e6*F1) == round(1e6*F4) ), 'grade spec should be consistent' )
 
-fprintf('passed\n')
-disp('=================')
 
 
 

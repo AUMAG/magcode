@@ -1,7 +1,5 @@
 
 clear all
-disp('=================')
-fprintf('TEST 001b: ')
 
 magnet_fixed.dim = [0.04 0.04 0.04];
 magnet_float.dim =  magnet_fixed.dim;
@@ -168,7 +166,4 @@ assert ( ...
            )
 
 
-
-fprintf('passed\n')
-disp('=================')
 
