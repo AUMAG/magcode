@@ -3,10 +3,12 @@ language: java
 
 install: source /dev/stdin <<< "$(curl -sL https://ssd.mathworks.com/supportfiles/matlab-runner/install)"
 
-script: matlab-runner --disableAutoOutfiles
+script:
+      - matlab-runner --disableAutoOutfiles
                       --disableAutoInfiles
                       --infile "matlab"
+                      --outfile "CoverageResults.xml"
                       --excludeInfile "matlab/magcode-matlab.pdf"
                       -sd "matlab"
                       "runtestsuite"
-
+      - bash <(curl -s https://codecov.io/bash)
