@@ -30,7 +30,7 @@ if choice == 2
   suite  = TestSuite.fromFolder('testsuite/');
   runner = TestRunner.withTextOutput;
   plugin = CodeCoveragePlugin.forFolder('testsuite/',...
-    'Producing',CoberturaFormat('CoverageResults.xml'));
+    'Producing',CoberturaFormat('coverage.xml'));
   
   runner.addPlugin(plugin);
   results = runner.run(suite);
