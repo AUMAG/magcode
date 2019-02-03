@@ -7,7 +7,7 @@ script:
       - matlab-runner --disableAutoOutfiles
                       --disableAutoInfiles
                       --infile "matlab"
-                      --outfile "CoverageResults.xml"
+                      --outfile "matlab/CoverageResults.xml"
                       --excludeInfile "matlab/magcode-matlab.pdf"
                       -sd "matlab"
                       "runtestsuite"

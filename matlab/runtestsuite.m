@@ -1,4 +1,6 @@
-%% Run test suite
+%% Wrapper script to run the MAGCODE test suite
+
+addpath(pwd)
 
 choice = 2;
 
@@ -10,13 +12,14 @@ choice = 2;
 % to ensure that the path is correctly set up.
 
 if choice == 1
-  addpath(pwd)
   results = runtests('testsuite/');
-  assert(all(~[results.Failed]));
 end
 
 
 %% Coverage report
+%
+% This uses the far more clunky interface to run tests but produces
+% something very interesting...
 
 if choice == 2
   import matlab.unittest.TestSuite
@@ -31,5 +34,8 @@ if choice == 2
   
   runner.addPlugin(plugin);
   results = runner.run(suite);
-  assert(all(~[results.Failed]));
 end
+
+%% Finish up
+
+assert(all(~[results.Failed]));
