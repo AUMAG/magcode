@@ -7,6 +7,6 @@
 
 addpath(pwd)
 
-results = runtests('IncludeSubfolders', true);
+results = runtests(pwd,'IncludeSubfolders', true);
 
 assert(all(~[results.Failed]));
