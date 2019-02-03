@@ -11,4 +11,4 @@ script:
                       --excludeInfile "matlab/magcode-matlab.pdf"
                       -sd "matlab"
                       "runtestsuite"
-      - bash <(curl -s https://codecov.io/bash)
+      - cd matlab; bash <(curl -s https://codecov.io/bash)
