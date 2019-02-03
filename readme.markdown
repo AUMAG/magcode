@@ -4,6 +4,12 @@ MAGCODE: models for calculating magnetic fields and interactions
 
 Public-facing documentation for this repository is located at: <http://wspr.io/magcode/>
 
+## Development details
+
+* Current release DOI: [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
+* Build status: [![Build Status](https://travis-ci.com/wspr/magcode.svg?branch=master)](https://travis-ci.com/wspr/magcode)
+* Code coverage: [![codecov](https://codecov.io/gh/wspr/magcode/branch/master/graph/badge.svg)](https://codecov.io/gh/wspr/magcode)
+
 ## Citation and acknowledgement
 
 If you use this code for your research, please cite the works from which the code is derived
@@ -14,8 +20,6 @@ In addition, please cite this code repository as:
 * Title: ‘MAGCODE: framework of models for calculating magnetic fields and interactions’
 * Author: William S. P. Robertson
 * DOI for the repository: 10.5281/zenodo.1491206
-
-DOI for the current release: [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
 
 ## [Releases](https://github.com/wspr/magcode/releases)
 
