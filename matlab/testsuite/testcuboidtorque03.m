@@ -19,8 +19,8 @@ T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
 T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
 
 check = round([T1,T2]*prec);
-assert( all(~isnan(check(:))) , 'UV no nans' )
-assert( all(check(:,1)==check(:,2)) , 'UV singularity consistent' )
+testCase.verifyThat(check, ~HasNaN, 'UV no nans' );
+testCase.verifyEqual(check(:,1), check(:,2), 'UV singularity consistent' );
 
 end
 
@@ -39,8 +39,8 @@ T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
 T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
 
 check = round([T1,T2]*prec);
-assert( all(~isnan(check(:))) , 'UW no nans' )
-assert( all(check(:,1)==check(:,2)) , 'UW singularity consistent' )
+testCase.verifyThat(check, ~HasNaN, 'UV no nans' );
+testCase.verifyEqual(check(:,1), check(:,2), 'UV singularity consistent' );
 
 end
 
@@ -59,7 +59,13 @@ T1 = magnetforces(magnet_fixed,magnet_float,displ,'torque');
 T2 = magnetforces(magnet_fixed,magnet_float,displ+smidge,'torque');
 
 check = round([T1,T2]*prec);
-assert( all(~isnan(check(:))) , 'UW no nans' )
-assert( all(check(:,1)==check(:,2)) , 'UW singularity consistent' )
 
+testCase.verifyThat(check, ~HasNaN, 'UV no nans' );
+testCase.verifyEqual(check(:,1), check(:,2), 'UV singularity consistent' );
+
+end
+
+% "import" function
+function c = HasNaN(varargin)
+c = matlab.unittest.constraints.HasNaN(varargin{:});
 end
