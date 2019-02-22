@@ -44,6 +44,23 @@ if choice == 2
   results = runner.run(suite);
 end
 
+%% Coverage report debugging
+
+if choice == 3
+  import matlab.unittest.TestSuite
+  import matlab.unittest.TestRunner
+  import matlab.unittest.plugins.CodeCoveragePlugin
+  import matlab.unittest.plugins.codecoverage.CoberturaFormat
+  
+  suite  = TestSuite.fromFile('testsuite/testcuboidtorque03.m');
+  runner = TestRunner.withTextOutput;
+  plugin = CodeCoveragePlugin.forFolder(pwd+["","/private"],...
+    'Producing',CoberturaFormat('coverage-debug.xml'));
+  
+  runner.addPlugin(plugin);
+  results = runner.run(suite);
+end
+
 %% Finish up
 %
 % Without this line we don't get the correct exit code if results failed.
