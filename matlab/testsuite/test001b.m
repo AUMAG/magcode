@@ -25,7 +25,7 @@ for ii = [1, -1]
   end
 end
 
-dirforces = chop( fzyz(2,:), 8 );
+dirforces = round( fzyz(2,:), 8 );
 otherforces = fzyz([1 3],:);
 
 
@@ -64,7 +64,7 @@ for ii = [1, -1]
   end
 end
 
-dirforces = chop( fzxz(3,:), 8 );
+dirforces = round( fzxz(3,:), 8 );
 otherforces = fzxz([1 2],:);
 
 
@@ -103,7 +103,7 @@ for ii = [1, -1]
   end
 end
 
-dirforces = chop( fzxx(1,:), 8 );
+dirforces = round( fzxx(1,:), 8 );
 otherforces = fzxx([2 3],:);
 
 
@@ -144,7 +144,7 @@ for ii = [1, -1]
   end
 end
 
-dirforces = chop( fzyy(3,:), 8 );
+dirforces = round( fzyy(3,:), 8 );
 otherforces = fzyy([1 2],:);
 
 

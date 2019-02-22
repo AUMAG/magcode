@@ -29,7 +29,7 @@ for ii = [-1 1]
   end
 end
 
-f = chop( f , 8 );
+f = round( f , 8 );
 
 uniquedir = f(3,:);
 otherdir  = f([1 2],:);
@@ -69,7 +69,7 @@ for ii = [-1 1]
   end
 end
 
-f = chop( f , 8 );
+f = round( f , 8 );
 
 uniquedir = f(1,:);
 otherdir  = f([2 3],:);

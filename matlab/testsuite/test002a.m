@@ -23,7 +23,7 @@ displ = [0 0 0.02];
 
 f_total = multipoleforces(fixed_array, float_array, displ);
 
-assert( chop(f_total(3),5)==0.13909 , 'Regression shouldn''t fail: %5.5f ~= %5.5f',chop(f_total(3),5),0.13909);
+assert( round(f_total(3),5)==0.13909 , 'Regression shouldn''t fail: %5.5f ~= %5.5f',round(f_total(3),5),0.13909);
 
 
 

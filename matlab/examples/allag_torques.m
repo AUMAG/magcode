@@ -187,7 +187,7 @@ fprintf('\nTherefore, only the z-force needs examining.\n')
 
 fprintf('\nBreakdown of the y-torque into components per corner of z-force:\n\n')
 disp('                                 corner      z-force   y-torque-z')
-disp([corners chop(f_corner_z,3) chop(ty_corner_z,3)])
+disp([corners round(f_corner_z,3) round(ty_corner_z,3)])
 
 fprintf(['\nThese forces are not symmetrical and therefore invalidate the argument\n',...
              'that the corner forces can be used for calculating torques.\n'])

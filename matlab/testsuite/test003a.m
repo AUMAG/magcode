@@ -37,7 +37,7 @@ float_array.face = 'down';
 
 f2 = multipoleforces(fixed_array, float_array, displ);
 
-assert( all(chop(f1,6)==chop(f2,6)) , ...
+assert( all(round(f1,6)==round(f2,6)) , ...
   'linear (4mag) and linear-quasi should be equivalent');
 
 % Test against Halbach array with two magnets per wavelength
@@ -74,7 +74,7 @@ float_array.face = 'down';
 
 f4 = multipoleforces(fixed_array, float_array, displ);
 
-assert( all(chop(f3,6)==chop(f4,6)) , ...
+assert( all(round(f3,6)==round(f4,6)) , ...
   'linear (2mag) and linear-quasi should be equivalent');
 
 

@@ -76,7 +76,7 @@ float_array.face = '-y';
 displ = [0 0.02 0];
 f(:,end+1) = multipoleforces(fixed_array, float_array, displ);
 
-assert( all(chop(sum(f),4)==37.31) , ...
+assert( all(round(sum(f),2)==37.31) , ...
   'Arrays aligned in different directions should produce consistent results.');
 
 

@@ -27,5 +27,5 @@ fixed_mag = magnetdefine('type','cuboid','dim',[0.01 0.01 0.01],'magn',1,'magdir
 float_mag = magnetdefine('type','cuboid','dim',[0.01 0.01 0.01],'magn',1,'magdir',[0 -90]);
 f_mag = magnetforces(fixed_mag,float_mag,displ);
 
-assert( chop(f_total(3),6) == chop(f_mag(3),6) );
+assert( round(f_total(3),6) == round(f_mag(3),6) );
 

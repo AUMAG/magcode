@@ -24,7 +24,7 @@ for ii = [1, -1]
   end
 end
 
-dirforces = chop( f(3,:), 8 );
+dirforces = round( f(3,:), 8 );
 otherforces = f([1 2],:);
 
 
@@ -61,7 +61,7 @@ for ii = [1, -1]
   end
 end
 
-dirforces = chop( f(1,:), 8 );
+dirforces = round( f(1,:), 8 );
 otherforces = f([2 3],:);
 
 
@@ -98,7 +98,7 @@ for ii = [1, -1]
   end
 end
 
-dirforces = chop( f(2,:), 8 );
+dirforces = round( f(2,:), 8 );
 otherforces = f([1 3],:);
 
 
