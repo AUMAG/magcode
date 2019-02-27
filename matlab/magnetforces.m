@@ -343,9 +343,9 @@ end
 
     torque_components = nan([size(displ) 9]);
 
-    d_x  = rotate_x_to_z(-displ);
-    d_y  = rotate_y_to_z(-displ);
-    d_z  = -displ;
+    d_x  = rotate_x_to_z(displ);
+    d_y  = rotate_y_to_z(displ);
+    d_z  = displ;
 
     l_x = rotate_x_to_z(lever);
     l_y = rotate_y_to_z(lever);
@@ -375,7 +375,7 @@ end
     torque_components(:,:,6) = ...
       rotate_z_to_y( cuboid_torque_z_y(size1_y,size2_y,d_y,l_y,J1_y,J2_y) );
 
-    torques_out = -sum(torque_components,3);
+    torques_out = sum(torque_components,3);
   end
 
 % \end{mfunction}

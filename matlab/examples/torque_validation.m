@@ -32,9 +32,9 @@ h(2) = plot(displ*1000,torq_para(2,:));
 h(3) = plot(displ*1000,torq_para(3,:));
 
 load paratorques
-plot(x*1000,-T(:,1),'--','color',h(1).Color,'linewidth',2)
-plot(x*1000,-T(:,2),'--','color',h(2).Color,'linewidth',2)
-plot(x*1000,-T(:,3),'--','color',h(3).Color,'linewidth',2)
+plot(x*1000,T(:,1),'--','color',h(1).Color,'linewidth',2)
+plot(x*1000,T(:,2),'--','color',h(2).Color,'linewidth',2)
+plot(x*1000,T(:,3),'--','color',h(3).Color,'linewidth',2)
 
 legend('x','y','z')
 xlabel('Displacement, mm')
