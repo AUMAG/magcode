@@ -42,9 +42,7 @@ if br1==0 || br2==0
   return
 end
 
-Tx = zeros([1, size(offset,2)]);
-Ty = Tx;
-Tz = Tx;
+Txyz = zeros([3, size(offset,2)]);
 
 for ii=[0,1]
   for jj=[0,1]
@@ -156,9 +154,7 @@ for ii=[0,1]
               
             end
             
-            Tx = Tx + (-1)^(ii+jj+kk+ll+mm+nn)*Ex;
-            Ty = Ty + (-1)^(ii+jj+kk+ll+mm+nn)*Ey;
-            Tz = Tz + (-1)^(ii+jj+kk+ll+mm+nn)*Ez;
+            Txyz = Txyz + (-1)^(ii+jj+kk+ll+mm+nn)*[Ex; Ey; Ez];
             
           end
         end
@@ -167,7 +163,7 @@ for ii=[0,1]
   end
 end
 
-torque_zz = [Tx; Ty; Tz].*br1*br2/(16*pi^2*1e-7);
+torque_zz = Txyz.*br1*br2/(16*pi^2*1e-7);
 
 end
 % \end{mfunction}
