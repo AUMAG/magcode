@@ -88,15 +88,15 @@ for ii=[0,1]
             end
             
             if any(b)
-              Ex(b) = -1/4*Cw.*v(b).*(v(b)+2*abs(v(b)));
-              Ey(b) = -1/4*Cw.*v(b).^2.*(log(v2(b))-1);
-              Ez(b) = 1/72*v(b).*(2*v(b).^2+36*Cu.*abs(v(b))+9*v(b).*(Cvv(b)).*log(v2(b)));
+              Ex(b) = -1/4*Cw(b).*v(b).*(v(b)+2*abs(v(b)));
+              Ey(b) = -1/4*Cw(b).*v2(b).*(log(v2(b))-1);
+              Ez(b) =  1/72*v(b).*(2*v2(b)+36*Cu(b).*abs(v(b))+9*v(b).*Cvv(b).*log(v2(b)));
             end
                         
             if any(c)
-              Ex(c) = 1/4*Cw.*u2(c).*(log(u2(c))-1);
-              Ey(c) = 1/4*Cw.*(u2(c)+2*abs(u(c)).*u(c));
-              Ez(c) = -1/72*u(c).*(2*u2(c)+36*Cv.*abs(u(c))+9*u(c).*(Cuu(c)).*log(u2(c)));
+              Ex(c) =  1/4*Cw(c).*u2(c).*(log(u2(c))-1);
+              Ey(c) =  1/4*Cw(c).*(u2(c)+2*abs(u(c)).*u(c));
+              Ez(c) = -1/72*u(c).*(2*u2(c)+36*Cv(c).*abs(u(c))+9*u(c).*Cuu(c).*log(u2(c)));
             end
             
             if any(d)
