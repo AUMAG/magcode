@@ -24,6 +24,13 @@ if ~isfield(mag,'type')
   end
 end
 
+if isfield(mag,'dim')
+  switch mag.type
+    case 'cylinder', mag.volume = pi*mag.dim(1)^2*mag.dim(2);
+    case 'cuboid',   mag.volume = prod(mag.dim);
+  end
+end
+
 if isfield(mag,'grade')
   if isfield(mag,'magn')
     error('Cannot specify both ''magn'' and ''grade''.')
@@ -93,6 +100,7 @@ end
 
 if isfield(mag,'magdir') && isfield(mag,'magn')
   mag.magM = mag.magdir*mag.magn;
+  mag.dipolemoment = 1/(4*pi*1e-7)*mag.magM*mag.volume;
 end
 
 mag.fndefined = true;
