@@ -10,8 +10,11 @@ magnet_float.type = 'cuboid';
 magnet_fixed.magn = 1;
 magnet_float.magn = 1;
 
-magnet_fixed.magdir = [30  50];
-magnet_float.magdir = [60  45];
+[x,y,z]=sph2cart(30*pi/180, 50*pi/180, 1);
+magnet_fixed.magdir = [x y z];
+
+[x,y,z]=sph2cart(60*pi/180, 45*pi/180, 1);
+magnet_float.magdir = [x y z];
 
 displ = [0.1 0.09 0.11];
 

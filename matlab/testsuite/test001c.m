@@ -18,8 +18,8 @@ for ii = [-1 1]
       for yy = 0.12*[-1, 1]
         for zz = 0.12*[-1, 1]
 
-              magnet_fixed.magdir = [0  ii*90];  % $z$
-              magnet_float.magdir = [0  jj*90];  % $z$
+              magnet_fixed.magdir = [0 0 ii];
+              magnet_float.magdir = [0 0 jj];
               displ = [xx yy zz];
               f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
 
@@ -29,11 +29,10 @@ for ii = [-1 1]
   end
 end
 
-f = round( f , 8 );
+f = round(f,8);
 
 uniquedir = f(3,:);
 otherdir  = f([1 2],:);
-
 
 test1 = abs(diff(abs(f(1,:))))<1e-10 ;
 test2 = abs(diff(abs(f(2,:))))<1e-10 ;
@@ -58,8 +57,8 @@ for ii = [-1 1]
       for yy = 0.12*[-1, 1]
         for zz = 0.12*[-1, 1]
 
-              magnet_fixed.magdir = [0  ii*90];  % $\pm z$
-              magnet_float.magdir = [jj*90  0];  % $\pm y$
+              magnet_fixed.magdir = [0 0 ii];
+              magnet_float.magdir = [0 jj 0];
               displ = [xx yy zz];
               f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
 

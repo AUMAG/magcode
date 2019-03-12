@@ -10,18 +10,18 @@ magnet_float.type = 'cuboid';
 % Fixed parameters:
 magnet_fixed.magn = 1.3;
 magnet_float.magn = 1.3;
-magnet_fixed.magdir = [0  90];  % $z$
+magnet_fixed.magdir = [0 0 1];
 displ = 0.12*[1 1 1];
 
 
-magnet_float.magdir = [45  0];  % $\vec e_x+\vec e_y$
+magnet_float.magdir = [1 1 0];
 f1 = magnetforces(magnet_fixed,magnet_float,displ);
 
 % Components:
-magnet_float.magdir = [0  0];  % $\vec e_x$
+magnet_float.magdir = [1 0 0];
 fc1 = magnetforces(magnet_fixed,magnet_float,displ);
 
-magnet_float.magdir = [90  0];  % $\vec e_y$
+magnet_float.magdir = [0 1 0];
 fc2 = magnetforces(magnet_fixed,magnet_float,displ);
 
 f2 = (fc1+fc2)/sqrt(2);
@@ -32,14 +32,14 @@ assert ( ...
            )
 
 
-magnet_float.magdir = [0  45];  % $\vec e_y+\vec e_z$
+magnet_float.magdir = [0 1 1];
 f1 = magnetforces(magnet_fixed,magnet_float,displ);
 
 % Components:
-magnet_float.magdir = [0  0];  % $\vec e_x$
+magnet_float.magdir = [0 1 0];
 fc1 = magnetforces(magnet_fixed,magnet_float,displ);
 
-magnet_float.magdir = [0  90];  % $\vec e_z$
+magnet_float.magdir = [0 0 1];
 fc2 = magnetforces(magnet_fixed,magnet_float,displ);
 
 f2 = (fc1+fc2)/sqrt(2);
@@ -50,18 +50,17 @@ assert ( ...
            )
 
 
-[t p r] = cart2sph(1/sqrt(3),1/sqrt(3),1/sqrt(3));
-magnet_float.magdir = [t p]*180/pi;  % $\vec e_y+\vec e_z+\vec e_z$
+magnet_float.magdir = [1 1 1];
 f1 = magnetforces(magnet_fixed,magnet_float,displ);
 
 % Components:
-magnet_float.magdir = [0  0];  % $\vec e_x$
+magnet_float.magdir = [1 0 0];
 fc1 = magnetforces(magnet_fixed,magnet_float,displ);
 
-magnet_float.magdir = [90  0];  % $\vec e_y$
+magnet_float.magdir = [0 1 0];
 fc2 = magnetforces(magnet_fixed,magnet_float,displ);
 
-magnet_float.magdir = [0  90];  % $\vec e_z$
+magnet_float.magdir = [0 0 1];
 fc3 = magnetforces(magnet_fixed,magnet_float,displ);
 
 f2 = (fc1+fc2+fc3)/sqrt(3);

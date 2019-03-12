@@ -16,8 +16,8 @@ for ii = [1, -1]
   for jj = [1, -1]
     for kk = [1, -1]
 
-      magnet_fixed.magdir = ii*[0  90];  % $\pm z$
-      magnet_float.magdir = jj*[90 0];  % $\pm y$
+      magnet_fixed.magdir = [0 0 ii];  % $\pm z$
+      magnet_float.magdir = [0 jj 0];  % $\pm y$
       displ = kk*[0 0 0.1];  % $\pm z$
       fzyz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
 
@@ -55,8 +55,8 @@ for ii = [1, -1]
   for jj = [1, -1]
     for kk = [1, -1]
 
-      magnet_fixed.magdir = ii*[0  90];  % $\pm z$
-      magnet_float.magdir = [90+jj*90 0];  % $\pm x$
+      magnet_fixed.magdir = [0 0 ii];  % $\pm z$
+      magnet_float.magdir = [jj 0 0];  % $\pm x$
       displ = kk*[0.1 0 0];  % $\pm x$
       fzxz(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
 
@@ -94,8 +94,8 @@ for ii = [1, -1]
   for jj = [1, -1]
     for kk = [1, -1]
 
-      magnet_fixed.magdir = ii*[0  90];  % $\pm z$
-      magnet_float.magdir = [90+jj*90 0];  % $\pm x$
+      magnet_fixed.magdir = [0 0 ii];  % $\pm z$
+      magnet_float.magdir = [jj 0 0];  % $\pm x$
       displ = kk*[0 0 0.1];  % $\pm z$
       fzxx(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
 
@@ -135,8 +135,8 @@ for ii = [1, -1]
   for jj = [1, -1]
     for kk = [1, -1]
 
-      magnet_fixed.magdir = ii*[0  90];  % $\pm z$
-      magnet_float.magdir = jj*[90 0];  % $\pm y$
+      magnet_fixed.magdir = [0 0 ii];  % $\pm z$
+      magnet_float.magdir = [0 jj 0];  % $\pm y$
       displ = kk*[0 0.1 0];  % $\pm y$
       fzyy(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
 

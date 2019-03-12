@@ -217,6 +217,7 @@ especially, is rather unclear/non-existent at present. The user guide,
 however, should contain the bulk of the information needed to use this code.
 \end{abstract}
 
+\newpage
 \tableofcontents
 
 \newpage
@@ -235,34 +236,24 @@ however, should contain the bulk of the information needed to use this code.
 The possible options for \texttt{T} are: \texttt{'cuboid'}, \texttt{'cylinder'}, \texttt{'coil'}.
 If \texttt{'type',T} is omitted it will be inferred by the number of elements used to specify the dimensions of the magnets/coils.
 
-\paragraph{Cuboid magnets}
+\subsection{Cuboid magnets}
+
 For cuboid magnets, the following should be specified:
 \begin{description}[noitemsep,font=\ttfamily]
 \item['dim'] A $(3\times1)$ vector of the side-lengths of the magnet.
 \item['grade'] The `grade' of the magnet as a string such as \texttt{'N42'}.
-\item['magdir'] A vector representing the direction of the magnetisation.
-                This may be either a $(3\times1)$ vector in cartesian
-                coordinates or a $(2\times1)$ vector in spherical coordidates.
+\item['magdir'] A vector representing the direction of the magnetisation; either a $(3\times1)$ vector in cartesian
+                coordinates or a string such as \texttt{'+x'}.
 \end{description}
+In cartesian coordinates, the |'magdir'| vector is interpreted as a unit vector; it is only used to calculate the direction of the magnetisation.
+In other words, writing |[1;0;0]| is the same as |[2;0;0]|, and so on.
+
 Instead of specifying a magnet grade, you may explicitly input the remanence magnetisation
 of the magnet direction with
 \begin{description}[noitemsep,font=\ttfamily]
 \item['magn'] The remanence magnetisation of the magnet in Tesla.
 \end{description}
 Note that when not specified, the |magn| value $B_r$ is calculated from the magnet grade $N$ using $B_r=2\sqrt{N/100}$.
-
-In cartesian coordinates, the |'magdir'| vector is interpreted as a unit vector; it is only used to calculate the direction of the magnetisation.
-In other words, writing |[1;0;0]| is the same as |[2;0;0]|, and so on.
-In spherical coordinates $(\theta,\phi)$, $\theta$ is the vertical projection of the angle around the $x$--$y$ plane ($\theta=0$ coincident with the $x$-axis), and $\phi$ is the angle from the $x$--$y$ plane towards the $z$-axis.
-In other words, the following unit vectors are equivalent:
-\begin{align*}
-(1,0,0)_{\text{cartesian}} &\equiv (0,0)_{\text{spherical}}\\
-(0,1,0)_{\text{cartesian}} &\equiv (90,0)_{\text{spherical}}\\
-(0,0,1)_{\text{cartesian}} &\equiv (0,90)_{\text{spherical}}
-\end{align*}
-N.B.\ $\theta$ and $\phi$ must be input in degrees, not radians.
-This seemingly odd decision was made in order to calculate quantities such as $\cos(\pi/2)=0$ exactly rather than to machine precision.%
-\footnote{Try for example comparing the logical comparisons \texttt{cosd(90)==0} versus \texttt{cos(pi)==0}.}
 
 If you are calculating the torque on the second magnet, then it is assumed that the centre of rotation is at the centroid of the second magnet.
 If this is not the case, the centre of rotation of the second magnet can be specified with
@@ -271,16 +262,22 @@ If this is not the case, the centre of rotation of the second magnet can be spec
 (or $(3\times D)$ if necessary; see $D$ below).
 \end{description}
 
-\paragraph{Cylindrical magnets/coils}
+\subsection{Cylindrical and ring magnets/coils}
+
 If the dimension of the magnet (\texttt{'dim'}) only has two elements,
-or the \texttt{'type'} is \texttt{'cylinder'}, the forces are calculated between two cylindrical magnets.
+or the \texttt{'type'} is \texttt{'cylinder'}, the forces are calculated between two cylindrical or ring magnets.
+
+Support for ring magnets is preliminary.
 
 While coaxial and `eccentric' geometries can be calculated, the latter is around 50 times slower; you may want to benchmark your solutions to ensure speed is acceptable. (In the not-too-near-field, you can sometimes approximate a cylindrical magnet by a cuboid magnet with equal depth and equal face area.)
 \begin{description}[noitemsep,font=\ttfamily]
-\item['dim'] A $(2\times1)$ vector containing, respectively, the magnet radius and length.
+\item['radius'] For cylindrical magnets, a $(1\times1)$ element specifying the magnet radius. For ring magnets, a $(2\times1)$ vector containing the inner and outer radius, resp.
+\item['dim'] A $(2\times1)$ or $(3\times1)$ vector containing, respectively, the magnet radius and length (for cylinders) or magnet radii and length (for rings).
 \item['dir'] Alignment direction of the cylindrical magnets;
 `\textsf{x}' or `\textsf{y}' or `\textsf{z}' (default).
 E.g., for an alignment direction of `\textsf{z}', the faces of the cylinder will be oriented in the $x$--$y$ plane.
+\item['grade'] The `grade' of the magnet as a string such as \texttt{'N42'}.
+\item['magdir'] A vector representing the direction of the magnetisation; either a $(3\times1)$ vector in cartesian coordinates or a string such as \texttt{'+x'}.
 \end{description}
 A `thin' magnetic coil can be modelled in the same way as a magnet, above; instead of
 specifying a magnetisation, however, use the following:
@@ -288,6 +285,8 @@ specifying a magnetisation, however, use the following:
 \item['turns'] A scalar representing the number of axial turns of the coil.
 \item['current'] Scalar coil current flowing CCW-from-top.
 \end{description}
+
+\subsection{Coil---unfinished!}
 
 A `thick' magnetic coil contains multiple windings in the radial direction and requires further specification.
 The complete list of variables to describe a thick coil, which requires \texttt{'type'} to be `\textsf{coil}' are
@@ -297,6 +296,7 @@ The complete list of variables to describe a thick coil, which requires \texttt{
 \item['current'] Scalar coil current flowing CCW-from-top.
 \end{description}
 Again, only coaxial displacements and forces can be investigated at this stage.
+
 
 
 \section{Forces}

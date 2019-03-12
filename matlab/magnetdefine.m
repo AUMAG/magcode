@@ -24,13 +24,6 @@ if ~isfield(mag,'type')
   end
 end
 
-if isfield(mag,'dim')
-  switch mag.type
-    case 'cylinder', mag.volume = pi*mag.dim(1)^2*mag.dim(2);
-    case 'cuboid',   mag.volume = prod(mag.dim);
-  end
-end
-
 if isfield(mag,'grade')
   if isfield(mag,'magn')
     error('Cannot specify both ''magn'' and ''grade''.')
@@ -50,52 +43,72 @@ else
 end
 
 if isfield(mag,'magdir')
-  mag.magdir = mag.magdir(:);
+  mag.magdir = make_unit_vector(mag,'magdir');
 end
 if isfield(mag,'dir')
-  mag.dir = mag.dir(:);
+  mag.dir = make_unit_vector(mag,'dir');
 end
 if isfield(mag,'dim')
   mag.dim = mag.dim(:);
 end
 
+if ~isfield(mag,'magdir')
+  mag.magdir = mag.dir;
+end
 
-if strcmp(mag.type,'cylinder')
+switch mag.type
+  case 'cylinder'
+    
+    % default to +Z magnetisation
+    if ~isfield(mag,'dir')
+      if ~isfield(mag,'magdir')
+        mag.dir    = [0; 0; 1];
+        mag.magdir = [0; 0; 1];
+      else
+        mag.dir = mag.magdir;
+      end
+    end
 
-  % default to +Z magnetisation
-  if ~isfield(mag,'dir')
+    % convert from current/turns to equiv magnetisation:
+    if ~isfield(mag,'magn')
+      if isfield(mag,'turns') && isfield(mag,'current')
+        mag.magn = 4*pi*1e-7*mag.turns*mag.current/mag.dim(2);
+      end
+    end
+    
+    if isfield(mag,'radius') && isfield(mag,'height')
+      mag.dim = [mag.radius(:); mag.height];
+    end
+    
+    if isfield(mag,'dim')
+      
+      if numel(mag.dim) == 3
+        mag.isring = true;
+        if mag.dim(2) <= mag.dim(1)
+          error('Ring radii must be defined as [ri ro] with ro > ri.')
+        end
+        mag.volume = pi*(mag.dim(2)^2-mag.dim(1)^2)*mag.dim(3);
+      else
+        mag.isring = false;
+        mag.volume = pi*mag.dim(1)^2*mag.dim(2);
+      end
+      
+    end
+
+    
+  case 'cuboid'
+    
     if ~isfield(mag,'magdir')
-      mag.dir    = [0; 0; 1];
+      warning('Magnet direction ("magdir") not specified; assuming +z.')
       mag.magdir = [0; 0; 1];
     else
-      mag.dir = mag.magdir;
+      mag.magdir = make_unit_vector(mag,'magdir');
     end
-  else
-    if ~isfield(mag,'magdir')
-      mag.magdir = mag.dir;
+    
+    if isfield(mag,'dim')
+      mag.volume = prod(mag.dim);
     end
-  end
-
-  % convert from current/turns to equiv magnetisation:
-  if ~isfield(mag,'magn')
-    if isfield(mag,'turns') && isfield(mag,'current')
-      mag.magn = 4*pi*1e-7*mag.turns*mag.current/mag.dim(2);
-    end
-  end
-
-  if isfield(mag,'radius') && isfield(mag,'height')
-    mag.dim = [mag.radius, mag.height];
-  end
-
-else
-
-  if ~isfield(mag,'magdir')
-    warning('Magnet direction ("magdir") not specified; assuming +z.')
-    mag.magdir = [0; 0; 1];
-  else
-    mag.magdir = resolve_magdir(mag.magdir);
-  end
-
+    
 end
 
 if isfield(mag,'magdir') && isfield(mag,'magn')
@@ -136,43 +149,47 @@ end
 end
 %\end{mfunction}
 
-%\begin{mfunction}{resolve_magdir}
+%\begin{mfunction}{make_unit_vector}
+function vec = make_unit_vector(mag,vecname)
+% Magnetisation directions are specified in cartesian coordinates.
+% Although they should be unit vectors, we don't assume they are.
 
-function magdir = resolve_magdir(magdir)
+if ~isfield(mag,vecname)
+  vec = [0;0;0];
+  return
+end
 
-% Magnetisation directions are specified in either cartesian or spherical
-% coordinates.
-%
-% We don't use Matlab's |sph2cart| here, because it doesn't calculate zero
-% accurately (because it uses radians and |cos(pi/2)| can only be evaluated
-% to machine precision of pi rather than symbolically).
+vec_in = mag.(vecname);
 
-  if numel(magdir) == 2
-    theta = magdir(1);
-    phi = magdir(2);
-    magdir = [ cosd(phi)*cosd(theta); cosd(phi)*sind(theta); sind(phi) ];
-  elseif numel(magdir) == 3
-    if all(magdir == 0)
-      magdir = [0; 0; 0]; % this looks redundant but ensures column vector
-    else
-      magdir = magdir(:)/norm(magdir);
-    end
-  elseif numel(magdir) == 1
-    switch magdir
-      case  'x'; magdir = [1;0;0];
-      case  'y'; magdir = [0;1;0];
-      case  'z'; magdir = [0;0;1];
-      case '+x'; magdir = [1;0;0];
-      case '+y'; magdir = [0;1;0];
-      case '+z'; magdir = [0;0;1];
-      case '-x'; magdir = [-1; 0; 0];
-      case '-y'; magdir = [ 0;-1; 0];
-      case '-z'; magdir = [ 0; 0;-1];
-      otherwise, error('Magnetisation %s not understood.',magdir);
-    end
-  else
-    error('magdir has wrong number of elements.')
+if isnumeric(vec_in)
+  
+  if numel(vec_in) ~= 3
+    error(['"',vecname,'" has wrong number of elements (should be 3x1 vector or string input like ''+x''.'])
   end
+  norm_vec_in = norm(vec_in);
+  if norm_vec_in < eps
+    norm_vec_in = 1; % to avoid 0/0
+  end
+  vec = vec_in(:)/norm_vec_in;
+  
+elseif ischar(vec_in)
+  
+  switch vec_in
+    case  'x'; vec = [1;0;0];
+    case  'y'; vec = [0;1;0];
+    case  'z'; vec = [0;0;1];
+    case '+x'; vec = [1;0;0];
+    case '+y'; vec = [0;1;0];
+    case '+z'; vec = [0;0;1];
+    case '-x'; vec = [-1; 0; 0];
+    case '-y'; vec = [ 0;-1; 0];
+    case '-z'; vec = [ 0; 0;-1];
+    otherwise, error('Vector string %s not understood.',vec);
+  end
+  
+else
+  error('Strange input (this shouldn''t happen)')
+end
 
 
 end

@@ -23,8 +23,8 @@ displ = [0 0 0.02];
 
 f_total = multipoleforces(fixed_array, float_array, displ);
 
-fixed_mag = magnetdefine('type','cuboid','dim',[0.01 0.01 0.01],'magn',1,'magdir',[0  90]);
-float_mag = magnetdefine('type','cuboid','dim',[0.01 0.01 0.01],'magn',1,'magdir',[0 -90]);
+fixed_mag = magnetdefine('type','cuboid','dim',[0.01 0.01 0.01],'magn',1,'magdir',[0 0 +1]);
+float_mag = magnetdefine('type','cuboid','dim',[0.01 0.01 0.01],'magn',1,'magdir',[0 0 -1]);
 f_mag = magnetforces(fixed_mag,float_mag,displ);
 
 assert( round(f_total(3),6) == round(f_mag(3),6) );

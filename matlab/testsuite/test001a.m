@@ -14,9 +14,9 @@ offset = 0.1;
 f = [];
 
 for ii = [1, -1]
-  magnet_fixed.magdir = [0 ii*90]; % $\pm z$
+  magnet_fixed.magdir = [0 0 ii];
   for jj = [1, -1]
-    magnet_float.magdir = [0 jj*90];
+    magnet_float.magdir = [0 0 jj];
     for kk = [1, -1]
       displ = kk*[0 0 offset];
       f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
@@ -51,9 +51,9 @@ assert ( ...
 f = [];
 
 for ii = [1, -1]
-  magnet_fixed.magdir = [90+ii*90 0]; % $\pm x$
+  magnet_fixed.magdir = [ii 0 0]; % $\pm x$
   for jj = [1, -1]
-    magnet_float.magdir = [90+jj*90 0];
+    magnet_float.magdir = [jj 0 0];
     for kk = [1, -1]
       displ = kk*[offset 0 0];
       f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);
@@ -88,9 +88,9 @@ assert ( ...
 f = [];
 
 for ii = [1, -1]
-  magnet_fixed.magdir = [ii*90 0]; % $\pm y$
+  magnet_fixed.magdir = [0 ii 0]; % $\pm y$
   for jj = [1, -1]
-    magnet_float.magdir = [jj*90 0];
+    magnet_float.magdir = [0 jj 0];
     for kk = [1, -1]
       displ = kk*[0 offset 0];
       f(:,end+1) = magnetforces(magnet_fixed,magnet_float,displ);

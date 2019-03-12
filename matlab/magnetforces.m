@@ -129,99 +129,107 @@ magtype = magnet_fixed.type;
 
 %% \subsubsection{Magnet calculations}
 
-if strcmp(magtype,'cuboid')
-
-  size1 = magnet_fixed.dim(:)/2;
-  size2 = magnet_float.dim(:)/2;
-
-  swap_x_y = @(vec) vec([2 1 3],:);
-  swap_x_z = @(vec) vec([3 2 1],:);
-  swap_y_z = @(vec) vec([1 3 2],:);
-
-  rotate_z_to_x = @(vec) [  vec(3,:);  vec(2,:); -vec(1,:) ] ; % Ry( 90)
-  rotate_x_to_z = @(vec) [ -vec(3,:);  vec(2,:);  vec(1,:) ] ; % Ry(-90)
-
-  rotate_y_to_z = @(vec) [  vec(1,:); -vec(3,:);  vec(2,:) ] ; % Rx( 90)
-  rotate_z_to_y = @(vec) [  vec(1,:);  vec(3,:); -vec(2,:) ] ; % Rx(-90)
-
-  rotate_x_to_y = @(vec) [ -vec(2,:);  vec(1,:);  vec(3,:) ] ; % Rz( 90)
-  rotate_y_to_x = @(vec) [  vec(2,:); -vec(1,:);  vec(3,:) ] ; % Rz(-90)
-
-  size1_x = swap_x_z(size1);
-  size2_x = swap_x_z(size2);
-  J1_x    = rotate_x_to_z(magnet_fixed.magM);
-  J2_x    = rotate_x_to_z(magnet_float.magM);
-
-  size1_y = swap_y_z(size1);
-  size2_y = swap_y_z(size2);
-  J1_y    = rotate_y_to_z(magnet_fixed.magM);
-  J2_y    = rotate_y_to_z(magnet_float.magM);
-  
-  if calc_force_bool
-    for iii = 1:Ndispl
-      forces_out(:,iii) = single_magnet_force(displ(:,iii));
+switch magtype
+  case 'cuboid'
+    
+    size1 = magnet_fixed.dim(:)/2;
+    size2 = magnet_float.dim(:)/2;
+    
+    swap_x_y = @(vec) vec([2 1 3],:);
+    swap_x_z = @(vec) vec([3 2 1],:);
+    swap_y_z = @(vec) vec([1 3 2],:);
+    
+    rotate_z_to_x = @(vec) [  vec(3,:);  vec(2,:); -vec(1,:) ] ; % Ry( 90)
+    rotate_x_to_z = @(vec) [ -vec(3,:);  vec(2,:);  vec(1,:) ] ; % Ry(-90)
+    
+    rotate_y_to_z = @(vec) [  vec(1,:); -vec(3,:);  vec(2,:) ] ; % Rx( 90)
+    rotate_z_to_y = @(vec) [  vec(1,:);  vec(3,:); -vec(2,:) ] ; % Rx(-90)
+    
+    rotate_x_to_y = @(vec) [ -vec(2,:);  vec(1,:);  vec(3,:) ] ; % Rz( 90)
+    rotate_y_to_x = @(vec) [  vec(2,:); -vec(1,:);  vec(3,:) ] ; % Rz(-90)
+    
+    size1_x = swap_x_z(size1);
+    size2_x = swap_x_z(size2);
+    J1_x    = rotate_x_to_z(magnet_fixed.magM);
+    J2_x    = rotate_x_to_z(magnet_float.magM);
+    
+    size1_y = swap_y_z(size1);
+    size2_y = swap_y_z(size2);
+    J1_y    = rotate_y_to_z(magnet_fixed.magM);
+    J2_y    = rotate_y_to_z(magnet_float.magM);
+    
+    if calc_force_bool
+      for iii = 1:Ndispl
+        forces_out(:,iii) = single_magnet_force(displ(:,iii));
+      end
     end
-  end
-
-  if calc_stiffness_bool
-    for iii = 1:Ndispl
-      stiffnesses_out(:,iii) = single_magnet_stiffness(displ(:,iii));
+    
+    if calc_stiffness_bool
+      for iii = 1:Ndispl
+        stiffnesses_out(:,iii) = single_magnet_stiffness(displ(:,iii));
+      end
     end
-  end
-
-  if calc_torque_bool
-    torques_out = single_magnet_torque(displ,magnet_float.lever);
-  end
-
-elseif strcmp(magtype,'cylinder')
-
-  if any(abs(magnet_fixed.dir) ~= abs(magnet_float.dir))
-    error('Cylindrical magnets must be oriented in the same direction')
-  end
-  if any(abs(magnet_fixed.magdir) ~= abs(magnet_float.magdir))
-    error('Cylindrical magnets must be oriented in the same direction')
-  end
-  if any(abs(magnet_fixed.dir) ~= abs(magnet_fixed.magdir))
-    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
-  end
-  if any(abs(magnet_float.dir) ~= abs(magnet_float.magdir))
-    error('Cylindrical magnets must be magnetised in the same direction as their orientation')
-  end
-
-  cyldir    = find(magnet_float.magdir ~= 0);
-  cylnotdir = find(magnet_float.magdir == 0);
-  if length(cyldir) ~= 1
-    error('Cylindrical magnets must be aligned in one of the x, y or z directions')
-  end
-
-  if calc_force_bool
-    for iii = 1:Ndispl
-      forces_out(:,iii)  =  single_magnet_cyl_force(displ(:,iii));
+    
+    if calc_torque_bool
+      torques_out = single_magnet_torque(displ,magnet_float.lever);
     end
-  end
-
-  if calc_stiffness_bool
-    error('Stiffness cannot be calculated for cylindrical magnets yet.')
-  end
-
-  if calc_torque_bool
-    error('Torques cannot be calculated for cylindrical magnets yet.')
-  end
-  
-
-elseif strcmp(magtype,'coil')
-
-  for iii = 1:Ndispl
-    forces_out(:,iii) = coil_sign*coil.dir*...
-      forces_magcyl_shell_calc(...
+    
+  case 'cylinder'
+    
+    if any(abs(magnet_fixed.dir) ~= abs(magnet_float.dir))
+      error('Cylindrical magnets must be oriented in the same direction')
+    end
+    if any(abs(magnet_fixed.magdir) ~= abs(magnet_float.magdir))
+      error('Cylindrical magnets must be oriented in the same direction')
+    end
+    if any(abs(magnet_fixed.dir) ~= abs(magnet_fixed.magdir))
+      error('Cylindrical magnets must be magnetised in the same direction as their orientation')
+    end
+    if any(abs(magnet_float.dir) ~= abs(magnet_float.magdir))
+      error('Cylindrical magnets must be magnetised in the same direction as their orientation')
+    end
+    
+    cyldir    = find(magnet_float.magdir ~= 0);
+    cylnotdir = find(magnet_float.magdir == 0);
+    if length(cyldir) ~= 1
+      error('Cylindrical magnets must be aligned in one of the x, y or z directions')
+    end
+    
+    if calc_force_bool
+      if magnet_fixed.isring && magnet_float.isring
+        for iii = 1:Ndispl
+          forces_out(:,iii) = single_magnet_ring_force(displ(:,iii));
+        end
+      else
+        for iii = 1:Ndispl
+          forces_out(:,iii) = single_magnet_cyl_force(displ(:,iii));
+        end
+      end
+    end
+    
+    if calc_stiffness_bool
+      error('Stiffness cannot be calculated for cylindrical magnets yet.')
+    end
+    
+    if calc_torque_bool
+      error('Torques cannot be calculated for cylindrical magnets yet.')
+    end
+    
+    
+  case 'coil'
+    
+    warning('Code for coils in Matlab has never been completed :( See the Mathematica code for more details!')
+    for iii = 1:Ndispl
+      forces_out(:,iii) = coil_sign*coil.dir*...
+        forces_magcyl_shell_calc(...
         magnet.dim, ...
         coil.dim, ...
         squeeze(displ(cyldir,:)), ...
         magnet.magM(cyldir), ...
         coil.current, ...
         coil.turns);
-  end
-
+    end
+    
 end
 
 
@@ -274,6 +282,32 @@ end
       magdir = [0;0;0];
       magdir(cyldir) = 1;
       forces_out = magdir*cylinder_force_coaxial(magnet_fixed.magM(cyldir), magnet_float.magM(cyldir), magnet_fixed.dim(1), magnet_float.dim(1), magnet_fixed.dim(2), magnet_float.dim(2), displ(cyldir)).';
+    else
+      ecc_forces = cylinder_force_eccentric(magnet_fixed.dim, magnet_float.dim, displ(cyldir), ecc, magnet_fixed.magM(cyldir), magnet_float.magM(cyldir)).';
+      forces_out(cyldir) = ecc_forces(2);
+      forces_out(cylnotdir(1)) = displ(cylnotdir(1))/ecc*ecc_forces(1);
+      forces_out(cylnotdir(2)) = displ(cylnotdir(2))/ecc*ecc_forces(1);
+      % Need to check this division into components is correct...
+    end
+
+  end
+% \end{mfunction}
+
+% \begin{mfunction}{single_magnet_ring_force}
+  function forces_out = single_magnet_ring_force(displ)
+
+    forces_out = nan(size(displ));
+
+    ecc = sqrt(sum(displ(cylnotdir).^2));
+
+    if ecc < eps
+      magdir = [0;0;0];
+      magdir(cyldir) = 1;
+      forces11 = magdir*cylinder_force_coaxial(-magnet_fixed.magM(cyldir), -magnet_float.magM(cyldir), magnet_fixed.dim(1), magnet_float.dim(1), magnet_fixed.dim(3), magnet_float.dim(3), displ(cyldir)).';
+      forces12 = magdir*cylinder_force_coaxial(-magnet_fixed.magM(cyldir), +magnet_float.magM(cyldir), magnet_fixed.dim(1), magnet_float.dim(2), magnet_fixed.dim(3), magnet_float.dim(3), displ(cyldir)).';
+      forces21 = magdir*cylinder_force_coaxial(+magnet_fixed.magM(cyldir), -magnet_float.magM(cyldir), magnet_fixed.dim(2), magnet_float.dim(1), magnet_fixed.dim(3), magnet_float.dim(3), displ(cyldir)).';
+      forces22 = magdir*cylinder_force_coaxial(+magnet_fixed.magM(cyldir), +magnet_float.magM(cyldir), magnet_fixed.dim(2), magnet_float.dim(2), magnet_fixed.dim(3), magnet_float.dim(3), displ(cyldir)).';
+      forces_out = forces11 + forces12 + forces21 + forces22;
     else
       ecc_forces = cylinder_force_eccentric(magnet_fixed.dim, magnet_float.dim, displ(cyldir), ecc, magnet_fixed.magM(cyldir), magnet_float.magM(cyldir)).';
       forces_out(cyldir) = ecc_forces(2);
