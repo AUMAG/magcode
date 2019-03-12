@@ -32,41 +32,70 @@ if isfield(mag,'grade')
   end
 end
 
+mag = attempt3Mvector(mag,'lever');
+mag = make_unit_vector(mag,'magdir');
+mag = make_unit_vector(mag,'dir');
+
+% defaults
 
 if ~isfield(mag,'lever')
   mag.lever = [0; 0; 0];
+end
+
+if strcmp(mag.type,'cylinder')
 else
-  ss = size(mag.lever);
-  if (ss(1)~=3) && (ss(2)==3)
-    mag.lever = mag.lever.'; % attempt [3 M] shape
-  end
 end
 
-if isfield(mag,'magdir')
-  mag.magdir = make_unit_vector(mag,'magdir');
-end
-if isfield(mag,'dir')
-  mag.dir = make_unit_vector(mag,'dir');
-end
-if isfield(mag,'dim')
-  mag.dim = mag.dim(:);
-end
-
-if ~isfield(mag,'magdir')
-  mag.magdir = mag.dir;
-end
 
 switch mag.type
-  case 'cylinder'
+  case 'cylinder', mag = definecylinder(mag);
+  case 'cuboid',   mag = definecuboid(mag);
+  otherwise
+    error('Magnet type "%s" unknown',mag.type)
+end
+
+
+if isfield(mag,'magdir') && isfield(mag,'magn')
+  mag.magM = mag.magdir*mag.magn;
+  mag.dipolemoment = 1/(4*pi*1e-7)*mag.magM*mag.volume;
+end
+
+mag.fndefined = true;
+
+end
+
+
+function mag = definecuboid(mag)
+
+    if ~isfield(mag,'magdir')
+      warning('Magnet direction ("magdir") not specified; assuming +z.')
+      mag.magdir = [0; 0; 1];
+    else
+      mag = make_unit_vector(mag,'magdir');
+    end
     
+    if isfield(mag,'dim')
+      mag.volume = prod(mag.dim);
+    end
+
+end
+
+
+function mag = definecylinder(mag)
+
     % default to +Z magnetisation
     if ~isfield(mag,'dir')
       if ~isfield(mag,'magdir')
+        warning('Magnet direction and magnetisation direction ("dir" and "magdir") not specified; assuming +z for both.')
         mag.dir    = [0; 0; 1];
         mag.magdir = [0; 0; 1];
       else
         mag.dir = mag.magdir;
       end
+    else
+      if ~isfield(mag,'magdir')
+        mag.magdir = mag.dir;
+      end      
     end
 
     % convert from current/turns to equiv magnetisation:
@@ -95,30 +124,28 @@ switch mag.type
       
     end
 
-    
-  case 'cuboid'
-    
-    if ~isfield(mag,'magdir')
-      warning('Magnet direction ("magdir") not specified; assuming +z.')
-      mag.magdir = [0; 0; 1];
-    else
-      mag.magdir = make_unit_vector(mag,'magdir');
-    end
-    
-    if isfield(mag,'dim')
-      mag.volume = prod(mag.dim);
-    end
-    
 end
 
-if isfield(mag,'magdir') && isfield(mag,'magn')
-  mag.magM = mag.magdir*mag.magn;
-  mag.dipolemoment = 1/(4*pi*1e-7)*mag.magM*mag.volume;
+
+
+%\begin{mfunction}{attempt3Mvector}
+% If a series of vectors (column arrays) are stacked they should create a
+% [3 M] size array.
+% If [M 3] is entered, transpose it.
+% (If size [3 3], leave as is!)
+function mag = attempt3Mvector(mag,vecname)
+
+if isfield(mag,vecname)
+
+  if (size(mag.(vecname),1)~=3) && (size(mag.(vecname),2)==3)
+    mag.(vecname) = transpose(mag.(vecname)); % attempt [3 M] shape
+  end
+  
 end
 
-mag.fndefined = true;
-
 end
+%\end{mfunction}
+
 
 %\begin{mfunction}{grade2magn}
 %  Magnet `strength' can be specified using either "magn" or "grade".
@@ -150,12 +177,11 @@ end
 %\end{mfunction}
 
 %\begin{mfunction}{make_unit_vector}
-function vec = make_unit_vector(mag,vecname)
+function mag = make_unit_vector(mag,vecname)
 % Magnetisation directions are specified in cartesian coordinates.
 % Although they should be unit vectors, we don't assume they are.
 
 if ~isfield(mag,vecname)
-  vec = [0;0;0];
   return
 end
 
@@ -191,6 +217,7 @@ else
   error('Strange input (this shouldn''t happen)')
 end
 
+mag.(vecname) = vec;
 
 end
 
