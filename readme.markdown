@@ -8,7 +8,7 @@ Public-facing documentation for this repository is located at: <http://wspr.io/m
 
 * [![DOI](https://zenodo.org/badge/344445.svg)](https://zenodo.org/badge/latestdoi/344445)
 * [![Build Status](https://travis-ci.com/wspr/magcode.svg?branch=master)](https://travis-ci.com/wspr/magcode)
-* [![codecov](https://codecov.io/gh/wspr/magcode/branch/master/graph/badge.svg)](https://codecov.io/gh/wspr/magcode)
+* [![codecov](https://codecov.io/gh/wspr/magcode/branch/master/graph/badge.svg)](https://codecov.io/gh/wspr/magcode) (there appears to be a problem/bug in the code coverage calculation in Matlab)
 
 ## Citation and acknowledgement
 
