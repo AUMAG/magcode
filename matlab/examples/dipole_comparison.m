@@ -19,12 +19,12 @@ assert(all(t1(:)==t2(:)))
 ma = [0;0;100];
 mb = [0;0;100];
 rab = [0;0;1];
-calcdipoleforcetorque(rab,ma,mb)
+calcdipoleforcetorque(ma,mb,rab)
 
 ma = [0;-100;0];
 mb = [0;0;100];
 rab = [0;0;1];
-calcdipoleforcetorque(rab,ma,mb)
+calcdipoleforcetorque(ma,mb,rab)
 
 %%
 
