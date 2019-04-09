@@ -29,16 +29,25 @@ calcdipoleforcetorque(ma,mb,rab)
 %%
 
 clc
+clear all
+close all
+
+JM = 1;
+magJa = [0;0;1];
+magJb = [0;0;1];
 
 a = 0.02;
-coil = magnetdefine('type','cuboid','magn',+1,'magdir',[0;0;1],'dim',[a 2*a a]);
-mag  = magnetdefine('type','cuboid','magn',-1,'magdir',[0;0;1],'dim',[2*a a a]);
+coil = magnetdefine('type','cuboid','magn',JM,'magdir',magJa,'dim',[a 2*a a]);
+mag  = magnetdefine('type','cuboid','magn',JM,'magdir',magJb,'dim',[2*a a a]);
 
 N = 50;
 displ = [0; 0; 1]*linspace(2*a,5*a,N)+[2*a;a;0];
 
+coil_moment = 1/(4*pi*1e-7)*magJa*coil.volume;
+mag_moment  = 1/(4*pi*1e-7)*magJb*mag.volume;
+
 [coilmagforce,coilmagtorque] = magnetforces(coil,mag,displ,'force','torque');
-[dipoleforce,dipoletorque]  = calcdipoleforcetorque(coil.dipolemoment,mag.dipolemoment,displ);
+[dipoleforce,dipoletorque]  = calcdipoleforcetorque(coil_moment,mag_moment,displ);
 
 figure(1); clf; hold on
 subplot(2,1,1); cla; hold on
@@ -52,7 +61,7 @@ end
 legend('X','Y','Z')
 xlabel('Displacement, m')
 ylabel('Force, N')
-set(gca,'box','on')
+title('Cuboid exact (solid) vs dipole (dashed)')
 
 subplot(2,1,2); cla; hold on
 h = {0;0;0};
@@ -65,15 +74,31 @@ end
 legend('X','Y','Z')
 xlabel('Displacement, m')
 ylabel('Torque, Nm')
-set(gca,'box','on')
+title('Cuboid exact (solid) vs dipole (dashed)')
 
 
 
-%% Dipole functions
+%% Dipole function
 
 function [f,t] = calcdipoleforcetorque(m_a,m_b,r_ab)
-
-% m = 1/(4*pi*1e-7)*Br*V
+% [F,T] = CALCDIPOLEFORCETORQUE(MA,MB,R)
+%
+% Calculates the force and torque on magnetic dipole MB due to magnetic
+% dipole MA with distance vector R.
+%
+% Magnetic dipole moments can be calculated for a hard magnet using the equation
+%           m = 1/(4*pi*1e-7)*Br*V
+% where Br is the remanence magnetisation vector in Tesla and V is the magnet volume.
+%
+% For a coil, the magnetic dipole moment is
+%           m = N*I*A*n
+% where I is the current, N the number of turns, A the cross-sectional area
+% of the current loop(s), and n is the normal vector to the loop(s).
+%
+% These equations have been adapted from the following pair of papers:
+% * Yung 1998:      http://doi.org/10.1155/1998/79537
+% * Landecker 1999: http://doi.org/10.1155/1999/97902
+%
 
 % ensure dipole moment vectors are replicated to the same length as the
 % displacement vector:
@@ -86,21 +111,21 @@ else
 end
 
 R_ab = sqrt(r_ab(1,:).^2+r_ab(2,:).^2+r_ab(3,:).^2);
-ur   = r_ab./R_ab;
+rnorm   = r_ab./R_ab;
 
-drma = dot(ur,m_a);
-drmb = dot(ur,m_b);
+dot_rma = dot(rnorm,m_a);
+dot_rmb = dot(rnorm,m_b);
 
-f = 3e-7./(R_ab.^4).*(...
-   + ur.*dot(m_a,m_b) ...
-   + m_a.*drmb ...
-   + m_b.*drma ...
-   - 5*ur.*drma.*drmb ...
+f = 3e-7./R_ab.^4.*(...
+   + rnorm.*dot(m_a,m_b) ...
+   + m_a.*dot_rmb ...
+   + m_b.*dot_rma ...
+   - 5*rnorm.*dot_rma.*dot_rmb ...
   );
 
-t = 1e-7./R_ab.^5.*( ...
-  + cross(3*m_b,dot(m_a,r_ab).*r_ab) ...  
-  - r_ab.^2.*cross(m_a,m_b) ...
+t = 1e-7./R_ab.^3.*( ...
+  + cross(3*m_b,dot_rma.*rnorm) ...  
+  - cross(m_a,m_b) ...
   );
 
 end
