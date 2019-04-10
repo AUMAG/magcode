@@ -84,7 +84,7 @@ for ii=[0,1]
             if any(a)
               Ex(a) = 1/8*w(a).*(-w2(a)-2*Cw(a).*w(a)-8*Cv(a).*abs(w(a))+w(a).*Cww(a).*log(w2(a)));
               Ey(a) = 1/8*w(a).*(+w2(a)+2*Cw(a).*w(a)+8*Cu(a).*abs(w(a))-w(a).*Cww(a).*log(w2(a)));
-              Ez(a) = 1/4*(Cu(a)-Cv(a))*w2(a).*log(w2(a));
+              Ez(a) = 1/4*(Cu(a)-Cv(a)).*w2(a).*log(w2(a));
             end
             
             if any(b)
