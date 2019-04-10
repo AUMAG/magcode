@@ -26,8 +26,9 @@ index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
 calc_force_bool     = false;
 calc_stiffness_bool = false;
 calc_torque_bool    = false;
+break_ind = numel(varargin);
 
-for iii = 1:length(varargin)
+for iii = 1:break_ind
   switch varargin{iii}
     case 'force',      calc_force_bool     = true;
     case 'stiffness',  calc_stiffness_bool = true;
@@ -36,12 +37,27 @@ for iii = 1:length(varargin)
     case 'y',  warning("Options 'x','y','z' are no longer supported.");
     case 'z',  warning("Options 'x','y','z' are no longer supported.");
     otherwise
-      error(['Unknown calculation option ''',varargin{iii},''''])
+      break_ind = iii;
+      break
   end
 end
 
+if break_ind == numel(varargin)
+  plain_opts = varargin;
+  var_opts = {};
+else
+  plain_opts = varargin{1:break_ind-1};
+  var_opts   = varargin{break_ind:end};
+end
+
+all_methods = {'auto'};
+
+ip = inputParser;
+ip.addParameter('method','auto',@(x) any(validatestring(x,all_methods)));
+ip.parse(var_opts{:});
+
 if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
-  varargin{end+1} = 'force';
+  plain_opts = {'force'};
   calc_force_bool = true;
 end
 
@@ -242,11 +258,13 @@ end
 % Outputs are ordered in the same order as the inputs are specified, which
 % makes the code a bit uglier but is presumably a bit nicer for the user
 % and/or just a bit more flexible.
+%
+% TODO: with new inputParser this can be simplified
 
 argcount = 0;
 
-for iii = 1:length(varargin)
-  switch varargin{iii}
+for iii = 1:length(plain_opts)
+  switch plain_opts{iii}
     case 'force',     argcount = argcount+1;
     case 'stiffness', argcount = argcount+1;
     case 'torque',    argcount = argcount+1;
@@ -257,8 +275,8 @@ varargout = cell(argcount,1);
 
 argcount = 0;
 
-for iii = 1:length(varargin)
-  switch varargin{iii}
+for iii = 1:length(plain_opts)
+  switch plain_opts{iii}
     case 'force',      argcount = argcount+1; varargout{argcount} = forces_out;
     case 'stiffness',  argcount = argcount+1; varargout{argcount} = stiffnesses_out;
     case 'torque',     argcount = argcount+1; varargout{argcount} = torques_out;
