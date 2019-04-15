@@ -29,7 +29,6 @@ legend('TX','TY','TZ')
 xlabel('Displacement, mm')
 ylabel('Torque, N.m')
 
-
 %% ZY
 %
 % Geometries and axis ordering to match Janssen (2011).

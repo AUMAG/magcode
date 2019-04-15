@@ -190,7 +190,7 @@ vec_in = mag.(vecname);
 if isnumeric(vec_in)
   
   if numel(vec_in) ~= 3
-    error(['"',vecname,'" has wrong number of elements (should be 3x1 vector or string input like ''+x''.'])
+    error(['"',vecname,'" has wrong number of elements (should be 3x1 vector or string input like ''+x'').'])
   end
   norm_vec_in = norm(vec_in);
   if norm_vec_in < eps
@@ -214,7 +214,7 @@ elseif ischar(vec_in)
   end
   
 else
-  error('Strange input (this shouldn''t happen)')
+  error('Strange input (should be 3x1 vector or string input like ''+x'').')
 end
 
 mag.(vecname) = vec;

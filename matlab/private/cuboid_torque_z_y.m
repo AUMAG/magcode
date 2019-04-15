@@ -42,6 +42,8 @@ Tx = zeros([1, size(offset,2)]);
 Ty = Tx;
 Tz = Tx;
 
+E_nan = nan(size(Tx));
+
 % calculate sums as described in Janssen, 2011
 for ii = 0:1
   for jj = 0:1
@@ -50,9 +52,9 @@ for ii = 0:1
         for mm = 0:1
           for nn = 0:1
             
-            Ex = nan(size(Tx));
-            Ey = Ex;
-            Ez = Ex;
+            Ex = E_nan;
+            Ey = E_nan;
+            Ez = E_nan;
 
             Cu = ((-1)^ii).*(size1(1))-offset(1,:)-lever(1,:);
             Cv = ((-1)^kk).*(size1(2))-offset(2,:)-lever(2,:);

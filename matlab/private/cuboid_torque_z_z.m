@@ -43,6 +43,7 @@ if br1==0 || br2==0
 end
 
 Txyz = zeros([3, size(offset,2)]);
+E_nan = nan(1,size(offset,2));
 
 for ii=[0,1]
   for jj=[0,1]
@@ -77,9 +78,9 @@ for ii=[0,1]
             % and all those that do not
             d = ~a & ~b & ~c;
             
-            Ex = nan(1,size(offset,2));
-            Ey = nan(1,size(offset,2));
-            Ez = nan(1,size(offset,2));
+            Ex = E_nan;
+            Ey = E_nan;
+            Ez = E_nan;
             
             if any(a)
               Ex(a) = 1/8*w(a).*(-w2(a)-2*Cw(a).*w(a)-8*Cv(a).*abs(w(a))+w(a).*Cww(a).*log(w2(a)));
