@@ -46,11 +46,11 @@ if break_ind == numel(varargin)
   plain_opts = varargin;
   var_opts = {};
 else
-  plain_opts = varargin{1:break_ind-1};
-  var_opts   = varargin{break_ind:end};
+  plain_opts = varargin(1:(break_ind-1));
+  var_opts   = varargin(break_ind:end);
 end
 
-all_methods = {'auto'};
+all_methods = {'auto','dipole'};
 
 ip = inputParser;
 ip.addParameter('method','auto',@(x) any(validatestring(x,all_methods)));
@@ -108,44 +108,52 @@ if ~isfield(magnet_float,'fndefined')
   magnet_float = magnetdefine(magnet_float);
 end
 
+if strcmp(ip.Results.method, 'dipole')
 
-
-if strcmp(magnet_fixed.type, 'coil')
-
-  if ~strcmp(magnet_float.type, 'cylinder')
-    error('Coil/magnet forces can only be calculated for cylindrical magnets.')
+  magtype = 'dipole';
+  
+else
+  
+  if strcmp(magnet_fixed.type, 'coil')
+    
+    if ~strcmp(magnet_float.type, 'cylinder')
+      error('Coil/magnet forces can only be calculated for cylindrical magnets.')
+    end
+    
+    coil = magnet_fixed;
+    magnet = magnet_float;
+    magtype = 'coil';
+    coil_sign = +1;
+    
   end
-
-  coil = magnet_fixed;
-  magnet = magnet_float;
-  magtype = 'coil';
-  coil_sign = +1;
-
-end
-
-if strcmp(magnet_float.type, 'coil')
-
-  if ~strcmp(magnet_fixed.type, 'cylinder')
-    error('Coil/magnet forces can only be calculated for cylindrical magnets.')
+  
+  if strcmp(magnet_float.type, 'coil')
+    
+    if ~strcmp(magnet_fixed.type, 'cylinder')
+      error('Coil/magnet forces can only be calculated for cylindrical magnets.')
+    end
+    
+    coil = magnet_float;
+    magnet = magnet_fixed;
+    magtype = 'coil';
+    coil_sign = -1;
+    
   end
-
-  coil = magnet_float;
-  magnet = magnet_fixed;
-  magtype = 'coil';
-  coil_sign = -1;
-
+  
+  if ~strcmp(magnet_fixed.type, magnet_float.type)
+    error('Magnets must be of same type (cuboid/cuboid or cylinder/cylinder)')
+  end
+  magtype = magnet_fixed.type;
+  
 end
-
-
-if ~strcmp(magnet_fixed.type, magnet_float.type)
-  error('Magnets must be of same type (cuboid/cuboid or cylinder/cylinder)')
-end
-magtype = magnet_fixed.type;
-
 
 %% \subsubsection{Magnet calculations}
 
 switch magtype
+  case 'dipole'
+    
+    [forces_out,torques_out] = dipole_forcetorque(magnet_fixed.dipolemoment,magnet_float.dipolemoment,displ);
+    
   case 'cuboid'
     
     size1 = magnet_fixed.dim(:)/2;
@@ -176,18 +184,18 @@ switch magtype
     
     if calc_force_bool
       for iii = 1:Ndispl
-        forces_out(:,iii) = single_magnet_force(displ(:,iii));
+        forces_out(:,iii) = cuboid_magnet_force(displ(:,iii));
       end
     end
     
     if calc_stiffness_bool
       for iii = 1:Ndispl
-        stiffnesses_out(:,iii) = single_magnet_stiffness(displ(:,iii));
+        stiffnesses_out(:,iii) = cuboid_magnet_stiffness(displ(:,iii));
       end
     end
     
     if calc_torque_bool
-      torques_out = single_magnet_torque(displ,magnet_float.lever);
+      torques_out = cuboid_magnet_torque(displ,magnet_float.lever);
     end
     
   case 'cylinder'
@@ -214,11 +222,11 @@ switch magtype
     if calc_force_bool
       if magnet_fixed.isring && magnet_float.isring
         for iii = 1:Ndispl
-          forces_out(:,iii) = single_magnet_ring_force(displ(:,iii));
+          forces_out(:,iii) = ring_magnet_force(displ(:,iii));
         end
       else
         for iii = 1:Ndispl
-          forces_out(:,iii) = single_magnet_cyl_force(displ(:,iii));
+          forces_out(:,iii) = cyl_magnet_force(displ(:,iii));
         end
       end
     end
@@ -290,7 +298,7 @@ end
 
 
 % \begin{mfunction}{single_magnet_cyl_force}
-  function forces_out = single_magnet_cyl_force(displ)
+  function forces_out = cyl_magnet_force(displ)
 
     forces_out = nan(size(displ));
 
@@ -312,7 +320,7 @@ end
 % \end{mfunction}
 
 % \begin{mfunction}{single_magnet_ring_force}
-  function forces_out = single_magnet_ring_force(displ)
+  function forces_out = ring_magnet_force(displ)
 
     forces_out = nan(size(displ));
 
@@ -346,7 +354,7 @@ end
 % After the forces are calculated, rotate them back to the original
 % coordinate system.
 
-  function force_out = single_magnet_force(displ)
+  function force_out = cuboid_magnet_force(displ)
 
     force_components = nan([9 3]);
 
@@ -391,7 +399,7 @@ end
 % and defines the lever arm for that first magnet. Therefore we need to
 % flip the definitions a bit.
 
-  function torques_out = single_magnet_torque(displ,lever)
+  function torques_out = cuboid_magnet_torque(displ,lever)
 
     torque_components = nan([size(displ) 9]);
 
@@ -435,7 +443,7 @@ end
 
 % \begin{mfunction}{single_magnet_stiffness}
 
-  function stiffness_out = single_magnet_stiffness(displ)
+  function stiffness_out = cuboid_magnet_stiffness(displ)
 
     stiffness_components = nan([9 3]);
 

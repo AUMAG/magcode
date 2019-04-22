@@ -29,17 +29,29 @@ function [f,t] = dipole_forcetorque(m_a,m_b,r_ab)
 % * Landecker 1999: http://doi.org/10.1155/1999/97902
 
 
+%% Vector size wrangling
+%
+% This can be skipped entirely if you know the three arguments are always
+% the same size.
+
 assert( size(r_ab,1)==3 , "Displacement vector RAB must be 3xM size")
 assert( size(m_a,1)==3 && size(m_b,1)==3 , "Dipole moment vectors MA and MB must be 3xM size")
+
+s = [size(m_a,2),size(m_b,2),size(r_ab,2)];
+assert( numel(unique(s)) < 3 , "Dipole moment and displacement vectors incompatible sizes (either all or only one 3xM in size)" )
+N = max(s);
+
+% Replicate all vectors to the same length:
+if s(1) == 1, m_a  = repmat(m_a,[1,N]);  end
+if s(2) == 1, m_b  = repmat(m_b,[1,N]);  end
+if s(3) == 1, r_ab = repmat(r_ab,[1,N]); end
+
+% Redundant but good to check:
 assert( size(m_a,2)==size(m_b,2) , "Dipole moment vectors MA and MB must be equal sizes")
 assert( size(m_a,2)==size(r_ab,2) , "Dipole moment vectors MA and MB and displacement vector RAB must be equal sizes")
 
-% replicate dipole moment vectors to the same length as the displacement vector:
-N = size(r_ab,2);
-if size(m_a,2) == 1
-  m_a = repmat(m_a,[1,N]);
-  m_b = repmat(m_b,[1,N]);
-end
+
+%% Calculations
 
 R_ab = sqrt(r_ab(1,:).^2+r_ab(2,:).^2+r_ab(3,:).^2);
 rnorm   = r_ab./R_ab;
