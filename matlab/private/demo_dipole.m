@@ -67,6 +67,7 @@ ylabel('Force')
 yyaxis right
 plot(t,t6(2,:))
 ylabel('Torque')
+grid on
 
 xlabel('Angle, deg.')
 xticks([0 pi/4 pi/2 3*pi/4 pi])
