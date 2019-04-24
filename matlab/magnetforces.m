@@ -183,9 +183,7 @@ switch magtype
     J2_y    = rotate_y_to_z(magnet_float.magM);
     
     if calc_force_bool
-      for iii = 1:Ndispl
-        forces_out(:,iii) = cuboid_magnet_force(displ(:,iii));
-      end
+      forces_out = cuboid_magnet_force(displ);
     end
     
     if calc_stiffness_bool
@@ -356,37 +354,38 @@ end
 
   function force_out = cuboid_magnet_force(displ)
 
-    force_components = nan([9 3]);
+    force_out = zeros(size(displ));
 
     d_x  = rotate_x_to_z(displ);
     d_y  = rotate_y_to_z(displ);
 
-    force_components(1,:) = ...
+    force_out = force_out + ...
       rotate_z_to_x( cuboid_force_z_z(size1_x,size2_x,d_x,J1_x,J2_x) );
 
-    force_components(2,:) = ...
+    force_out = force_out + ...
       rotate_z_to_x( cuboid_force_z_y(size1_x,size2_x,d_x,J1_x,J2_x) );
 
-    force_components(3,:) = ...
+    force_out = force_out + ...
       rotate_z_to_x( cuboid_force_z_x(size1_x,size2_x,d_x,J1_x,J2_x) );
 
-    force_components(4,:) = ...
+    force_out = force_out + ...
       rotate_z_to_y( cuboid_force_z_x(size1_y,size2_y,d_y,J1_y,J2_y) );
 
-    force_components(5,:) = ...
+    force_out = force_out + ...
       rotate_z_to_y( cuboid_force_z_z(size1_y,size2_y,d_y,J1_y,J2_y) );
 
-    force_components(6,:) = ...
+    force_out = force_out + ...
       rotate_z_to_y( cuboid_force_z_y(size1_y,size2_y,d_y,J1_y,J2_y) );
 
-    force_components(9,:) = cuboid_force_z_z( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
+    force_out = force_out + ...
+      cuboid_force_z_z( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
-    force_components(8,:) = cuboid_force_z_y( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
+    force_out = force_out + ...
+      cuboid_force_z_y( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
-    force_components(7,:) = cuboid_force_z_x( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
+    force_out = force_out + ...
+      cuboid_force_z_x( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
 
-
-    force_out = sum(force_components);
   end
 
 % \end{mfunction}

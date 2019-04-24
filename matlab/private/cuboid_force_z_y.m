@@ -47,9 +47,9 @@
 
                 ind_sum = ii*jj*kk*ll*pp*qq;
 
-                u = offset(1) + size2(1)*jj - size1(1)*ii;
-                v = offset(2) + size2(2)*ll - size1(2)*kk;
-                w = offset(3) + size2(3)*qq - size1(3)*pp;
+                u = offset(1,:) + size2(1)*jj - size1(1)*ii;
+                v = offset(2,:) + size2(2)*ll - size1(2)*kk;
+                w = offset(3,:) + size2(3)*qq - size1(3)*pp;
                 r = sqrt(u.^2+v.^2+w.^2);
 
                 if u == 0

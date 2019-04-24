@@ -44,9 +44,9 @@ for ii = [1 -1]
 
             ind_sum = ii*jj*kk*ll*pp*qq;
 
-            u = -offset(2) - size2(2)*jj + size1(2)*ii;
-            v =  offset(1) + size2(1)*ll - size1(1)*kk;
-            w =  offset(3) + size2(3)*qq - size1(3)*pp;
+            u = -offset(2,:) - size2(2)*jj + size1(2)*ii;
+            v =  offset(1,:) + size2(1)*ll - size1(1)*kk;
+            w =  offset(3,:) + size2(3)*qq - size1(3)*pp;
             r = sqrt(u.^2+v.^2+w.^2);
 
             if u == 0
