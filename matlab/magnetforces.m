@@ -54,6 +54,14 @@ all_methods = {'auto','dipole'};
 
 ip = inputParser;
 ip.addParameter('method','auto',@(x) any(validatestring(x,all_methods)));
+ip.addParameter('figure',gcf);
+ip.addParameter('draw',0);
+ip.addParameter('drawN',2);
+ip.addParameter('drawpath',false);
+ip.addParameter('drawpathopt',{'--','color','black'});
+ip.addParameter('markpath',false);
+ip.addParameter('markpathN',10);
+ip.addParameter('markpathopt',{'color','black','markerfacecolor','black'});
 ip.parse(var_opts{:});
 
 if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
@@ -255,6 +263,16 @@ switch magtype
 end
 
 
+%% \subsubsection{Drawing}
+
+markpath = ip.Results.markpath;
+if ischar(ip.Results.markpath)
+  markpath = {ip.Results.markpath,ip.Results.markpath,ip.Results.markpath};
+end
+
+if ip.Results.draw || ip.Results.drawpath || iscell(ip.Results.markpath)
+  draw_everything(ip)
+end
 
 
 %% \subsubsection{Return all results}
@@ -294,6 +312,45 @@ end
 
 %% \subsection{Nested functions}
 
+% \begin{mfunction}{draw_everything}
+
+  function draw_everything(ip)
+    
+    figure(ip.Results.figure);
+    fig_was_held_bool = ishold;
+    if ~fig_was_held_bool, hold on; end
+    
+    % draw magnets
+    if ip.Results.draw
+      M = min(Ndispl,ip.Results.drawN);
+      Mind = round(linspace(1,Ndispl,M));
+      
+      magnetdraw(magnet_fixed,[0;0;0])
+      magnetdraw(magnet_float,displ(:,Mind))
+      
+    end
+    
+    % draw path
+    if ip.Results.drawpath || iscell(ip.Results.markpath)
+      plot3(displ(1,:),displ(2,:),displ(3,:),ip.Results.drawpathopt{:})
+    end
+    
+    % draw markers
+    if iscell(ip.Results.markpath)
+      M = min(Ndispl,ip.Results.markpathN);
+      Mind = round(linspace(1,Ndispl,M));
+      
+      plot3(displ(1,Mind(1)),      displ(2,Mind(1))      ,displ(3,Mind(1))      ,'linestyle','none','marker',markpath{1},ip.Results.markpathopt{:})
+      plot3(displ(1,Mind(2:end-1)),displ(2,Mind(2:end-1)),displ(3,Mind(2:end-1)),'linestyle','none','marker',markpath{2},ip.Results.markpathopt{:})
+      plot3(displ(1,Mind(end)),    displ(2,Mind(end))    ,displ(3,Mind(end))    ,'linestyle','none','marker',markpath{3},ip.Results.markpathopt{:})
+      
+    end
+    
+    if ~fig_was_held_bool, hold off; end
+    
+  end
+
+% \end{mfunction}
 
 % \begin{mfunction}{single_magnet_cyl_force}
   function forces_out = cyl_magnet_force(displ)

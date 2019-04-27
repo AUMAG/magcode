@@ -1,4 +1,4 @@
-function magnetdraw(arg_magnet,arg_pos,varargin)
+function magnetdraw(magnet,arg_pos,varargin)
 % MAGNETDRAW(mag,pos) Draws a magnet in 3D.
 %
 % # Mandatory arguments
@@ -19,22 +19,31 @@ if nargin == 0
   disp('No arguments; running MAGNETDRAW demo.')
   demo_magnetdraw;
   return
+elseif nargin == 1
+  error('Not enough input arguments');
+end
+
+if ~isfield(magnet,'fndefined')
+  magnet = magnetdefine(magnet);
 end
 
 default_alpha  = 0.8;
-default_color  = [1 0 0.2];
+if isfield(magnet,'color')
+  default_color = magnet.color;
+else
+  default_color  = [1 0 0.2];
+end
 default_color2 = [NaN NaN NaN];
 
 p = inputParser;
-p.addRequired('magnet');
-p.addRequired('pos',@(x) numel(x)==3 );
+p.addRequired('pos',@(x) size(x,1)==3 );
 p.addParameter('color',default_color);
 p.addParameter('color2',default_color2);
 p.addParameter('alpha',default_alpha);
-parse(p,arg_magnet,arg_pos,varargin{:});
+p.parse(arg_pos,varargin{:});
 
-magnet = p.Results.magnet;
 pos    = p.Results.pos;
+Ndispl = size(pos,2);
 color1 = p.Results.color;
 color2 = p.Results.color2;
 alpha  = p.Results.alpha;
@@ -46,14 +55,12 @@ patch_opts2 = {'FaceColor',color2,'FaceAlpha',alpha,'EdgeColor',color1/4};
 patch_opts3 = {'FaceColor',color1,'FaceAlpha',alpha,'EdgeColor','none'};
 patch_opts4 = {'FaceColor',color2,'FaceAlpha',alpha,'EdgeColor','none'};
 
-if ~isfield(magnet,'fndefined')
-  magnet = magnetdefine(magnet);
-end
-
-switch magnet.type
-  case 'cuboid',  draw_cube(magnet,pos);
-  case 'cylinder', draw_cyl(magnet,pos);
-  otherwise, error(['Cannot draw magnet of type "',magnet.type,'".'])
+for ii = 1:Ndispl
+  switch magnet.type
+    case 'cuboid',  draw_cube(magnet,pos(:,ii));
+    case 'cylinder', draw_cyl(magnet,pos(:,ii));
+    otherwise, error(['Cannot draw magnet of type "',magnet.type,'".'])
+  end
 end
 
 %% Sub-functions
