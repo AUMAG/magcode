@@ -49,37 +49,23 @@ for ii = [1 -1]
             w =  offset(3,:) + size2(3)*qq - size1(3)*pp;
             r = sqrt(u.^2+v.^2+w.^2);
 
-            if u == 0
-              atan_term_u = 0;
-            else
-              atan_term_u = atan(v.*w./(r.*u));
-            end
-            if v == 0
-              atan_term_v = 0;
-            else
-              atan_term_v = atan(u.*w./(r.*v));
-            end
-            if w == 0
-              atan_term_w = 0;
-            else
-              atan_term_w = atan(u.*v./(r.*w));
-            end
+            tmp = zeros(size(u));
+            atan_term_u = tmp; atan_term_v = tmp; atan_term_w = tmp;
+            log_ru      = tmp; log_rw      = tmp; log_rv      = tmp;
+            
+            ind = abs(u) > eps;
+            if any(ind), atan_term_u(ind) = atan(v(ind).*w(ind)./(r(ind).*u(ind))); end
+            ind = abs(v) > eps;
+            if any(ind), atan_term_v(ind) = atan(u(ind).*w(ind)./(r(ind).*v(ind))); end
+            ind = abs(w) > eps;
+            if any(ind), atan_term_w(ind) = atan(u(ind).*v(ind)./(r(ind).*w(ind))); end
 
-            if abs(r-u) < eps
-              log_ru = 0;
-            else
-              log_ru = log(r-u);
-            end
-            if abs(r+w) < eps
-              log_rw = 0;
-            else
-              log_rw = log(r+w);
-            end
-            if abs(r+v) < eps
-              log_rv = 0;
-            else
-              log_rv = log(r+v);
-            end
+            ind = abs(r-u) > eps;
+            if any(ind), log_ru(ind) = log(r(ind)-u(ind)); end
+            ind = abs(r+w) > eps;
+            if any(ind), log_rw(ind) = log(r(ind)+w(ind)); end
+            ind = abs(r+v) > eps;
+            if any(ind), log_rv(ind) = log(r(ind)+v(ind)); end
 
             cx = ...
               + v.*w.*log_ru ...
