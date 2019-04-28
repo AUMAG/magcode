@@ -417,7 +417,7 @@ end
     d_y  = rotate_y_to_z(displ);
 
     force_out = force_out + ...
-      rotate_z_to_x( cuboid_force_z_z(size1_x,size2_x,d_x,J1_x,J2_x) );
+      cuboid_force_x_x(size1,size2,displ,magnet_fixed.magM,magnet_float.magM);
 
     force_out = force_out + ...
       rotate_z_to_x( cuboid_force_z_y(size1_x,size2_x,d_x,J1_x,J2_x) );
@@ -429,7 +429,7 @@ end
       rotate_z_to_y( cuboid_force_z_x(size1_y,size2_y,d_y,J1_y,J2_y) );
 
     force_out = force_out + ...
-      rotate_z_to_y( cuboid_force_z_z(size1_y,size2_y,d_y,J1_y,J2_y) );
+      cuboid_force_y_y(size1,size2,displ,magnet_fixed.magM,magnet_float.magM);
 
     force_out = force_out + ...
       rotate_z_to_y( cuboid_force_z_y(size1_y,size2_y,d_y,J1_y,J2_y) );
