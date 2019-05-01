@@ -191,7 +191,7 @@ switch magtype
     J2_y    = rotate_y_to_z(magnet_float.magM);
     
     if calc_force_bool
-      forces_out = cuboid_magnet_force(displ);
+      forces_out = cuboid_magnet_force(magnet_fixed,magnet_float,displ);
     end
     
     if calc_stiffness_bool
@@ -398,53 +398,6 @@ end
     end
 
   end
-% \end{mfunction}
-
-% \begin{mfunction}{single_magnet_force}
-
-% The |x| and |y| forces require a rotation to get
-% the magnetisations correctly aligned.
-% In the case of the magnet sizes, the lengths are just flipped rather than
-% rotated (in rotation, sign is important).
-% After the forces are calculated, rotate them back to the original
-% coordinate system.
-
-  function force_out = cuboid_magnet_force(displ)
-
-    force_out = zeros(size(displ));
-
-    d_x  = rotate_x_to_z(displ);
-    d_y  = rotate_y_to_z(displ);
-
-    force_out = force_out + ...
-      cuboid_force_x_x(size1,size2,displ,magnet_fixed.magM,magnet_float.magM);
-
-    force_out = force_out + ...
-      cuboid_force_x_y(size1,size2,displ,magnet_fixed.magM,magnet_float.magM);
-
-    force_out = force_out + ...
-      rotate_z_to_x( cuboid_force_z_x(size1_x,size2_x,d_x,J1_x,J2_x) );
-
-    force_out = force_out + ...
-      rotate_z_to_y( cuboid_force_z_x(size1_y,size2_y,d_y,J1_y,J2_y) );
-
-    force_out = force_out + ...
-      cuboid_force_y_y(size1,size2,displ,magnet_fixed.magM,magnet_float.magM);
-
-    force_out = force_out + ...
-      rotate_z_to_y( cuboid_force_z_y(size1_y,size2_y,d_y,J1_y,J2_y) );
-
-    force_out = force_out + ...
-      cuboid_force_z_z( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
-
-    force_out = force_out + ...
-      cuboid_force_z_y( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
-
-    force_out = force_out + ...
-      cuboid_force_z_x( size1,size2,displ,magnet_fixed.magM,magnet_float.magM );
-
-  end
-
 % \end{mfunction}
 
 
@@ -706,3 +659,26 @@ end
 
 
 end
+
+
+% \begin{mfunction}{cuboid_magnet_force}
+function force_out = cuboid_magnet_force(magnet_fixed,magnet_float,displ)
+
+hsize1 = magnet_fixed.dim(:)/2;
+hsize2 = magnet_float.dim(:)/2;
+J1 = magnet_fixed.magM;
+J2 = magnet_float.magM;
+
+force_out = zeros(size(displ));
+force_out = force_out + cuboid_force_x_x(hsize1,hsize2,displ,J1,J2);
+force_out = force_out + cuboid_force_x_y(hsize1,hsize2,displ,J1,J2);
+force_out = force_out + cuboid_force_x_z(hsize1,hsize2,displ,J1,J2);
+force_out = force_out + cuboid_force_y_x(hsize1,hsize2,displ,J1,J2);
+force_out = force_out + cuboid_force_y_y(hsize1,hsize2,displ,J1,J2);
+force_out = force_out + cuboid_force_y_z(hsize1,hsize2,displ,J1,J2);
+force_out = force_out + cuboid_force_z_x(hsize1,hsize2,displ,J1,J2);
+force_out = force_out + cuboid_force_z_y(hsize1,hsize2,displ,J1,J2);
+force_out = force_out + cuboid_force_z_z(hsize1,hsize2,displ,J1,J2);
+
+end
+% \end{mfunction}
