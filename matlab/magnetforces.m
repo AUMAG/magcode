@@ -197,6 +197,7 @@ switch magtype
     if calc_stiffness_bool
       for iii = 1:Ndispl
         stiffnesses_out(:,iii) = cuboid_magnet_stiffness(displ(:,iii));
+        %stiffnesses_out(:,iii) = cuboid_stiffness(size1,size2,displ(:,iii),magnet_fixed.magM,magnet_float.magM);
       end
     end
     

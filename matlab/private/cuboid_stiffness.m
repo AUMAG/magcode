@@ -35,9 +35,9 @@ end
 function calc_out = stiffnesses_calc_z_z(size1,size2,offset,J1,J2,aa)
 
 switch aa
-  case 1, di = [-3  2  1]; oi = [ 3  2 -1];
-  case 2, di = [ 1 -3  2]; oi = [ 1  3 -2];
-  case 3, di = [ 1  2  3]; oi = [ 1  2  3];
+  case 1, di = [-3;  2;  1]; oi = [ 3;  2; -1];
+  case 2, di = [ 1; -3;  2]; oi = [ 1;  3; -2];
+  case 3, di = [ 1;  2;  3]; oi = [ 1;  2;  3];
 end
 
 si = abs(di);
@@ -51,9 +51,9 @@ for ii = [0,1]
         for pp = [0,1]
           for qq = [0,1]
             
-            u = offset(di(1),:) + size2(si(1))*(-1).^jj - size1(si(1))*(-1).^ii;
-            v = offset(di(2),:) + size2(si(2))*(-1).^ll - size1(si(2))*(-1).^kk;
-            w = offset(di(3),:) + size2(si(3))*(-1).^qq - size1(si(3))*(-1).^pp;
+            u = sign(di(1))*offset(abs(di(1)),:) + size2(si(1))*(-1).^jj - size1(si(1))*(-1).^ii;
+            v = sign(di(2))*offset(abs(di(2)),:) + size2(si(2))*(-1).^ll - size1(si(2))*(-1).^kk;
+            w = sign(di(3))*offset(abs(di(3)),:) + size2(si(3))*(-1).^qq - size1(si(3))*(-1).^pp;
             r = sqrt(u.^2+v.^2+w.^2);
             
             component_x = - r - (u.^2 .*v)./(u.^2+w.^2) - v.*log(r-v) ;
@@ -69,7 +69,7 @@ for ii = [0,1]
   end
 end
 
-calc_out = J1*J2*magconst*comps_xyz(oi,:);
+calc_out = J1*J2/(4*pi*(4*pi*1e-7))*sign(oi).*comps_xyz(abs(oi),:);
 
 end
 
@@ -83,18 +83,18 @@ function calc_out = stiffnesses_calc_z_y(size1,size2,offset,J1,J2,aa,bb)
 switch aa
   case 1
     switch bb
-      case 2, di = [-3 2  1]; oi = [3 2 -1];
-      case 3, di = [-3 1 -2]; oi = [3 1  2];
+      case 2, di = [-3; 2;  1]; oi = [3; 2; -1];
+      case 3, di = [-3; 1; -2]; oi = [3; 1;  2];
     end
   case 2
     switch bb
-      case 1, di = [-2 -3 1]; oi = [2 3 1];
-      case 3, di = [ 1 -3 2]; oi = [1 3 2];
+      case 1, di = [-2; -3; 1]; oi = [2; 3; 1];
+      case 3, di = [ 1; -3; 2]; oi = [1; 3; 2];
     end
   case 3
     switch bb
-      case 1, di = [-2 1 3]; oi = [2 1 3];
-      case 2, di = [ 1 2 3]; oi = [1 2 3];
+      case 1, di = [-2; 1; 3]; oi = [2; 1; 3];
+      case 2, di = [ 1; 2; 3]; oi = [1; 2; 3];
     end
 end
 
@@ -108,9 +108,9 @@ for ii = [0,1]
         for pp = [0,1]
           for qq = [0,1]
             
-            u = offset(di(1),:) + size2(si(1))*(-1).^jj - size1(si(1))*(-1).^ii;
-            v = offset(di(2),:) + size2(si(2))*(-1).^ll - size1(si(2))*(-1).^kk;
-            w = offset(di(3),:) + size2(si(3))*(-1).^qq - size1(si(3))*(-1).^pp;
+            u = sign(di(1))*offset(abs(di(1)),:) + size2(si(1))*(-1).^jj - size1(si(1))*(-1).^ii;
+            v = sign(di(1))*offset(abs(di(1)),:) + size2(si(2))*(-1).^ll - size1(si(2))*(-1).^kk;
+            w = sign(di(1))*offset(abs(di(1)),:) + size2(si(3))*(-1).^qq - size1(si(3))*(-1).^pp;
             r = sqrt(u.^2+v.^2+w.^2);
             
             component_x =  ((u.^2 .*v)./(u.^2 + v.^2)) + (u.^2 .*w)./(u.^2 + w.^2) ...
@@ -122,7 +122,7 @@ for ii = [0,1]
 
             component_z = - component_x - component_y;
             
-            comps_xyz = comps_xyz + index_sum.*[component_x; component_y; component_z];
+            comps_xyz = comps_xyz + (-1)^(ii+jj+kk+ll+pp+qq).*[component_x; component_y; component_z];
             
           end
         end
@@ -131,7 +131,7 @@ for ii = [0,1]
   end
 end
 
-calc_out = J1*J2*magconst*comps_xyz(oi);
+calc_out = J1*J2/(4*pi*(4*pi*1e-7))*sign(oi).*comps_xyz(abs(oi),:);
 
 end
 

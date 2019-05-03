@@ -18,10 +18,10 @@ magnet_float.magdir = [x y z];
 
 displ = [0.1 0.09 0.11];
 
-f_all = magnetforces(magnet_fixed,magnet_float,displ);
+k_all = magnetforces(magnet_fixed,magnet_float,displ,'stiffness');
 
-assert( all( round(f_all*1e6) == [-1391969;    -1140254;    -1042102]) , ...
-  'Forces components appear incorrect.')
+assert( all( round(k_all*1e6) == [ -5424370 ;    2953150 ;    2471220]) , ...
+  'Stiffness components appear incorrect.')
 
 
 
