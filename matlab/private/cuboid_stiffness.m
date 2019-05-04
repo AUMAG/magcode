@@ -14,17 +14,15 @@ function stiffness_out = cuboid_stiffness(size1,size2,offset,J1,J2)
 
 stiffness_out = zeros(size(offset));
 
-for ii = 1:3
-  for jj = 1:3
-    if (J1(ii)>eps && J2(jj)>eps)
-      if ii == jj
-        stiffness_out = stiffness_out + stiffnesses_calc_z_z(size1,size2,offset,J1(ii),J2(jj),ii);
-      else
-        stiffness_out = stiffness_out + stiffnesses_calc_z_y(size1,size2,offset,J1(ii),J2(jj),ii,jj);
-      end
-    end
-  end
-end
+stiffness_out = stiffness_out + stiffnesses_calc_z_z(size1,size2,offset,J1(1),J2(1),[-3;  2; 1], [ 3;  2;  1]); % xx
+stiffness_out = stiffness_out + stiffnesses_calc_z_y(size1,size2,offset,J1(1),J2(2),[-3;  2; 1], [ 3;  2;  1]); % xy
+stiffness_out = stiffness_out + stiffnesses_calc_z_y(size1,size2,offset,J1(1),J2(3),[-2; -3; 1], [-3; -1; -2]); % xz
+stiffness_out = stiffness_out + stiffnesses_calc_z_y(size1,size2,offset,J1(2),J2(1),[ 3;  1; 2], [ 2;  3;  1]); % yx
+stiffness_out = stiffness_out + stiffnesses_calc_z_z(size1,size2,offset,J1(2),J2(2),[ 1; -3; 2], [ 1;  3;  2]); % yy
+stiffness_out = stiffness_out + stiffnesses_calc_z_y(size1,size2,offset,J1(2),J2(3),[ 1; -3; 2], [-1; -3; -2]); % yz
+stiffness_out = stiffness_out + stiffnesses_calc_z_y(size1,size2,offset,J1(3),J2(1),[-2;  1; 3], [ 2;  1;  3]); % zx
+stiffness_out = stiffness_out + stiffnesses_calc_z_y(size1,size2,offset,J1(3),J2(2),[ 1;  2; 3], [ 1;  2;  3]); % zy
+stiffness_out = stiffness_out + stiffnesses_calc_z_z(size1,size2,offset,J1(3),J2(3),[ 1;  2; 3], [ 1;  2;  3]); % zz
 
 end
 
@@ -32,12 +30,11 @@ end
 
 % \begin{mfunction}{stiffnesses_calc_z_z}
 
-function calc_out = stiffnesses_calc_z_z(size1,size2,offset,J1,J2,aa)
+function calc_out = stiffnesses_calc_z_z(size1,size2,offset,J1,J2,di,oi)
 
-switch aa
-  case 1, di = [-3;  2;  1]; oi = [ 3;  2; -1];
-  case 2, di = [ 1; -3;  2]; oi = [ 1;  3; -2];
-  case 3, di = [ 1;  2;  3]; oi = [ 1;  2;  3];
+if (J1<eps || J2<eps)
+  calc_out = zeros(size(offset));
+  return
 end
 
 si = abs(di);
@@ -51,9 +48,9 @@ for ii = [0,1]
         for pp = [0,1]
           for qq = [0,1]
             
-            u = sign(di(1))*offset(abs(di(1)),:) + size2(si(1))*(-1).^jj - size1(si(1))*(-1).^ii;
-            v = sign(di(2))*offset(abs(di(2)),:) + size2(si(2))*(-1).^ll - size1(si(2))*(-1).^kk;
-            w = sign(di(3))*offset(abs(di(3)),:) + size2(si(3))*(-1).^qq - size1(si(3))*(-1).^pp;
+            u = sign(di(1))*offset(si(1),:) + size2(si(1))*(-1).^jj - size1(si(1))*(-1).^ii;
+            v = sign(di(2))*offset(si(2),:) + size2(si(2))*(-1).^ll - size1(si(2))*(-1).^kk;
+            w = sign(di(3))*offset(si(3),:) + size2(si(3))*(-1).^qq - size1(si(3))*(-1).^pp;
             r = sqrt(u.^2+v.^2+w.^2);
             
             component_x = - r - (u.^2 .*v)./(u.^2+w.^2) - v.*log(r-v) ;
@@ -69,7 +66,7 @@ for ii = [0,1]
   end
 end
 
-calc_out = J1*J2/(4*pi*(4*pi*1e-7))*sign(oi).*comps_xyz(abs(oi),:);
+calc_out = J1*J2/(4*pi*(4*pi*1e-7))*sign(oi).*comps_xyz(si,:);
 
 end
 
@@ -78,24 +75,11 @@ end
 
 % \begin{mfunction}{stiffnesses_calc_z_y}
 
-function calc_out = stiffnesses_calc_z_y(size1,size2,offset,J1,J2,aa,bb)
+function calc_out = stiffnesses_calc_z_y(size1,size2,offset,J1,J2,di,oi)
 
-switch aa
-  case 1
-    switch bb
-      case 2, di = [-3; 2;  1]; oi = [3; 2; -1];
-      case 3, di = [-3; 1; -2]; oi = [3; 1;  2];
-    end
-  case 2
-    switch bb
-      case 1, di = [-2; -3; 1]; oi = [2; 3; 1];
-      case 3, di = [ 1; -3; 2]; oi = [1; 3; 2];
-    end
-  case 3
-    switch bb
-      case 1, di = [-2; 1; 3]; oi = [2; 1; 3];
-      case 2, di = [ 1; 2; 3]; oi = [1; 2; 3];
-    end
+if (J1<eps || J2<eps)
+  calc_out = zeros(size(offset));
+  return
 end
 
 si = abs(di);
@@ -108,9 +92,9 @@ for ii = [0,1]
         for pp = [0,1]
           for qq = [0,1]
             
-            u = sign(di(1))*offset(abs(di(1)),:) + size2(si(1))*(-1).^jj - size1(si(1))*(-1).^ii;
-            v = sign(di(1))*offset(abs(di(1)),:) + size2(si(2))*(-1).^ll - size1(si(2))*(-1).^kk;
-            w = sign(di(1))*offset(abs(di(1)),:) + size2(si(3))*(-1).^qq - size1(si(3))*(-1).^pp;
+            u = sign(di(1))*offset(si(1),:) + size2(si(1))*(-1).^jj - size1(si(1))*(-1).^ii;
+            v = sign(di(2))*offset(si(2),:) + size2(si(2))*(-1).^ll - size1(si(2))*(-1).^kk;
+            w = sign(di(3))*offset(si(3),:) + size2(si(3))*(-1).^qq - size1(si(3))*(-1).^pp;
             r = sqrt(u.^2+v.^2+w.^2);
             
             component_x =  ((u.^2 .*v)./(u.^2 + v.^2)) + (u.^2 .*w)./(u.^2 + w.^2) ...
