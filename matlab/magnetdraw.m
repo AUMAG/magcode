@@ -27,13 +27,21 @@ if ~isfield(magnet,'fndefined')
   magnet = magnetdefine(magnet);
 end
 
-default_alpha  = 0.8;
+if isfield(magnet,'alpha')
+  default_alpha = magnet.alpha;
+else
+  default_alpha  = 0.8;
+end
 if isfield(magnet,'color')
   default_color = magnet.color;
 else
   default_color  = [1 0 0.2];
 end
-default_color2 = [NaN NaN NaN];
+if isfield(magnet,'color2')
+  default_color2 = magnet.color2;
+else
+  default_color2 = default_color/2;
+end
 
 p = inputParser;
 p.addRequired('pos',@(x) size(x,1)==3 );

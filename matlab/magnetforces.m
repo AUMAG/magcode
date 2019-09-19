@@ -55,7 +55,10 @@ all_methods = {'auto','dipole'};
 ip = inputParser;
 ip.addParameter('method','auto',@(x) any(validatestring(x,all_methods)));
 ip.addParameter('figure',gcf);
-ip.addParameter('draw',0);
+ip.addParameter('draw',false);
+ip.addParameter('drawforce',false);
+ip.addParameter('drawforcescale',0.1);
+ip.addParameter('drawforceopt',{'color','red','linewidth',3,'linestyle','-'});
 ip.addParameter('drawN',2);
 ip.addParameter('drawpath',false);
 ip.addParameter('drawpathopt',{'--','color','black'});
@@ -244,8 +247,8 @@ if ischar(ip.Results.markpath)
   markpath = {ip.Results.markpath,ip.Results.markpath,ip.Results.markpath};
 end
 
-if ip.Results.draw || ip.Results.drawpath || iscell(ip.Results.markpath)
-  draw_everything(ip)
+if ip.Results.draw || ip.Results.drawforce || ip.Results.drawpath || iscell(ip.Results.markpath)
+  draw_everything(ip,forces_out)
 end
 
 
@@ -288,7 +291,7 @@ end
 
 % \begin{mfunction}{draw_everything}
 
-  function draw_everything(ip)
+  function draw_everything(ip,forces_out)
     
     figure(ip.Results.figure);
     fig_was_held_bool = ishold;
@@ -301,12 +304,24 @@ end
       
       magnetdraw(magnet_fixed,[0;0;0])
       magnetdraw(magnet_float,displ(:,Mind))
-      
     end
     
     % draw path
     if ip.Results.drawpath || iscell(ip.Results.markpath)
       plot3(displ(1,:),displ(2,:),displ(3,:),ip.Results.drawpathopt{:})
+    end
+    
+    % draw force
+    if ip.Results.drawforce
+      M = min(Ndispl,ip.Results.markpathN);
+      Mind = round(linspace(1,Ndispl,M));
+      s = ip.Results.drawforcescale;
+      
+      for mm = Mind
+        f = forces_out(:,mm);
+        d = displ(:,mm);
+        plot3(d(1)+[0 s*f(1)],d(2)+[0 s*f(2)],d(3)+[0 s*f(3)],ip.Results.drawforceopt{:})
+      end
     end
     
     % draw markers
@@ -317,9 +332,8 @@ end
       plot3(displ(1,Mind(1)),      displ(2,Mind(1))      ,displ(3,Mind(1))      ,'linestyle','none','marker',markpath{1},ip.Results.markpathopt{:})
       plot3(displ(1,Mind(2:end-1)),displ(2,Mind(2:end-1)),displ(3,Mind(2:end-1)),'linestyle','none','marker',markpath{2},ip.Results.markpathopt{:})
       plot3(displ(1,Mind(end)),    displ(2,Mind(end))    ,displ(3,Mind(end))    ,'linestyle','none','marker',markpath{3},ip.Results.markpathopt{:})
-      
     end
-    
+      
     if ~fig_was_held_bool, hold off; end
     
   end

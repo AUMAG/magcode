@@ -10,6 +10,7 @@ switch mag.type
   case 'cylinder'
     
     
+    
 end
 
 end
