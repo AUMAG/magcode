@@ -38,7 +38,7 @@ zticklabels([])
 
 set(gca,'position',[0.05 0.05 0.9 0.95],'projection','perspective')
 
-print -dpng -r600 magforce.png
+print -dpng -r300 magforce.png
 
 
 %% Magnetic fields
@@ -119,7 +119,7 @@ axis off;
 pbaspect([1 1 1])
 set(gca,'position',[0.01 0.01 0.99 0.99])
 
-print -dpng -r600 magfield.png
+print -dpng -r300 magfield.png
 
 %%
 
