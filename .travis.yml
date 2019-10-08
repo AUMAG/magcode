@@ -4,11 +4,5 @@ dist: xenial
 install: wget -qO- --retry-connrefused https://storage.googleapis.com/matlabimagesus/public/install.sh | sudo -E bash
 
 script:
-      - matlab --disableAutoOutfiles
-               --disableAutoInfiles
-               --infile "matlab"
-               --excludeInfile "matlab/magcode-matlab.pdf"
-               -sd "matlab"
-               --outfile "coverage.xml"
-               "runtestsuite"
+      - cd matlab; matlab -batch "runtestsuite"
       - cd matlab; bash <(curl -s https://codecov.io/bash)
