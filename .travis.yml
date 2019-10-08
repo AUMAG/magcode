@@ -1,14 +1,14 @@
 
-language: java
-
-install: source /dev/stdin <<< "$(curl -sL https://ssd.mathworks.com/supportfiles/matlab-runner/install)"
+language: minimal
+dist: xenial
+install: wget -qO- --retry-connrefused https://storage.googleapis.com/matlabimagesus/public/install.sh | sudo -E bash
 
 script:
-      - matlab-runner --disableAutoOutfiles
-                      --disableAutoInfiles
-                      --infile "matlab"
-                      --excludeInfile "matlab/magcode-matlab.pdf"
-                      -sd "matlab"
-                      --outfile "coverage.xml"
-                      "runtestsuite"
+      - matlab --disableAutoOutfiles
+               --disableAutoInfiles
+               --infile "matlab"
+               --excludeInfile "matlab/magcode-matlab.pdf"
+               -sd "matlab"
+               --outfile "coverage.xml"
+               "runtestsuite"
       - cd matlab; bash <(curl -s https://codecov.io/bash)
