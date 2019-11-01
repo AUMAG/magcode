@@ -18,7 +18,7 @@ end
 
 function magB = calc_cuboid_field(mag,xyz)
 
-Br = 1;
+Br = mag.magn;
 u0 = 4*pi*10^-7 ;   
 
 
@@ -48,19 +48,39 @@ kk=repmat(reshape(kk,[1,1,8]),N);
 x=ones(N(1),N(2),8).*X;
 y=ones(N(1),N(2),8).*Y;
 z=ones(N(1),N(2),8).*Z;
+X_m = reshape(x_m(ii),N(1),N(2),8);
+Y_m = reshape(y_m(jj),N(1),N(2),8);
+Z_m = reshape(z_m(kk),N(1),N(2),8);
 %define equation constant D  - ravaud 2009
 D=((-1).^(ii+jj+kk));
 %define equation constant zeta  - ravaud 2009
-zeta = sqrt((x-x_m(ii)+eps).^2+(y-y_m(jj)+eps).^2+(z-z_m(kk)+eps).^2);
+zeta = sqrt((x-X_m+eps).^2+(y-Y_m+eps).^2+(z-Z_m+eps).^2);
 zeta(isnan(zeta))=0;
 
-% +Z magnetisation
+% Set up zero arrays
+Bx = zeros(size(X));
+By = zeros(size(Y));
+Bz = zeros(size(Z));
 
-Bx = (Br*u0/(4*pi))*sum(D.*-real(log((y-y_m(jj)+eps)+zeta)),3);
-By = (Br*u0/(4*pi))*sum(D.*-real(log((x-x_m(ii)+eps)+zeta)),3);
-Bz = (Br*u0/(4*pi))*sum(D.*(atan(((x-x_m(ii)+eps).*(y-y_m(jj)+eps))./((z-z_m(kk)+eps).*zeta))),3);
+% X magnetisation
+Jx = Br*mag.magdir(1);
+Bx = Bx + (Jx/(4*pi))*sum(D.*(atan(((y-Y_m+eps).*(z-Z_m+eps))./((x-X_m+eps).*zeta))),3);
+By = By + (Jx/(4*pi))*sum(D.*-real(log((z-Z_m+eps)+zeta)),3);
+Bz = Bz + (Jx/(4*pi))*sum(D.*-real(log((y-Y_m+eps)+zeta)),3);
 
-magB = sum([Bx;By;Bz],2);
+% Y magnetisation
+Jy = Br*mag.magdir(2);
+Bx = Bx + (Jy/(4*pi))*sum(D.*-real(log((z-Z_m+eps)+zeta)),3);
+By = By + (Jy/(4*pi))*sum(D.*(atan(((x-X_m+eps).*(z-Z_m+eps))./((y-Y_m+eps).*zeta))),3);
+Bz = Bz + (Jy/(4*pi))*sum(D.*-real(log((x-X_m+eps)+zeta)),3);
+
+% Z magnetisation
+Jz = Br*mag.magdir(3);
+Bx = Bx + (Jz/(4*pi))*sum(D.*-real(log((y-Y_m+eps)+zeta)),3);
+By = By + (Jz/(4*pi))*sum(D.*-real(log((x-X_m+eps)+zeta)),3);
+Bz = Bz + (Jz/(4*pi))*sum(D.*(atan(((x-X_m+eps).*(y-Y_m+eps))./((z-Z_m+eps).*zeta))),3);
+
+magB = sum([Bx;By;Bz],3);
 
 
 end
