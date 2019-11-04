@@ -115,15 +115,41 @@ P = ellipticPi(1-[gamma,gamma].^2,1-ksq);
 P1 = K - 2./(1-ksq).*(K-E);
 P2 = -gamma./(1-gamma.^2).*(P-K)-1./(1-gamma.^2).*(gamma.^2.*P-K);
 
+%evaluate the singularities at rho = 0
+P1(rho==0,:) = 0;
+P2(rho==0,:) = pi/2;
+
 Brho = M*R/pi*(alpha(:,1).*P1(:,1)-alpha(:,2).*P1(:,2));
 Bz = M*R./(pi*(rho+R)).*(beta(:,1).*P2(:,1)-beta(:,2).*P2(:,2));
 
+%evaluate the z-field at rho = R if necessary
+index = abs(rho-R)<eps;
+Bz(index) = imag(sum((-1).^[0,1].*alpha(index,:).*zeta(index,:).*(ellipticF(-asin(1./beta(index,:).^2),beta(index,:).^2)+ellipticK(beta(index,:).^2))));
+
 %convert to Cartesian coordinates
-d = sqrt(xyz(:,1).^2+xyz(:,2).^2);
+d = sqrt(xyz(:,1).^2+xyz(:,2).^2)+eps;
 Bx = Brho.*xyz(:,1)./d;
 By = Brho.*xyz(:,2)./d;
 
-magB = [Bx;By;Bz];
+magB = [Bx';By';Bz'];
+
+
+
+% Try Ravaud's code:
+zi = [L,-L];
+alphai = (rho-R).^2+(Z-zi).^2;
+a = rho.^2+R^2+(Z-zi).^2;
+b = 2*rho*R;
+c = rho.^2+R^2;
+eps1i = (a-c)./(a+b);
+eps2i = (a-b)./(a+b);
+eps3i = -asin((a+b)./(a-b));
+eps4i = 2*R*(Z-zi)./(b.*(a-c).*sqrt(-a-b));
+
+ravaudb = eps4i.*((c.*rho-b*R).*(ellipticPi(eps1i,eps3i,eps2i)+ellipticPi(eps1i,eps2i))+(b*R-a.*rho).*(ellipticF(eps3i,eps2i)+ellipticK(eps2i)));
+ravaudb = real(ravaudb(:,1)-ravaudb(:,2))*M/(2*pi);
+
+
 
 end
 
