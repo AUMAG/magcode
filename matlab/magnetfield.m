@@ -9,7 +9,9 @@ switch mag.type
     
   case 'cylinder'
     
-    
+    if isequal(mag.magdir,[0;0;1]) && isequal(mag.dir,[0;0;1])
+        magB = calc_cylinder_axial_field(mag,xyz);
+    end
     
 end
 
@@ -84,3 +86,45 @@ magB = sum([Bx;By;Bz],3);
 
 
 end
+
+
+function magB = calc_cylinder_axial_field(mag,xyz)
+%field equations from Caciagli (2018)
+
+%set up variables
+M = mag.magn;
+R = mag.dim(1);
+L = mag.dim(2)/2;
+
+mu0 = 4*pi*10^(-7);
+xyz = xyz';
+
+rho = sqrt(xyz(:,1).^2+xyz(:,2).^2);
+Z = xyz(:,3);
+
+%compute equations
+zeta = [Z+L,Z-L];
+alpha = 1./sqrt(zeta.^2+(rho+R).^2);
+beta = zeta.*alpha;
+gamma = (rho-R)./(rho+R);
+ksq = (zeta.^2+(rho-R).^2)./(zeta.^2+(rho+R).^2);
+
+[K,E] = ellipke(1-ksq);
+P = ellipticPi(1-[gamma,gamma].^2,1-ksq);
+
+P1 = K - 2./(1-ksq).*(K-E);
+P2 = -gamma./(1-gamma.^2).*(P-K)-1./(1-gamma.^2).*(gamma.^2.*P-K);
+
+Brho = M*R/pi*(alpha(:,1).*P1(:,1)-alpha(:,2).*P1(:,2));
+Bz = M*R./(pi*(rho+R)).*(beta(:,1).*P2(:,1)-beta(:,2).*P2(:,2));
+
+%convert to Cartesian coordinates
+d = sqrt(xyz(:,1).^2+xyz(:,2).^2);
+Bx = Brho.*xyz(:,1)./d;
+By = Brho.*xyz(:,2)./d;
+
+magB = [Bx;By;Bz];
+
+end
+
+
