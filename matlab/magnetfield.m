@@ -122,9 +122,9 @@ P2(rho==0,:) = pi/2;
 Brho = M*R/pi*(alpha(:,1).*P1(:,1)-alpha(:,2).*P1(:,2));
 Bz = M*R./(pi*(rho+R)).*(beta(:,1).*P2(:,1)-beta(:,2).*P2(:,2));
 
-%evaluate the z-field at rho = R if necessary
+%evaluate the z-field at rho = R (Ravaud 2010)
 index = abs(rho-R)<eps;
-Bz(index) = imag(sum((-1).^[0,1].*alpha(index,:).*zeta(index,:).*(ellipticF(-asin(1./beta(index,:).^2),beta(index,:).^2)+ellipticK(beta(index,:).^2))));
+Bz(index) = imag(sum((-1).^[0,1].*alpha(index,:).*zeta(index,:).*(ellipticF(-asin(1./beta(index,:).^2),beta(index,:).^2)+ellipticK(beta(index,:).^2))))*M/2/pi;
 
 %convert to Cartesian coordinates
 d = sqrt(xyz(:,1).^2+xyz(:,2).^2)+eps;
