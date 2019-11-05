@@ -84,7 +84,6 @@ Bz = Bz + (Jz/(4*pi))*sum(D.*(atan(((x-X_m+eps).*(y-Y_m+eps))./((z-Z_m+eps).*zet
 
 magB = sum([Bx;By;Bz],3);
 
-
 end
 
 
@@ -132,24 +131,6 @@ Bx = Brho.*xyz(:,1)./d;
 By = Brho.*xyz(:,2)./d;
 
 magB = [Bx';By';Bz'];
-
-
-
-% Try Ravaud's code:
-zi = [L,-L];
-alphai = (rho-R).^2+(Z-zi).^2;
-a = rho.^2+R^2+(Z-zi).^2;
-b = 2*rho*R;
-c = rho.^2+R^2;
-eps1i = (a-c)./(a+b);
-eps2i = (a-b)./(a+b);
-eps3i = -asin((a+b)./(a-b));
-eps4i = 2*R*(Z-zi)./(b.*(a-c).*sqrt(-a-b));
-
-ravaudb = eps4i.*((c.*rho-b*R).*(ellipticPi(eps1i,eps3i,eps2i)+ellipticPi(eps1i,eps2i))+(b*R-a.*rho).*(ellipticF(eps3i,eps2i)+ellipticK(eps2i)));
-ravaudb = real(ravaudb(:,1)-ravaudb(:,2))*M/(2*pi);
-
-
 
 end
 
