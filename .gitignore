@@ -35,3 +35,5 @@ matlab/coverage\.xml
 matlab/coverage-debug\.xml
 
 *.gz
+
+*.asv
