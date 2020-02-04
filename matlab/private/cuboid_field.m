@@ -1,72 +1,119 @@
-%Matthew Forbes - matthew.forbes@adelaide.edu.au
+function magB = cuboid_field(mag,xyz)
 
-%Eqn from Ravaud 2009  - MAGNETIC FIELD PRODUCED BY A PARALLELEPI-
-%                        PEDIC MAGNET OF VARIOUS AND UNIFORM POLAR-
-%                        ZATION
+J = mag.magn*mag.magdir;
 
-function H = cuboid_field(sigma,phi,theta,x_m,y_m,z_m,X,Y,Z)
+if size(xyz,1) == 3
+elseif size(xyz,2) == 3
+  warning('xyz should be column vectors of position stacked along rows')
+  xyz = transpose(xyz);
+else
+  error('xyz funny size')
+end
 
-%theta      - CCW angle from the +x-axis to the polarisation vector 
-%           (XY-plane // about Z)
-%phi        - CW angle from the +z-axis to the polarisation vector
-%x1,y1,z1   - reference corner of magnet
-%x2,y2,z2   - opposite corner of magnet, defining direction of coordinate
-%           system and dimension of magnet
-%           x_m = [x1,x2] ...
-%sigma      - magnetic field strength, tesla
-%X,Y,Z      - field points
+% Set up variables
+xprime = mag.vertices(:,1);
+yprime = mag.vertices(:,2);
+zprime = mag.vertices(:,3);
+x = xyz(1,:);
+y = xyz(2,:);
+z = xyz(3,:);
 
-%unit conversion
-M0 = sigma*8*10^5; % A/m
+% Mesh everything for vectorisation
+[x,xprime] = meshgrid(x,xprime);
+[y,yprime] = meshgrid(y,yprime);
+[z,zprime] = meshgrid(z,zprime);
 
-%magnetic permeability of free space
-u0 = 4*pi*10^-7 ;  %H/m
+Bxcontribution = cuboid_field_x(x,y,z,xprime,yprime,zprime,J);
+Bycontribution = cuboid_field_y(x,y,z,xprime,yprime,zprime,J);
+Bzcontribution = cuboid_field_z(x,y,z,xprime,yprime,zprime,J);
 
-%summation of function over i,j,k 1:2
-[i,j,k]=meshgrid(1:2,1:2,1:2);
-d=size(X);
-
-%reshape index array for 8 summations and size of field array
-i=repmat(reshape(i,[1,1,8]),d);
-j=repmat(reshape(j,[1,1,8]),d);
-k=repmat(reshape(k,[1,1,8]),d);
-
-%reshape field array to match index array
-x=ones(d(1),d(2),8).*X;
-y=ones(d(1),d(2),8).*Y;
-z=ones(d(1),d(2),8).*Z;
-
-%define equation constant D 
-D=((-1).^(i+j+k));
-
-%define equation constant zeta 
-zeta = sqrt((x-x_m(i)+eps).^2+(y-y_m(j)+eps).^2+(z-z_m(k)+eps).^2);
-zeta(isnan(zeta))=0;
-
-%calculate magnetic field strength
-Hx = ((M0*sin(phi)*cos(theta))/(4*pi))*sum(D.*(atan(((y-y_m(j)+eps)...
-                        .*(z-z_m(k)+eps))./((x-x_m(i)+eps).*zeta))),3)...
-    +((M0*sin(phi)*sin(theta))/(4*pi))*sum(D.*-real(log((z-z_m(k)+eps)...
-                        +zeta)),3)...
-    +((M0*cos(phi))/(4*pi))*sum(D.*-real(log((y-y_m(j)+eps)+zeta)),3);
-
-Hy = ((M0*sin(phi)*cos(theta))/(4*pi))*sum(D.*-real(log((z-z_m(k)+eps)...
-                                                            +zeta)),3)...
-    +((M0*sin(phi)*sin(theta))/(4*pi))*sum(D.*(atan(((x-x_m(i)+eps)...
-                        .*(z-z_m(k)+eps))./((y-y_m(j)+eps).*zeta))),3)...
-    +((M0*cos(phi))/(4*pi))*sum(D.*-real(log((x-x_m(i)+eps)+zeta)),3);
-
-Hz = ((M0*sin(phi)*cos(theta))/(4*pi))*sum(D.*-real(log((y-y_m(j)+eps)...
-                                                            +zeta)),3)...
-    +((M0*sin(phi)*sin(theta))/(4*pi))*sum(D.*-real(log((x-x_m(i)+eps)...
-                                                            +zeta)),3)...
-    +((M0*cos(phi))/(4*pi))*sum(D.*(atan(((x-x_m(i)+eps)...
-                           .*(y-y_m(j)+eps))./((z-z_m(k)+eps).*zeta))),3);
-                       
-H = cat(3,Hx,Hy,Hz);
-
-%magnetic flux density
-B = u0.*H;
+magB = Bxcontribution+Bycontribution+Bzcontribution;
 
 end
 
+function B = cuboid_field_x(x,y,z,xprime,yprime,zprime,J)
+
+Jx = J(1);
+
+% Solve field
+D = repmat(Jx/(4*pi)*(-1).^(0:7)',1,length(x));
+zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
+Bx = D.*atan((y-yprime).*(z-zprime)./((x-xprime).*zeta));
+By = D.*log(-z+zprime+zeta);
+Bz = D.*log(-y+yprime+zeta);
+
+% Solve singularities:
+if any(any((abs(y-yprime)<eps | abs(z-zprime)<eps) & abs(x-xprime)<eps))
+    index = (abs(y-yprime)<eps | abs(z-zprime)<eps) & abs(x-xprime)<eps;
+    Bx(index) = 0;
+end
+if any(any(abs(zeta-z+zprime)<eps))
+    index = abs(zeta-z+zprime)<eps;
+    By(index) = D(index).*log(1./zeta(index));
+end
+if any(any(abs(zeta-y+yprime)<eps))
+    index = abs(zeta-y+yprime)<eps;
+    Bz(index) = D(index).*log(1./zeta(index));
+end
+
+B = [sum(Bx);sum(By);sum(Bz)];
+
+end
+
+function B = cuboid_field_y(x,y,z,xprime,yprime,zprime,J)
+
+Jy = J(2);
+
+% Solve field
+D = repmat(Jy/(4*pi)*(-1).^(0:7)',1,length(x));
+zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
+Bx = D.*log(-z+zprime+zeta);
+By = D.*atan((x-xprime).*(z-zprime)./((y-yprime).*zeta));
+Bz = D.*log(-x+xprime+zeta);
+
+% Solve singularities:
+if any(any(abs(zeta-z+zprime)<eps))
+    index = abs(zeta-z+zprime)<eps;
+    Bx(index) = D(index).*log(1./zeta(index));
+end
+if any(any(abs(zeta-x+xprime)<eps))
+    index = abs(zeta-x+xprime)<eps;
+    Bz(index) = D(index).*log(1./zeta(index));
+end
+if any(any((abs(x-xprime)<eps | abs(z-zprime)<eps) & abs(y-yprime)<eps))
+    index = (abs(x-xprime)<eps | abs(z-zprime)<eps) & abs(y-yprime)<eps;
+    By(index) = 0;
+end
+
+B = [sum(Bx);sum(By);sum(Bz)];
+
+end
+
+function B = cuboid_field_z(x,y,z,xprime,yprime,zprime,J)
+
+Jz = J(3);
+
+% Solve field
+D = repmat(Jz/(4*pi)*(-1).^(0:7)',1,length(x));
+zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
+Bx = D.*log(-y+yprime+zeta);
+By = D.*log(-x+xprime+zeta);
+Bz = D.*atan((x-xprime).*(y-yprime)./((z-zprime).*zeta));
+
+% Solve singularities:
+if any(any(abs(zeta-y+yprime)<eps))
+    index = abs(zeta-y+yprime)<eps;
+    Bx(index) = D(index).*log(1./zeta(index));
+end
+if any(any(abs(zeta-x+xprime)<eps))
+    index = abs(zeta-x+xprime)<eps;
+    By(index) = D(index).*log(1./zeta(index));
+end
+if any(any((abs(x-xprime)<eps | abs(y-yprime)<eps) & abs(z-zprime)<eps))
+    index = (abs(x-xprime)<eps | abs(y-yprime)<eps) & abs(z-zprime)<eps;
+    Bz(index) = 0;
+end
+
+B = [sum(Bx);sum(By);sum(Bz)];
+
+end
