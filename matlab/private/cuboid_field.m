@@ -1,119 +1,143 @@
-function magB = cuboid_field(mag,xyz)
+function [magBx,magBy,magBz,ptx,pty,ptz] = cuboid_field(mag,ptx,pty,ptz)
 
 J = mag.magn*mag.magdir;
 
-if size(xyz,1) == 3
-elseif size(xyz,2) == 3
-  warning('xyz should be column vectors of position stacked along rows')
-  xyz = transpose(xyz);
-else
-  error('xyz funny size')
-end
-
 % Set up variables
-xprime = mag.vertices(:,1);
-yprime = mag.vertices(:,2);
-zprime = mag.vertices(:,3);
-x = xyz(1,:);
-y = xyz(2,:);
-z = xyz(3,:);
+vertx = mag.vertices(:,1);
+verty = mag.vertices(:,2);
+vertz = mag.vertices(:,3);
 
 % Mesh everything for vectorisation
-[x,xprime] = meshgrid(x,xprime);
-[y,yprime] = meshgrid(y,yprime);
-[z,zprime] = meshgrid(z,zprime);
+[ptx2,vertx2] = matrgrid(ptx,vertx);
+[pty2,verty2] = matrgrid(pty,verty);
+[ptz2,vertz2] = matrgrid(ptz,vertz);
 
-Bxcontribution = cuboid_field_x(x,y,z,xprime,yprime,zprime,J);
-Bycontribution = cuboid_field_y(x,y,z,xprime,yprime,zprime,J);
-Bzcontribution = cuboid_field_z(x,y,z,xprime,yprime,zprime,J);
+[Bxx,Bxy,Bxz] = cuboid_field_x(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J);
+[Byx,Byy,Byz] = cuboid_field_y(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J);
+[Bzx,Bzy,Bzz] = cuboid_field_z(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J);
 
-magB = Bxcontribution+Bycontribution+Bzcontribution;
+magBx = Bxx+Byx+Bzx;
+magBy = Bxy+Byy+Bzy;
+magBz = Bxz+Byz+Bzz;
 
 end
 
-function B = cuboid_field_x(x,y,z,xprime,yprime,zprime,J)
+function [pointsM,vertsM] = matrgrid(points,verts)
+
+NV = numel(verts);
+
+pointsM = repmat(points,[1,1,NV]);
+vertsM = nan(size(points,1),size(points,2),NV);
+for ii = 1:NV
+  vertsM(:,:,ii) = repmat(verts(ii),size(points));
+end
+
+end
+
+function [Bx,By,Bz] = cuboid_field_x(x,y,z,xprime,yprime,zprime,J)
 
 Jx = J(1);
 
+DD = Jx/(4*pi)*(-1).^(0:7)';
+D = nan(size(x,1),size(x,2),8);
+for ii = 1:8
+  D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
+end
+
 % Solve field
-D = repmat(Jx/(4*pi)*(-1).^(0:7)',1,length(x));
 zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
-Bx = D.*atan((y-yprime).*(z-zprime)./((x-xprime).*zeta));
-By = D.*log(-z+zprime+zeta);
-Bz = D.*log(-y+yprime+zeta);
+Bxc = D.*atan((y-yprime).*(z-zprime)./((x-xprime).*zeta));
+Byc = D.*log(-z+zprime+zeta);
+Bzc = D.*log(-y+yprime+zeta);
 
 % Solve singularities:
 if any(any((abs(y-yprime)<eps | abs(z-zprime)<eps) & abs(x-xprime)<eps))
     index = (abs(y-yprime)<eps | abs(z-zprime)<eps) & abs(x-xprime)<eps;
-    Bx(index) = 0;
+    Bxc(index) = 0;
 end
 if any(any(abs(zeta-z+zprime)<eps))
     index = abs(zeta-z+zprime)<eps;
-    By(index) = D(index).*log(1./zeta(index));
+    Byc(index) = D(index).*log(1./zeta(index));
 end
 if any(any(abs(zeta-y+yprime)<eps))
     index = abs(zeta-y+yprime)<eps;
-    Bz(index) = D(index).*log(1./zeta(index));
+    Bzc(index) = D(index).*log(1./zeta(index));
 end
 
-B = [sum(Bx);sum(By);sum(Bz)];
+Bx = sum(Bxc,3);
+By = sum(Byc,3);
+Bz = sum(Bzc,3);
 
 end
 
-function B = cuboid_field_y(x,y,z,xprime,yprime,zprime,J)
+function [Bx,By,Bz] = cuboid_field_y(x,y,z,xprime,yprime,zprime,J)
 
 Jy = J(2);
 
+DD = Jy/(4*pi)*(-1).^(0:7)';
+D = nan(size(x,1),size(x,2),8);
+for ii = 1:8
+  D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
+end
+
 % Solve field
-D = repmat(Jy/(4*pi)*(-1).^(0:7)',1,length(x));
 zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
-Bx = D.*log(-z+zprime+zeta);
-By = D.*atan((x-xprime).*(z-zprime)./((y-yprime).*zeta));
-Bz = D.*log(-x+xprime+zeta);
+Bxc = D.*log(-z+zprime+zeta);
+Byc = D.*atan((x-xprime).*(z-zprime)./((y-yprime).*zeta));
+Bzc = D.*log(-x+xprime+zeta);
 
 % Solve singularities:
 if any(any(abs(zeta-z+zprime)<eps))
     index = abs(zeta-z+zprime)<eps;
-    Bx(index) = D(index).*log(1./zeta(index));
+    Bxc(index) = D(index).*log(1./zeta(index));
 end
 if any(any(abs(zeta-x+xprime)<eps))
     index = abs(zeta-x+xprime)<eps;
-    Bz(index) = D(index).*log(1./zeta(index));
+    Bzc(index) = D(index).*log(1./zeta(index));
 end
 if any(any((abs(x-xprime)<eps | abs(z-zprime)<eps) & abs(y-yprime)<eps))
     index = (abs(x-xprime)<eps | abs(z-zprime)<eps) & abs(y-yprime)<eps;
-    By(index) = 0;
+    Byc(index) = 0;
 end
 
-B = [sum(Bx);sum(By);sum(Bz)];
+Bx = sum(Bxc,3);
+By = sum(Byc,3);
+Bz = sum(Bzc,3);
 
 end
 
-function B = cuboid_field_z(x,y,z,xprime,yprime,zprime,J)
+function [Bx,By,Bz] = cuboid_field_z(x,y,z,xprime,yprime,zprime,J)
 
 Jz = J(3);
 
+DD = Jz/(4*pi)*(-1).^(0:7)';
+D = nan(size(x,1),size(x,2),8);
+for ii = 1:8
+  D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
+end
+
 % Solve field
-D = repmat(Jz/(4*pi)*(-1).^(0:7)',1,length(x));
 zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
-Bx = D.*log(-y+yprime+zeta);
-By = D.*log(-x+xprime+zeta);
-Bz = D.*atan((x-xprime).*(y-yprime)./((z-zprime).*zeta));
+Bxc = D.*log(-y+yprime+zeta);
+Byc = D.*log(-x+xprime+zeta);
+Bzc = D.*atan((x-xprime).*(y-yprime)./((z-zprime).*zeta));
 
 % Solve singularities:
 if any(any(abs(zeta-y+yprime)<eps))
     index = abs(zeta-y+yprime)<eps;
-    Bx(index) = D(index).*log(1./zeta(index));
+    Bxc(index) = D(index).*log(1./zeta(index));
 end
 if any(any(abs(zeta-x+xprime)<eps))
     index = abs(zeta-x+xprime)<eps;
-    By(index) = D(index).*log(1./zeta(index));
+    Byc(index) = D(index).*log(1./zeta(index));
 end
 if any(any((abs(x-xprime)<eps | abs(y-yprime)<eps) & abs(z-zprime)<eps))
     index = (abs(x-xprime)<eps | abs(y-yprime)<eps) & abs(z-zprime)<eps;
-    Bz(index) = 0;
+    Bzc(index) = 0;
 end
 
-B = [sum(Bx);sum(By);sum(Bz)];
+Bx = sum(Bxc,3);
+By = sum(Byc,3);
+Bz = sum(Bzc,3);
 
 end
