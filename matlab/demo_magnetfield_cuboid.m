@@ -34,10 +34,10 @@ N = 50;
 [ptx,pty] = meshgrid(linspace(-0.2,0.2,N),linspace(-0.2,0.2,N));
 ptz = repmat(-0.2,size(ptx));
 
-[Bx,By,Bz] = magnetfield(mag_cuboid,ptx,pty,ptz);
-Bmag = sqrt(Bx.^2+By.^2+Bz.^2);
+magB = magnetfield(mag_cuboid,[ptx(:),pty(:),ptz(:)].');
+Bmag = sqrt(magB(1,:).^2+magB(2,:).^2+magB(3,:).^2);
 
-h = surf(ptx,pty,ptz,Bmag);
+h = surf(ptx,pty,ptz,reshape(Bmag,size(ptx)));
 h.EdgeColor = 'none';
 h.FaceAlpha = 0.8;
 
@@ -52,10 +52,10 @@ y = linspace(-0.1,0.1);
 xx = r*cos(pp);
 zz = r*sin(pp);
 
-[Bx,By,Bz] = magnetfield(mag_cuboid,xx,yy,zz);
-Bmag = sqrt(Bx.^2+By.^2+Bz.^2);
+magB = magnetfield(mag_cuboid,[xx(:),yy(:),zz(:)].');
+Bmag = sqrt(magB(1,:).^2+magB(2,:).^2+magB(3,:).^2);
 
-h = surf(xx,yy,zz,Bmag);
+h = surf(xx,yy,zz,reshape(Bmag,size(pp)));
 h.EdgeColor = 'none';
 h.FaceAlpha = 0.8;
 

@@ -1,4 +1,4 @@
-function [magBx,magBy,magBz,ptx,pty,ptz] = cuboid_field(mag,ptx,pty,ptz)
+function [magB] = cuboid_field(mag,points)
 
 J = mag.magn*mag.magdir;
 
@@ -8,62 +8,41 @@ verty = mag.vertices(:,2);
 vertz = mag.vertices(:,3);
 
 % Mesh for vectorisation
-[ptx2,vertx2] = matrgrid(ptx,vertx);
-[pty2,verty2] = matrgrid(pty,verty);
-[ptz2,vertz2] = matrgrid(ptz,vertz);
+[ptx,vertx] = meshgrid(points(1,:),vertx);
+[pty,verty] = meshgrid(points(2,:),verty);
+[ptz,vertz] = meshgrid(points(3,:),vertz);
 
 % Calculate components
 if abs(J(1)) > eps
-  [Bxx,Bxy,Bxz] = cuboid_field_x(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J(1));
+  [Bxx,Bxy,Bxz] = cuboid_field_x(ptx,pty,ptz,vertx,verty,vertz,J(1));
 else
-  Bxx = zeros(size(ptx)); Bxy = Bxx; Bxz = Bxx;
+  Bxx = zeros(size(points(1,:))); Bxy = Bxx; Bxz = Bxx;
 end
 
 if abs(J(2)) > eps
-  [Byx,Byy,Byz] = cuboid_field_y(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J(2));
+  [Byx,Byy,Byz] = cuboid_field_y(ptx,pty,ptz,vertx,verty,vertz,J(2));
 else
-  Byx = zeros(size(ptx)); Byy = Byx; Byz = Byx;
+  Byx = zeros(size(points(1,:))); Byy = Byx; Byz = Byx;
 end
 
 if abs(J(3)) > eps
-  [Bzx,Bzy,Bzz] = cuboid_field_z(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J(3));
+  [Bzx,Bzy,Bzz] = cuboid_field_z(ptx,pty,ptz,vertx,verty,vertz,J(3));
 else
-  Bzx = zeros(size(ptx)); Bzy = Bzx; Bzz = Bzx;
+  Bzx = zeros(size(points(1,:))); Bzy = Bzx; Bzz = Bzx;
 end
 
 % Finish
-magBx = Bxx+Byx+Bzx;
-magBy = Bxy+Byy+Bzy;
-magBz = Bxz+Byz+Bzz;
+magB = [Bxx+Byx+Bzx;
+        Bxy+Byy+Bzy;
+        Bxz+Byz+Bzz];
 
 end
 
-function [pointsM,vertsM] = matrgrid(points,verts)
-% This is like a restricted multidimensional ndgrid.
-%
-% We want every interaction between points [xx,yy] and vertices [v0..v7].
-% because [xx,yy] is already from meshgrid we DON'T want ndgid(xx,yy,vv);
-% that would give too many interactions.
-%
-% I think there might be a simpler way to do this.
-
-NV = numel(verts);
-
-pointsM = repmat(points,[1,1,NV]);
-vertsM = nan(size(points,1),size(points,2),NV);
-for ii = 1:NV
-  vertsM(:,:,ii) = repmat(verts(ii),size(points));
-end
-
-end
 
 function [Bx,By,Bz] = cuboid_field_x(x,y,z,xprime,yprime,zprime,J)
 
 DD = J/(4*pi)*(-1).^(0:7)';
-D = nan(size(x,1),size(x,2),8);
-for ii = 1:8
-  D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
-end
+D = repmat(DD,1,size(x,2));
 
 % Solve field
 zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
@@ -85,19 +64,16 @@ if any(any(abs(zeta-y+yprime)<eps))
     Bzc(index) = D(index).*log(1./zeta(index));
 end
 
-Bx = sum(Bxc,3);
-By = sum(Byc,3);
-Bz = sum(Bzc,3);
+Bx = sum(Bxc,1);
+By = sum(Byc,1);
+Bz = sum(Bzc,1);
 
 end
 
 function [Bx,By,Bz] = cuboid_field_y(x,y,z,xprime,yprime,zprime,J)
 
 DD = J/(4*pi)*(-1).^(0:7)';
-D = nan(size(x,1),size(x,2),8);
-for ii = 1:8
-  D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
-end
+D = repmat(DD,1,size(x,2));
 
 % Solve field
 zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
@@ -119,19 +95,16 @@ if any(any((abs(x-xprime)<eps | abs(z-zprime)<eps) & abs(y-yprime)<eps))
     Byc(index) = 0;
 end
 
-Bx = sum(Bxc,3);
-By = sum(Byc,3);
-Bz = sum(Bzc,3);
+Bx = sum(Bxc,1);
+By = sum(Byc,1);
+Bz = sum(Bzc,1);
 
 end
 
 function [Bx,By,Bz] = cuboid_field_z(x,y,z,xprime,yprime,zprime,J)
 
 DD = J/(4*pi)*(-1).^(0:7)';
-D = nan(size(x,1),size(x,2),8);
-for ii = 1:8
-  D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
-end
+D = repmat(DD,1,size(x,2));
 
 % Solve field
 zeta = sqrt((x-xprime).^2+(y-yprime).^2+(z-zprime).^2);
@@ -153,8 +126,8 @@ if any(any((abs(x-xprime)<eps | abs(y-yprime)<eps) & abs(z-zprime)<eps))
     Bzc(index) = 0;
 end
 
-Bx = sum(Bxc,3);
-By = sum(Byc,3);
-Bz = sum(Bzc,3);
+Bx = sum(Bxc,1);
+By = sum(Byc,1);
+Bz = sum(Bzc,1);
 
 end

@@ -1,11 +1,11 @@
-function [Bx,By,Bz,ptx,pty,ptz] = magnetfield(mag,ptx,pty,ptz,varargin)
+function [magB] = magnetfield(mag,points,varargin)
 %MAGNETFIELD Calculate magnetic field from a magnet source
 
 switch mag.type
   
   case 'cuboid'
     
-    [Bx,By,Bz,ptx,pty,ptz] = cuboid_field(mag,ptx,pty,ptz);
+    magB = cuboid_field(mag,points);
     
   case 'cylinder'
     
