@@ -7,15 +7,31 @@ vertx = mag.vertices(:,1);
 verty = mag.vertices(:,2);
 vertz = mag.vertices(:,3);
 
-% Mesh everything for vectorisation
+% Mesh for vectorisation
 [ptx2,vertx2] = matrgrid(ptx,vertx);
 [pty2,verty2] = matrgrid(pty,verty);
 [ptz2,vertz2] = matrgrid(ptz,vertz);
 
-[Bxx,Bxy,Bxz] = cuboid_field_x(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J);
-[Byx,Byy,Byz] = cuboid_field_y(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J);
-[Bzx,Bzy,Bzz] = cuboid_field_z(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J);
+% Calculate components
+if abs(J(1)) > eps
+  [Bxx,Bxy,Bxz] = cuboid_field_x(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J(1));
+else
+  Bxx = zeros(size(ptx)); Bxy = Bxx; Bxz = Bxx;
+end
 
+if abs(J(2)) > eps
+  [Byx,Byy,Byz] = cuboid_field_y(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J(2));
+else
+  Byx = zeros(size(ptx)); Byy = Byx; Byz = Byx;
+end
+
+if abs(J(3)) > eps
+  [Bzx,Bzy,Bzz] = cuboid_field_z(ptx2,pty2,ptz2,vertx2,verty2,vertz2,J(3));
+else
+  Bzx = zeros(size(ptx)); Bzy = Bzx; Bzz = Bzx;
+end
+
+% Finish
 magBx = Bxx+Byx+Bzx;
 magBy = Bxy+Byy+Bzy;
 magBz = Bxz+Byz+Bzz;
@@ -23,6 +39,13 @@ magBz = Bxz+Byz+Bzz;
 end
 
 function [pointsM,vertsM] = matrgrid(points,verts)
+% This is like a restricted multidimensional ndgrid.
+%
+% We want every interaction between points [xx,yy] and vertices [v0..v7].
+% because [xx,yy] is already from meshgrid we DON'T want ndgid(xx,yy,vv);
+% that would give too many interactions.
+%
+% I think there might be a simpler way to do this.
 
 NV = numel(verts);
 
@@ -36,9 +59,7 @@ end
 
 function [Bx,By,Bz] = cuboid_field_x(x,y,z,xprime,yprime,zprime,J)
 
-Jx = J(1);
-
-DD = Jx/(4*pi)*(-1).^(0:7)';
+DD = J/(4*pi)*(-1).^(0:7)';
 D = nan(size(x,1),size(x,2),8);
 for ii = 1:8
   D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
@@ -72,9 +93,7 @@ end
 
 function [Bx,By,Bz] = cuboid_field_y(x,y,z,xprime,yprime,zprime,J)
 
-Jy = J(2);
-
-DD = Jy/(4*pi)*(-1).^(0:7)';
+DD = J/(4*pi)*(-1).^(0:7)';
 D = nan(size(x,1),size(x,2),8);
 for ii = 1:8
   D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
@@ -108,9 +127,7 @@ end
 
 function [Bx,By,Bz] = cuboid_field_z(x,y,z,xprime,yprime,zprime,J)
 
-Jz = J(3);
-
-DD = Jz/(4*pi)*(-1).^(0:7)';
+DD = J/(4*pi)*(-1).^(0:7)';
 D = nan(size(x,1),size(x,2),8);
 for ii = 1:8
   D(:,:,ii) = repmat(DD(ii),size(x,1),size(x,2));
