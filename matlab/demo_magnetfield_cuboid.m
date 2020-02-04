@@ -28,18 +28,6 @@ mag_cuboid.magdir = [0 0 5];
 magnetdraw(mag_cuboid,[0; 0; 0]);
 
 
-%% top 
-
-N = 50;
-[ptx,pty] = meshgrid(linspace(-0.2,0.2,N),linspace(-0.2,0.2,N));
-ptz = repmat(0.2,size(ptx));
-
-[Bx,By,Bz,ptx,pty,ptz] = magnetfield(mag_cuboid,ptx,pty,ptz);
-Bmag = sqrt(Bx.^2+By.^2+Bz.^2);
-
-h = surf(ptx,pty,ptz,Bmag);
-h.EdgeColor = 'none';
-h.FaceAlpha = 0.8;
 
 %% bottom 
 
@@ -53,4 +41,23 @@ Bmag = sqrt(Bx.^2+By.^2+Bz.^2);
 h = surf(ptx,pty,ptz,Bmag);
 h.EdgeColor = 'none';
 h.FaceAlpha = 0.8;
+
+%% curve
+
+phi = linspace(0,pi);
+r = 0.2;
+y = linspace(-0.1,0.1);
+
+[pp,yy] = meshgrid(phi,y);
+
+xx = r*cos(pp);
+zz = r*sin(pp);
+
+[Bx,By,Bz] = magnetfield(mag_cuboid,xx,yy,zz);
+Bmag = sqrt(Bx.^2+By.^2+Bz.^2);
+
+h = surf(xx,yy,zz,Bmag);
+h.EdgeColor = 'none';
+h.FaceAlpha = 0.8;
+
 
