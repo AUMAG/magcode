@@ -1,30 +1,44 @@
-function [B_rho, B_z] = cylinder_field_axial(M,R,L,rho,z)
-% CYLINDER_FIELD_AXIAL  Magnetic field of axially-magnetised cylinder
-%
-% These equations are from Caciagli (2018).
+function magB = cylinder_field_axial(mag,xyz)
 
-xi_1 = z+L;
-xi_2 = z-L;
-alpha_1 = (xi_1.^2+(rho+R).^2).^(-1/2);
-alpha_2 = (xi_2.^2+(rho+R).^2).^(-1/2);
-beta_1 = xi_1.*alpha_1;
-beta_2 = xi_2.*alpha_2;
+% Set up variables
+M = mag.magn;
+R = mag.dim(1);
+L = mag.dim(2)/2;
+xyz = xyz';
+rho = sqrt(xyz(:,1).^2+xyz(:,2).^2);
+Z = xyz(:,3);
+
+% Solve field equations (Caciagli 2018)
+zeta = [Z+L,Z-L];
+alpha = 1./sqrt(zeta.^2+(rho+R).^2);
+beta = zeta.*alpha;
 gamma = (rho-R)./(rho+R);
-gg = 1-gamma.^2;
-m_1 = (xi_1.^2+(rho-R).^2)./(xi_1.^2+(rho+R).^2);
-m_2 = (xi_2.^2+(rho-R).^2)./(xi_2.^2+(rho+R).^2);
+ksq = (zeta.^2+(rho-R).^2)./(zeta.^2+(rho+R).^2);
 
-[K_1,E_1,PI_1] = ellipkepi(gg,(1-m_1));
-[K_2,E_2,PI_2] = ellipkepi(gg,(1-m_2));
+[K,E,P] = ellipkepi(1-[gamma,gamma].^2,1-ksq);
 
-P11 = K_1-2./(1-m_1).*(K_1-E_1);
-P12 = K_2-2./(1-m_2).*(K_2-E_2);
+P1 = K - 2./(1-ksq).*(K-E);
+P2 = -gamma./(1-gamma.^2).*(P-K)-1./(1-gamma.^2).*(gamma.^2.*P-K);
 
-P21 = -gamma./gg.*(PI_1-K_1)-1./gg.*(gamma.^2.*PI_1-K_1);
-P22 = -gamma./gg.*(PI_2-K_2)-1./gg.*(gamma.^2.*PI_2-K_2);
+% Evaluate the numeric singularities at rho = 0
+P1(rho==0,:) = 0;
+P2(rho==0,:) = pi/2;
 
-B_rho = 4e-7*M*R*(alpha_1.*P11-alpha_2.*P12);
-B_z   = 4e-7*M*R./(rho+R).*(beta_1.*P21-beta_2.*P22);
+Brho = M*R/pi*(alpha(:,1).*P1(:,1)-alpha(:,2).*P1(:,2));
+Bz = M*R./(pi*(rho+R)).*(beta(:,1).*P2(:,1)-beta(:,2).*P2(:,2));
+
+% Evaluate the z-field at rho = R (Ravaud 2010)
+index = abs(rho-R)<eps;
+if any(index)
+    Bz(index) = imag(sum((-1).^[0,1].*alpha(index,:).*zeta(index,:).*(ellipticF(-asin(1./beta(index,:).^2),beta(index,:).^2)+ellipticK(beta(index,:).^2)),2))*M/2/pi;
+end
+    
+% Convert to Cartesian coordinates
+d = sqrt(xyz(:,1).^2+xyz(:,2).^2)+eps;
+Bx = Brho.*xyz(:,1)./d;
+By = Brho.*xyz(:,2)./d;
+
+magB = [Bx';By';Bz'];
 
 end
 
