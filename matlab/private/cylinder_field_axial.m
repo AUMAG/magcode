@@ -1,9 +1,12 @@
-function magB = cylinder_field_axial(mag,xyz)
+function magB = cylinder_field_axial(mag,xyz_g)
 
 % Set up variables
 M = mag.magn;
 R = mag.dim(1);
 L = mag.dim(2)/2;
+
+xyz = transpose(mag.rotation)*xyz_g-mag.position;
+
 xyz = xyz';
 rho = sqrt(xyz(:,1).^2+xyz(:,2).^2);
 Z = xyz(:,3);

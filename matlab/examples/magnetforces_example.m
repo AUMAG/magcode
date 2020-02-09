@@ -5,12 +5,11 @@
 % Reproducing the results of Akoun & Yonnet (1984)
 
 magnet_fixed = magnetdefine('type','cuboid','dim',[0.02 0.012 0.006],'magn',0.38,'magdir','z');
-magnet_float = magnetdefine('type','cuboid','dim',[0.012 0.02 0.006],'magn',0.38,'magdir','z');
+magnet_float = magnetdefine('type','cuboid','dim',[0.012 0.02 0.006],'position',[-0.004; -0.004; 0.008],'magn',0.38,'magdir','z');
 
 N = 501;
-offset = repmat([-0.004; -0.004; 0.008],[1 N]);
 displ = linspace(0, 0.03, N);
-displ_range = offset+[1; 0; 0]*displ;
+displ_range = [1; 0; 0]*displ;
 
 f1_xyz = magnetforces(magnet_fixed,magnet_float,displ_range);
 
@@ -33,16 +32,15 @@ yline(0,'--');
 % Replicating the results of Janssen et al. (2009)
 
 magnet_fixed = magnetdefine('type','cuboid','dim',[0.01  0.026 0.014],'magn',1.23,'magdir','z');
-magnet_float = magnetdefine('type','cuboid','dim',[0.014 0.026 0.01 ],'magn',1.23,'magdir','x');
+magnet_float = magnetdefine('type','cuboid','dim',[0.014 0.026 0.01 ],'position',[0; -0.008; 0.015],'magn',1.23,'magdir','x');
 
 N = 501;
-offset = repmat([0; -0.008; 0.015],[1 N]);
 displ = linspace(-0.05, 0.05, N);
-displ_range = offset+[1; 0; 0]*displ;
+displ_range = [1; 0; 0]*displ;
 
 f_xyz = magnetforces(magnet_fixed,magnet_float,displ_range);
 
-%% Plot
+% Plot
 
 figure(2); clf; hold on
 plot(displ,f_xyz(1,:),'Tag','x')

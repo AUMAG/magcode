@@ -20,7 +20,7 @@ if nargin == 0
   demo_magnetdraw;
   return
 elseif nargin == 1
-  error('Not enough input arguments');
+  arg_pos = [0;0;0];
 end
 
 if ~isfield(magnet,'fndefined')
@@ -40,7 +40,7 @@ end
 if isfield(magnet,'color2')
   default_color2 = magnet.color2;
 else
-  default_color2 = default_color/2;
+  default_color2 = [nan nan nan];
 end
 
 p = inputParser;
@@ -97,6 +97,9 @@ end
     [vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
     [vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
     
+    vrtc_p = transpose(magnet.rotation*transpose(vrtc_p) + magnet.position);
+    vrtc_n = transpose(magnet.rotation*transpose(vrtc_n) + magnet.position);
+    
     vrtc_p = vrtc_p+pos;
     vrtc_n = vrtc_n+pos;
     
@@ -115,6 +118,7 @@ end
     
     [X,Y,Z] = cylinder(r,n);
     vrtc = [X(:), Y(:), h*(Z(:)-0.5)];
+
     faces = nan(n,4);
     for ii = 1:n
       faces(ii,:) = 2*(ii-1)+[1 3 4 2];
@@ -123,6 +127,10 @@ end
     % Sides
     [vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
     [vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
+    
+    vrtc_p = transpose(magnet.rotation*transpose(vrtc_p) + magnet.position);
+    vrtc_n = transpose(magnet.rotation*transpose(vrtc_n) + magnet.position);
+
     patch('Faces',faces_p,'Vertices',vrtc_p+pos,patch_opts3{:})
     patch('Faces',faces_n,'Vertices',vrtc_n+pos,patch_opts4{:})
     
@@ -130,6 +138,10 @@ end
     faces = [1:2:2*(n+1);2:2:2*(n+1)];
     [vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
     [vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
+
+    vrtc_p = transpose(magnet.rotation*transpose(vrtc_p) + magnet.position);
+    vrtc_n = transpose(magnet.rotation*transpose(vrtc_n) + magnet.position);
+
     patch('Faces',faces_p,'Vertices',vrtc_p+pos,patch_opts1{:})
     patch('Faces',faces_n,'Vertices',vrtc_n+pos,patch_opts2{:})
     

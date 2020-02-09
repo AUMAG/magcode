@@ -3,13 +3,19 @@
 % Replicating the Akoun and Yonnet geometry
 
 
-magnet_fixed = magnetdefine('type','cuboid','dim',[0.02 0.012 0.006],'magn',0.38,'magdir','z','color',[0.8 0 0]);
-magnet_float = magnetdefine('type','cuboid','dim',[0.012 0.02 0.006],'magn',0.38,'magdir','z','color',[0 0.8 0]);
+magnet_fixed = magnetdefine('type','cuboid',...
+  'dim',[0.02 0.012 0.006],...
+  'magn',0.38,'magdir','z',...
+  'color',[0.8 0 0]);
+magnet_float = magnetdefine('type','cuboid',...
+  'dim',[0.012 0.02 0.006],...
+  'position',[-0.004; -0.004; 0.008],...
+  'magn',0.38,'magdir','z',...
+  'color',[0 0.8 0]);
 
 N = 501;
-offset = repmat([-0.004; -0.004; 0.008],[1 N]);
 displ = linspace(0, 0.03, N);
-displ_range = offset+[1; 0; 0]*displ;
+displ_range = [1; 0; 0]*displ;
 
 figure(1); clf
 f1_xyz = magnetforces(magnet_fixed,magnet_float,displ_range,'draw',true,'drawpath',true,'markpath',{'d','o','s'},'markpathN',2);

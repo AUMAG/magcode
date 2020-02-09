@@ -3,9 +3,9 @@ function [magB] = cuboid_field(mag,points)
 J = mag.magn*mag.magdir;
 
 % Set up variables
-vertx = mag.vertices(:,1);
-verty = mag.vertices(:,2);
-vertz = mag.vertices(:,3);
+vertx = mag.vertices(1,:);
+verty = mag.vertices(2,:);
+vertz = mag.vertices(3,:);
 
 % Mesh for vectorisation
 [ptx,vertx] = meshgrid(points(1,:),vertx);

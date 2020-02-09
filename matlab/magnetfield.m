@@ -10,7 +10,7 @@ switch mag.type
   case 'cylinder'
     
     if isequal(mag.magdir,[0;0;1]) && isequal(mag.dir,[0;0;1])
-      magB = cylinder_field_axial(mag,xyz);
+      magB = cylinder_field_axial(mag,points);
     end
     
 end

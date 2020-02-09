@@ -19,15 +19,14 @@ index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
 
 
 %% \subsubsection{Wrangling user input and output}
-% We now have a choice of calculations to take based on the user input.
-% This chunk and the next are used in both \texttt{magnetforces.m} and
-% \texttt{multipoleforces.m}.
+
 
 calc_force_bool     = false;
 calc_stiffness_bool = false;
 calc_torque_bool    = false;
 break_ind = numel(varargin);
 
+% legacy arguments
 for iii = 1:break_ind
   switch varargin{iii}
     case 'force',      calc_force_bool     = true;
@@ -42,6 +41,7 @@ for iii = 1:break_ind
   end
 end
 
+% detect end of legacy arguments
 if break_ind == numel(varargin)
   plain_opts = varargin;
   var_opts = {};
@@ -52,6 +52,7 @@ end
 
 all_methods = {'auto','dipole'};
 
+% modern arguments
 ip = inputParser;
 ip.addParameter('method','auto',@(x) any(validatestring(x,all_methods)));
 ip.addParameter('figure',gcf);
@@ -85,6 +86,8 @@ else
   error(['Displacements matrix should be of size (3, D) ',...
     'where D is the number of displacements.'])
 end
+
+displ = displ - magnet_fixed.position + magnet_float.position;
 
 Ndispl = size(displ,2);
 

@@ -42,6 +42,14 @@ if ~isfield(mag,'lever')
   mag.lever = [0; 0; 0];
 end
 
+if ~isfield(mag,'position')
+  mag.position = [0; 0; 0];
+end
+
+if ~isfield(mag,'rotation')
+  mag.rotation = eye(3);
+end
+
 if strcmp(mag.type,'cylinder')
 else
 end
@@ -76,14 +84,17 @@ function mag = definecuboid(mag)
     
     if isfield(mag,'dim')
       mag.volume = prod(mag.dim);
-      mag.vertices = [mag.dim(1)/2,mag.dim(2)/2,mag.dim(3)/2;...
-          mag.dim(1)/2,-mag.dim(2)/2,mag.dim(3)/2;...
-          -mag.dim(1)/2,-mag.dim(2)/2,mag.dim(3)/2;...
-          -mag.dim(1)/2,mag.dim(2)/2,mag.dim(3)/2;...
-          mag.dim(1)/2,-mag.dim(2)/2,-mag.dim(3)/2;...
-          -mag.dim(1)/2,-mag.dim(2)/2,-mag.dim(3)/2;...
-          -mag.dim(1)/2,mag.dim(2)/2,-mag.dim(3)/2;...
-          mag.dim(1)/2,mag.dim(2)/2,-mag.dim(3)/2];
+      mag.vertices = transpose([
+          mag.dim(1)/2, mag.dim(2)/2, mag.dim(3)/2;
+          mag.dim(1)/2,-mag.dim(2)/2, mag.dim(3)/2;
+         -mag.dim(1)/2,-mag.dim(2)/2, mag.dim(3)/2;
+         -mag.dim(1)/2, mag.dim(2)/2, mag.dim(3)/2;
+          mag.dim(1)/2,-mag.dim(2)/2,-mag.dim(3)/2;
+         -mag.dim(1)/2,-mag.dim(2)/2,-mag.dim(3)/2;
+         -mag.dim(1)/2, mag.dim(2)/2,-mag.dim(3)/2;
+          mag.dim(1)/2, mag.dim(2)/2,-mag.dim(3)/2
+        ]);
+      mag.vertices = mag.rotation*mag.vertices + mag.position;
     end
 
 end

@@ -37,3 +37,7 @@ matlab/coverage-debug\.xml
 *.gz
 
 *.asv
+
+matlab/examples/moena2019/magfield.png
+
+matlab/examples/moena2019/magforce.png

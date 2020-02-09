@@ -1,6 +1,6 @@
 %% Demo for magnetdraw
 
-function demo_magnetfield_cuboid()
+function demo_magnetfield_cylinder()
 
 clc
 
@@ -19,13 +19,13 @@ zlabel('z');
 
 %% Cuboid
 
-mag_cuboid = magnetdefine(...
-  'type','cuboid',...
-  'dim',[0.1 0.2 0.3],...
-  'position',[0;-0.2;0],...
-  'magn',1,'magdir',[5 0 5]);
+mag_cyl = magnetdefine(...
+  'type','cylinder',...
+  'radius',0.1,'height',0.2,...
+  'position',[0;-0.11;0],...
+  'magn',1,'magdir',[0 0 1]);
 
-magnetdraw(mag_cuboid);
+magnetdraw(mag_cyl);
 
 
 
@@ -35,7 +35,7 @@ N = 50;
 [ptx,pty] = meshgrid(linspace(-0.2,0.2,N),linspace(-0.2,0.2,N));
 ptz = repmat(-0.2,size(ptx));
 
-magB = magnetfield(mag_cuboid,[ptx(:),pty(:),ptz(:)].');
+magB = magnetfield(mag_cyl,[ptx(:),pty(:),ptz(:)].');
 Bmag = sqrt(magB(1,:).^2+magB(2,:).^2+magB(3,:).^2);
 
 h = surf(ptx,pty,ptz,reshape(Bmag,size(ptx)));
@@ -53,7 +53,7 @@ y = linspace(-0.1,0.1);
 xx = r*cos(pp);
 zz = r*sin(pp);
 
-magB = magnetfield(mag_cuboid,[xx(:),yy(:),zz(:)].');
+magB = magnetfield(mag_cyl,[xx(:),yy(:),zz(:)].');
 Bmag = sqrt(magB(1,:).^2+magB(2,:).^2+magB(3,:).^2);
 
 h = surf(xx,yy,zz,reshape(Bmag,size(pp)));
