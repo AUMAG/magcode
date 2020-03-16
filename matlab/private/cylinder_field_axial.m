@@ -1,11 +1,11 @@
-function magB = cylinder_field_axial(mag,xyz_g)
+function magB = cylinder_field_axial(mag,g_xyz)
 
 % Set up variables
 M = mag.magn;
 R = mag.dim(1);
 L = mag.dim(2)/2;
 
-xyz = transpose(mag.rotation)*xyz_g-mag.position;
+xyz = transpose(mag.rotation)*(g_xyz-mag.position);
 
 xyz = xyz';
 rho = sqrt(xyz(:,1).^2+xyz(:,2).^2);
@@ -35,7 +35,7 @@ index = abs(rho-R)<eps;
 if any(index)
     Bz(index) = imag(sum((-1).^[0,1].*alpha(index,:).*zeta(index,:).*(ellipticF(-asin(1./beta(index,:).^2),beta(index,:).^2)+ellipticK(beta(index,:).^2)),2))*M/2/pi;
 end
-    
+
 % Convert to Cartesian coordinates
 d = sqrt(xyz(:,1).^2+xyz(:,2).^2)+eps;
 Bx = Brho.*xyz(:,1)./d;

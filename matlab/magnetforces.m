@@ -73,6 +73,18 @@ if ~calc_force_bool && ~calc_stiffness_bool && ~calc_torque_bool
   calc_force_bool = true;
 end
 
+%% \subsubsection{Define magnets}
+% The canonical approach is to use magnetdefine before calling magnetforces,
+% but the old way used a basic structure approach.
+% This will be phased out eventually, but to allow this still.
+
+if ~isfield(magnet_fixed,'fndefined')
+  magnet_fixed = magnetdefine(magnet_fixed);
+end
+if ~isfield(magnet_float,'fndefined')
+  magnet_float = magnetdefine(magnet_float);
+end
+
 %% \subsubsection{Organise input displacements}
 % Gotta check the displacement input for both functions.
 % After sorting that out, we can initialise the output variables now we
@@ -115,12 +127,6 @@ end
 % magnets; these dimensions are halved when performing all of the calculations.
 % (Because that's just how the maths is.)
 
-if ~isfield(magnet_fixed,'fndefined')
-  magnet_fixed = magnetdefine(magnet_fixed);
-end
-if ~isfield(magnet_float,'fndefined')
-  magnet_float = magnetdefine(magnet_float);
-end
 
 if strcmp(ip.Results.method, 'dipole')
 

@@ -46,7 +46,19 @@ if ~isfield(mag,'position')
   mag.position = [0; 0; 0];
 end
 
-if ~isfield(mag,'rotation')
+if ~isfield(mag,'euler_order')
+  mag.euler_order = 'XYZ';
+end
+
+if isfield(mag,'rotation')
+  if all(size(mag.rotation) == [3 3])
+    % good
+  elseif numel(mag.rotation) == 3
+    mag.rotation = eulang2rotmat(mag.rotation,mag.euler_order);
+  else
+    error('Magnet rotation must either be 3 euler angles or 3x3 rotation matrix.')
+  end
+else
   mag.rotation = eye(3);
 end
 
@@ -94,7 +106,6 @@ function mag = definecuboid(mag)
          -mag.dim(1)/2, mag.dim(2)/2,-mag.dim(3)/2;
           mag.dim(1)/2, mag.dim(2)/2,-mag.dim(3)/2
         ]);
-      mag.vertices = mag.rotation*mag.vertices + mag.position;
     end
 
 end

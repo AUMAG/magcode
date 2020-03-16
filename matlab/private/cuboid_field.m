@@ -1,6 +1,8 @@
-function [magB] = cuboid_field(mag,points)
+function [g_magB] = cuboid_field(mag,g_points)
 
 J = mag.magn*mag.magdir;
+
+points = transpose(mag.rotation)*(g_points - mag.position);
 
 % Set up variables
 vertx = mag.vertices(1,:);
@@ -32,10 +34,12 @@ else
 end
 
 % Finish
-magB = [Bxx+Byx+Bzx;
-        Bxy+Byy+Bzy;
-        Bxz+Byz+Bzz];
+l_magB = [Bxx+Byx+Bzx;
+          Bxy+Byy+Bzy;
+          Bxz+Byz+Bzz];
 
+g_magB = mag.rotation*l_magB;
+      
 end
 
 
