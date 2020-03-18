@@ -19,10 +19,10 @@ q1 = 1;
 w1 = 1;
 
 nn = 0;
-qq = 1;
 ww = m;
+qq = 1;
 
-while max(abs(w1(:))) > eps || max(abs(q1(:))) > eps
+while max(abs([w1(:);q1(:)])) > eps
 
   % Update from previous loop
   a0 = a1;
@@ -30,27 +30,29 @@ while max(abs(w1(:))) > eps || max(abs(q1(:))) > eps
   p0 = p1;
   q0 = q1;
 
+  p0p0 = p0.^2;
+  ag0  = a0.*g0;
+  rr   = ag0./p0p0;
+
   % for Elliptic I
   a1 = (a0+g0)/2;
-  g1 = sqrt(a0.*g0);
+  g1 = sqrt(ag0);
 
   % for Elliptic II
   nn = nn + 1;
-  d1 = (a0-g0)/2;
-  w1 = 2^nn*d1.^2;
+  w1 = 2^(nn-2)*(a0-g0).^2;
   ww = ww + w1;
 
   % for Elliptic III
-  rr = p0.^2+a0.*g0;
-  p1 = rr./p0/2;
-  q1 = q0.*(p0.^2-a0.*g0)./rr/2;
+  p1 = p0.*(1+rr)/2;
+  q1 = q0.*(1-rr)./(1+rr)/2;
   qq = qq + q1;
 
 end
 
 K  = 1./a1*pi/2;
 E  = K.*(1-ww/2);
-PI = K.*(1+a./(2-2*a).*qq);
+PI = K.*(1+a./(1-a).*qq/2);
 
 im = find(m == 1);
 if ~isempty(im)
