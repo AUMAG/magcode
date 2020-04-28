@@ -133,33 +133,7 @@ if strcmp(ip.Results.method, 'dipole')
   magtype = 'dipole';
   
 else
-  
-  if strcmp(magnet_fixed.type, 'coil')
     
-    if ~strcmp(magnet_float.type, 'cylinder')
-      error('Coil/magnet forces can only be calculated for cylindrical magnets.')
-    end
-    
-    coil = magnet_fixed;
-    magnet = magnet_float;
-    magtype = 'coil';
-    coil_sign = +1;
-    
-  end
-  
-  if strcmp(magnet_float.type, 'coil')
-    
-    if ~strcmp(magnet_fixed.type, 'cylinder')
-      error('Coil/magnet forces can only be calculated for cylindrical magnets.')
-    end
-    
-    coil = magnet_float;
-    magnet = magnet_fixed;
-    magtype = 'coil';
-    coil_sign = -1;
-    
-  end
-  
   if ~strcmp(magnet_fixed.type, magnet_float.type)
     error('Magnets must be of same type (cuboid/cuboid or cylinder/cylinder)')
   end
@@ -211,16 +185,49 @@ switch magtype
       error('Cylindrical magnets must be aligned in one of the x, y or z directions')
     end
     
+        
     if calc_force_bool
-      if magnet_fixed.isring && magnet_float.isring
+      
+      if magnet_fixed.isring || magnet_float.isring
         for iii = 1:Ndispl
           forces_out(:,iii) = ring_magnet_force(displ(:,iii));
         end
       else
-        for iii = 1:Ndispl
-          forces_out(:,iii) = cyl_magnet_force(displ(:,iii));
+        
+        if ( magnet_fixed.iscoil && magnet_fixed.turnsRadial > 1 ) || ...
+           ( magnet_float.iscoil && magnet_float.turnsRadial > 1 )
+          
+          if magnet_fixed.iscoil
+            coil = magnet_fixed;
+            magnet = magnet_float;
+            coil_sign = -1;
+          end
+          
+          if magnet_float.iscoil
+            coil = magnet_float;
+            magnet = magnet_fixed;
+            coil_sign = +1;
+          end
+          
+          for iii = 1:Ndispl
+            forces_out(:,iii) = coil_sign*coil.dir*...
+              forces_magcyl_shell_calc(magnet, coil, squeeze(displ(cyldir,:)));
+          end
+          
+          
+        else
+          
+          % normal scenario -- two magnets / thin coils
+          for iii = 1:Ndispl
+            forces_out(:,iii) = cyl_magnet_force(displ(:,iii));
+          end
+          
         end
+        
       end
+      
+      
+      
     end
     
     if calc_stiffness_bool
@@ -231,21 +238,7 @@ switch magtype
       error('Torques cannot be calculated for cylindrical magnets yet.')
     end
     
-    
-  case 'coil'
-    
-    warning('Code for coils in Matlab has never been completed :( See the Mathematica code for more details!')
-    for iii = 1:Ndispl
-      forces_out(:,iii) = coil_sign*coil.dir*...
-        forces_magcyl_shell_calc(...
-        magnet.dim, ...
-        coil.dim, ...
-        squeeze(displ(cyldir,:)), ...
-        magnet.magM(cyldir), ...
-        coil.current, ...
-        coil.turns);
-    end
-    
+
 end
 
 
@@ -349,7 +342,7 @@ end
 
 % \end{mfunction}
 
-% \begin{mfunction}{single_magnet_cyl_force}
+% \begin{mfunction}{cyl_magnet_force}
   function forces_out = cyl_magnet_force(displ)
 
     forces_out = nan(size(displ));
@@ -371,7 +364,7 @@ end
   end
 % \end{mfunction}
 
-% \begin{mfunction}{single_magnet_ring_force}
+% \begin{mfunction}{ring_magnet_force}
   function forces_out = ring_magnet_force(displ)
 
     forces_out = nan(size(displ));
@@ -401,19 +394,16 @@ end
 
 
 % \begin{mfunction}{forces_magcyl_shell_calc}
-  function Fz = forces_magcyl_shell_calc(magsize,coilsize,displ,Jmag,Nrz,I)
+  function Fz = forces_magcyl_shell_calc(mag,coil,displ)
 
-    Jcoil = 4*pi*1e-7*Nrz(2)*I/coil.dim(3);
+    Jmag = magnet.magM(cyldir);
+    Jcoil = 4*pi*1e-7*coil.turnsAxial*coil.current/coil.height/coil.turnsRadial;
 
-    shell_forces = nan([length(displ) Nrz(1)]);
+    shell_forces = nan([length(displ) coil.turnsRadial]);
 
-    for rr = 1:Nrz(1)
-
-      this_radius = coilsize(1)+(rr-1)/(Nrz(1)-1)*(coilsize(2)-coilsize(1));
-      shell_size = [this_radius, coilsize(3)];
-
-      shell_forces(:,rr) = cylinder_force_coaxial(magsize,shell_size,displ,Jmag,Jcoil);
-
+    for rr = 1:coil.turnsRadial
+      this_radius = coil.radiusInner(1)+(rr-1)/(coil.turnsRadial-1)*(coil.radiusOuter-coil.radiusInner);
+      shell_forces(:,rr) = cylinder_force_coaxial(Jmag,Jcoil,mag.radius,this_radius,mag.height,coil.height,displ);
     end
 
     Fz = sum(shell_forces,2);

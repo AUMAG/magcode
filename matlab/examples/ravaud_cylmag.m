@@ -32,7 +32,7 @@ displ = linspace(-displ_range,displ_range,NN);
 
 % Calculate forces:
 fcyl = magnetforces(...
-  struct('type','cylinder','turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]),...
+  struct('type','coil','turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]),...
   struct('type','cylinder','magn',J2,'dim',[r2 h2],'dir',[0 0 1]),...
   [0;0;1]*displ...
 );
@@ -56,8 +56,8 @@ end
 
 %% Save output to file
 
-f = fopen('data/magcyl-matlab.txt','w');
-fprintf(f,'%f %f\n',[1000*displ' fcyl(3,:)']');
+% f = fopen('data/magcyl-matlab.txt','w');
+% fprintf(f,'%f %f\n',[1000*displ' fcyl(3,:)']');
 
 %% Two magnets
 
