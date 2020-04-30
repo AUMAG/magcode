@@ -9,14 +9,6 @@
 
 function [varargout] = magnetforces(magnet_fixed, magnet_float, displ, varargin)
 
-%% \subsection{Main function body}
-
-magconst = 1/(4*pi*(4*pi*1e-7));
-
-[index_i, index_j, index_k, index_l, index_p, index_q] = ndgrid([0 1]);
-
-index_sum = (-1).^(index_i+index_j+index_k+index_l+index_p+index_q);
-
 
 %% \subsubsection{Wrangling user input and output}
 
@@ -211,7 +203,7 @@ switch magtype
           
           for iii = 1:Ndispl
             forces_out(:,iii) = coil_sign*coil.dir*...
-              forces_magcyl_shell_calc(magnet, coil, squeeze(displ(cyldir,:)));
+              forces_magcyl_shell_calc(magnet, coil, squeeze(displ(cyldir,iii)));
           end
           
           

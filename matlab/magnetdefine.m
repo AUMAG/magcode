@@ -268,7 +268,7 @@ elseif ischar(vec_in)
     case '-x'; vec = [-1; 0; 0];
     case '-y'; vec = [ 0;-1; 0];
     case '-z'; vec = [ 0; 0;-1];
-    otherwise, error('Vector string %s not understood.',vec);
+    otherwise, error('Vector string %s not understood.',vec_in);
   end
   
 else
