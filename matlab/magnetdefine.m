@@ -68,10 +68,6 @@ else
   mag.rotation = eye(3);
 end
 
-if strcmp(mag.type,'cylinder')
-else
-end
-
 
 switch mag.type
   case 'cylinder', mag = definecylinder(mag);

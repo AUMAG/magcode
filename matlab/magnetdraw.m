@@ -8,12 +8,15 @@ function magnetdraw(magnet,arg_pos,varargin)
 %
 % # Optional arguments
 %
-% 'color', color1 : color of the magnet (1x3)
-% 'color2',color2 : color of the "alternate face" of the magnet (1x3)
-% 'alpha', alpha  : transparency of the magnet
+% 'color', color1    : color of the magnet (1x3)
+% 'color2',color2    : color of the "alternate face" of the magnet (1x3)
+% 'alpha', alpha     : transparency of the magnet
+% 'drawlever', lever_bool : whether to draw lever arms (default false)
 %
 % By default color2 is 0.5*color1.
 %
+
+%% Defaults
 
 if nargin == 0
   disp('No arguments; running MAGNETDRAW demo.')
@@ -43,18 +46,43 @@ else
   default_color2 = [nan nan nan];
 end
 
+%% Options
+
 p = inputParser;
 p.addRequired('pos',@(x) size(x,1)==3 );
 p.addParameter('color',default_color);
 p.addParameter('color2',default_color2);
 p.addParameter('alpha',default_alpha);
+p.addParameter('drawlever',false);
+p.addParameter('euler','XYZ');
+p.addParameter('rot',[0;0;0]);
 p.parse(arg_pos,varargin{:});
+
+%% Pose
 
 pos    = p.Results.pos;
 Ndispl = size(pos,2);
+rot    = p.Results.rot;
+rotsize = size(rot);
+if numel(rotsize) == 3
+  Nrot   = rotsize(3);
+elseif numel(rotsize) == 2
+  Nrot   = rotsize(2);
+  rot = eulang2rotmat(rot,p.Results.euler);
+end
+if Nrot == 1
+  rot = repmat(rot,[1,1,Ndispl]);
+end
+Nrot = size(rot,3);
+assert(Ndispl==Nrot,'pos and rot inputs not compatible sizes.');
+
+
+%% Colour setup
+
 color1 = p.Results.color;
 color2 = p.Results.color2;
 alpha  = p.Results.alpha;
+lever_bool = p.Results.drawlever;
 if all(isnan(color2))
   color2 = color1/2;
 end
@@ -63,21 +91,31 @@ patch_opts2 = {'FaceColor',color2,'FaceAlpha',alpha,'EdgeColor',color1/4};
 patch_opts3 = {'FaceColor',color1,'FaceAlpha',alpha,'EdgeColor','none'};
 patch_opts4 = {'FaceColor',color2,'FaceAlpha',alpha,'EdgeColor','none'};
 
+
+%% Finally, draw
+
 for ii = 1:Ndispl
+  if lever_bool
+    draw_lever(magnet,pos(:,ii),rot(:,:,ii));
+  end
   switch magnet.type
-    case 'cuboid',  draw_cube(magnet,pos(:,ii));
-    case 'cylinder', draw_cyl(magnet,pos(:,ii));
+    case 'cuboid',  draw_cube(magnet,pos(:,ii),rot(:,:,ii));
+    case 'cylinder', draw_cyl(magnet,pos(:,ii),rot(:,:,ii));
     otherwise, error(['Cannot draw magnet of type "',magnet.type,'".'])
   end
 end
 
+
+
 %% Sub-functions
 
-  function draw_cube(magnet,pos)
-    
-    pos = transpose(pos(:));
+%%
+
+  function draw_cube(magnet,pos,rot)
+
     hdim = transpose(magnet.dim(:))/2;
-    
+    lever = magnet.lever;
+
     vrtc = [-1 -1 +1; % top plate
             +1 -1 +1;
             +1 +1 +1;
@@ -97,18 +135,20 @@ end
     [vrtc_p, faces_p] = split_patches(vrtc,faces,+magnet.magdir);
     [vrtc_n, faces_n] = split_patches(vrtc,faces,-magnet.magdir);
     
-    vrtc_p = transpose(magnet.rotation*transpose(vrtc_p) + magnet.position);
-    vrtc_n = transpose(magnet.rotation*transpose(vrtc_n) + magnet.position);
+    vrtc_p2 = magnet.rotation*transpose(vrtc_p) - lever;
+    vrtc_n2 = magnet.rotation*transpose(vrtc_n) - lever;
     
-    vrtc_p = vrtc_p+pos;
-    vrtc_n = vrtc_n+pos;
+    vrtc_p3 = rot*(vrtc_p2) + lever + pos + magnet.position ;
+    vrtc_n3 = rot*(vrtc_n2) + lever + pos + magnet.position ;
     
-    patch('Faces',faces_p,'Vertices',vrtc_p,patch_opts1{:})
-    patch('Faces',faces_n,'Vertices',vrtc_n,patch_opts2{:})
+    patch('Faces',faces_p,'Vertices',transpose(vrtc_p3),patch_opts1{:})
+    patch('Faces',faces_n,'Vertices',transpose(vrtc_n3),patch_opts2{:})
     
   end
 
-  function draw_cyl(magnet,pos)
+%%
+
+  function draw_cyl(magnet,pos,rot)
     
     pos = transpose(pos(:));
     
@@ -120,8 +160,8 @@ end
     vrtc = [X(:), Y(:), h*(Z(:)-0.5)];
 
     faces = nan(n,4);
-    for ii = 1:n
-      faces(ii,:) = 2*(ii-1)+[1 3 4 2];
+    for iii = 1:n
+      faces(iii,:) = 2*(iii-1)+[1 3 4 2];
     end
     
     % Sides
@@ -149,6 +189,18 @@ end
 
 end
 
+%%
+
+function draw_lever(magnet,pos,rot)
+
+ppos = transpose(pos(:))+magnet.position;
+lever = magnet.lever;
+
+plot_line(ppos+lever,ppos+lever+rot*(-lever),'k.-','linewidth',2,'markersize',20)
+
+end
+
+%%
 
 function [vrtc_new, faces_new] = split_patches(vrtc,faces,normm)
 
@@ -233,8 +285,6 @@ end
 
 end
 
-
-
 function faces_pn = calc_face_vertex_side(faces,vrtc,normm)
 
 Nfaces = size(faces,1);
@@ -248,6 +298,18 @@ for fff = 1:Nfaces
     pp = vrtc(faces(fff,vvv),:);
     faces_pn(fff,vvv) = sign(dot(normm,pp));
   end
+end
+
+end
+
+%%
+
+function p = plot_line(x,y,varargin)
+
+h = plot3([x(1) y(1)],[x(2) y(2)],[x(3) y(3)],varargin{:});
+
+if nargout > 0 
+  p = h 
 end
 
 end
