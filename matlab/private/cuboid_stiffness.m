@@ -32,7 +32,7 @@ end
 
 function calc_out = stiffnesses_calc_z_z(size1,size2,offset,J1,J2,di,oi)
 
-if (J1<eps || J2<eps)
+if (abs(J1)<eps || abs(J2)<eps)
   calc_out = zeros(size(offset));
   return
 end
@@ -77,7 +77,7 @@ end
 
 function calc_out = stiffnesses_calc_z_y(size1,size2,offset,J1,J2,di,oi)
 
-if (J1<eps || J2<eps)
+if (abs(J1)<eps || abs(J2)<eps)
   calc_out = zeros(size(offset));
   return
 end
