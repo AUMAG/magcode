@@ -2,7 +2,7 @@
 MAGCODE: models for calculating magnetic fields and interactions
 ================================================================
 
-Public-facing documentation for this repository is located at: <http://wspr.io/magcode/>
+Public-facing documentation for this repository is located at: <http://aumag.github.io/magcode/>
 
 ## Development details
 
@@ -21,7 +21,7 @@ In addition, please cite this code repository as:
 * Author: William S. P. Robertson
 * DOI for the repository: 10.5281/zenodo.1491206
 
-## [Releases](https://github.com/wspr/magcode/releases)
+## [Releases](https://github.com/aumag/magcode/releases)
 
 v0.1:
 * First release with a DOI, covering the code base up to 2018 before some significant rework
