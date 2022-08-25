@@ -297,6 +297,7 @@ if isfield(mag,'turns') && isfield(mag,'turnsAxial')
 end
 if isfield(mag,'turns')
   mag.turnsAxial = mag.turns;
+  mag.turnsRadial = 1;
 else
   if ~isfield(mag,'turnsRadial')
     mag.turnsRadial = 1;
