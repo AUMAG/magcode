@@ -6,11 +6,11 @@ h1 = 0.02; % metres
 r2 = 0.015; % metres
 h2 = 0.015; % metres
 
-coil1 = magnetdefine('type','coil','turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]);
-coil2 = magnetdefine('type','coil','turns',Nturns,'current',current,'dim',[r2 h2],'dir',[0 0 1]);
-
 Nturns = 100;
 current = 1; % Amperes
+
+coil1 = magnetdefine('type','coil','turns',Nturns,'current',current,'dim',[r1 h1],'dir',[0 0 1]);
+coil2 = magnetdefine('type','coil','turns',Nturns,'current',current,'dim',[r2 h2],'dir',[0 0 1]);
 
 % Displacement:
 NN = 45;
