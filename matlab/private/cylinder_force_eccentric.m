@@ -1,3 +1,4 @@
+% Based on CONWAY 2013: https://doi.org/10.1109/TMAG.2013.2251652
 %
 % \begin{mfunction}{cylinder_force_eccentric}
   function calc_out = cylinder_force_eccentric(size1,size2,h_gap,e_displ,J1,J2)
