@@ -182,6 +182,7 @@ end
 
 
 
+
 %\begin{mfunction}{attempt3Mvector}
 % If a series of vectors (column arrays) are stacked they should create a
 % [3 M] size array.
@@ -310,6 +311,7 @@ end
 
 end
 %\end{mfunction}
+
 
 
 % \end{mfunction}

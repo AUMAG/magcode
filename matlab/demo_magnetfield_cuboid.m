@@ -16,27 +16,39 @@ xlabel('x');
 ylabel('y');
 zlabel('z');
 
+Nmag = 5;
+mag_cuboid = cell(Nmag,1);
 
-%% Cuboid
+for ii = 1:5
 
-mag_cuboid = magnetdefine(...
+mag_cuboid{ii} = magnetdefine(...
   'type','cuboid',...
-  'dim',[0.1 0.2 0.3],...
-  'position',[0;-0.2;0],...
-  'magn',1,'magdir',[5 0 5]);
+  'dim',[0.1 0.1 0.1],...
+  'position',[ii*0.12;-0.2;0],...
+  'rotation',[0, pi/2+pi/2*ii, 0],...
+  'magn',1,'magdir',[0 0 1]);
 
-magnetdraw(mag_cuboid);
+magnetdraw(mag_cuboid{ii});
 
-
+end
 
 %% bottom 
 
 N = 50;
-[ptx,pty] = meshgrid(linspace(-0.2,0.2,N),linspace(-0.2,0.2,N));
-ptz = repmat(-0.2,size(ptx));
+[ptx,pty] = meshgrid(linspace(-0.2,1,N),linspace(-0.4,0.2,N));
+ptz = repmat(-0.1,size(ptx));
 
-magB = magnetfield(mag_cuboid,[ptx(:),pty(:),ptz(:)].');
-Bmag = sqrt(magB(1,:).^2+magB(2,:).^2+magB(3,:).^2);
+magB = nan(Nmag,3,N*N);
+Bmag = nan(Nmag,N*N);
+
+for ii = 1:5
+
+  magB(ii,:,:) = magnetfield(mag_cuboid{ii},[ptx(:),pty(:),ptz(:)].');
+  Bmag(ii,:) = sqrt(magB(ii,1,:).^2+magB(ii,2,:).^2+magB(ii,3,:).^2);
+
+end
+
+Bmag = sum(Bmag,1);
 
 h = surf(ptx,pty,ptz,reshape(Bmag,size(ptx)));
 h.EdgeColor = 'none';
@@ -46,7 +58,7 @@ h.FaceAlpha = 0.8;
 
 phi = linspace(0,pi);
 r = 0.2;
-y = linspace(-0.1,0.1);
+y = linspace(-0.4,0.1);
 
 [pp,yy] = meshgrid(phi,y);
 
